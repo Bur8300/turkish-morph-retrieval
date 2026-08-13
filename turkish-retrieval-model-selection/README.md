@@ -19,6 +19,8 @@ Turkish Retrieval** project (inzva AI Projects #10). One notebook, three decisio
   Raw survey output kept alongside as `docs/literature_survey_raw.json`.
 - **v2.0 dataset generation** (see below) — `morph_taxonomy.py`, `morph_prompts.py`,
   `morph_validators.py`, `morph_selftest.py`, `gen_morph_dataset.py`, output in `data_morph_v2/`.
+- **v2.3 additions** (see below) — `morph_annotate.py` (morphological annotation + variant
+  groups, zero API calls) and `morph_beir.py` (standard BEIR export).
 
 ## v2.0 morphological train/dev set
 
@@ -141,6 +143,89 @@ Reproduce any of this without an API key:
 ```bash
 conda run -n dl_hw1 python eval_morph_dev.py --split dev
 ```
+
+## v2.3 — morphological annotation, variant groups, BEIR export
+
+Pure post-processing over the v2.2 items: **zero API calls**, no regeneration. Run in place on the
+existing dataset:
+
+```bash
+conda run -n dl_hw1 python morph_annotate.py --split train --split dev
+conda run -n dl_hw1 python morph_beir.py --split train --split dev --split test
+```
+
+`gen_morph_dataset.py` also calls both automatically from now on, so a future full regeneration
+ships them without a separate step.
+
+**Morphological annotation** (`item["morphology"]`, `item["variants"]` in the output JSON).
+Two tiers: a deterministic Tier 1 that recovers `stem`/`diff_query`/`diff_counterfactual` for the
+critical-word pair via a windowed boundary search against an allomorph table *parsed from
+`morph_taxonomy.py`'s own `ek_turu` strings* (not hand-maintained), and an optional Tier 2
+(`zeyrek`) giving a full lemma + gold morpheme tags. The search runs against the FULL table, not
+just the item's own declared feature — that is what turns it into a label audit rather than a
+confirmation exercise.
+
+| metric | train | dev |
+|---|---|---|
+| Tier 1 exact match | 59.8% | 70.0% |
+| Tier 1 agrees with declared `target_feature` | 60.3% | 36.5% |
+| no recoverable word-level pair (`no_pair`) | 1.8% | 1.1% |
+| zeyrek parse rate | 91.4% | 87.8% |
+
+Three things worth knowing before trusting these numbers at face value:
+
+- **The train/dev agreement gap (60.3% vs 36.5%) is unexplained.** Both splits are annotated by
+  the identical code; dev is smaller (90 vs 510 items) so some of the gap is plausibly sampling
+  variance, but a gap this size hasn't been root-caused. Treat the disagreement rate as a QC
+  signal to investigate per-split, not a single trustworthy number.
+- **`no_pair` is a real, if small, QC finding, not just an edge case.** Every occurrence was
+  inspected by hand during development. Most are legitimate multi-word contrasts a single-word
+  matcher was never going to catch (`DISTR`'s `birer` vs `toplu halde`); a few are genuine
+  generation defects that slipped past the entire v2.2 judge/validator pipeline (`priv_0528_40b1dd`'s
+  counterfactual candidate is ungrammatical — `"... kira kontratı lidersi."`); a few are `PRIV`/`PROP`
+  items where the model realised the contrast as the suppletive existential pair `var`/`yok`
+  instead of the nominal `-lı`/`-sız` suffix it was asked for (happened 3 times independently).
+  See `no_pair_examples` in each split's `statistics.morphology_annotation` for the full list.
+- **A known, separate confound lowers the zeyrek-vs-label agreement specifically**, documented in
+  `morph_annotate.py` next to `tier2_annotate`: for chain features whose reported critical word is
+  a *phrase* (rejected by the single-word check), `morph_validators.resolve_critical_pair` falls
+  back to whichever positive-vs-counterfactual word pair shares a stem FIRST — even an incidental
+  one from the independently-reworded positive — rather than trying the query-vs-counterfactual
+  fallback that would recover the true contrast. Confirmed case: an `EVID.COND.NEG` item's real
+  contrast (`duyurmuş olsaydı` vs `duyurmuştu`, exactly as reported) gets bypassed in favour of an
+  unrelated noun's case-marking difference (`biletinin`/`biletini`) elsewhere in the reworded
+  positive. Not fixed here — it's existing, self-tested pipeline code with its own calibration
+  against v1.3.1, and reordering its fallback needs its own measurement pass, not a change bundled
+  into an annotation tool.
+
+**Variant groups** (`item["variants"]`): Turkish-correct deasciified/lowercased forms of the query
+and every candidate (`benimkiydi`→`benimkiydi`, `İlgili`→`ilgili` — not `i̇lgili`, the bug this
+round fixed; see below), plus a `lemma_family` grouping (zeyrek lemma when available, else the
+derived Tier-1 stem) for a root-family retrieval diagnostic. Verified on every generated item: no
+two candidates within one item collapse to the same string after deasciification, so the
+perturbation never destroys an item's unique correct answer — locked in by `morph_selftest.py`.
+Score the diacritic-robustness slice with `eval_morph_dev.py --variant deascii`.
+
+**BEIR export** (`data_morph_v2/beir/<split>/`): standard `corpus.jsonl` / `queries.jsonl` /
+`qrels/test.tsv`, loadable by the `beir`/`mteb` libraries or this repo's own
+`eval_semantic_encoders.load_beir_dataset`-style reader. Pooling is not free — standard BEIR
+merges every candidate from every query into one corpus, and a foreign query's candidate can
+legitimately outrank this query's own gold: measured at **144/510 train, 12/90 dev, 22/50 test**
+queries. Two sidecars carry what pooled BEIR can't express: `candidate_pool.json` (each query's
+own 11 candidate ids, reproducing the closed-set numbers this project reports everywhere else) and
+`hard_negatives.jsonl` (the typed structure — `morph_counterfactual`, `same_feature_wrong_content`,
+`partial_trap`, `state_variant` — which is the dataset's actual contribution over a generic BEIR
+set and has no field to live in otherwise). Score either framing explicitly:
+
+```bash
+conda run -n dl_hw1 python eval_morph_dev.py --split dev --pool closed   # this project's numbers
+conda run -n dl_hw1 python eval_morph_dev.py --split dev --pool beir     # standard, harder, different task
+```
+
+**Also fixed this round**: `morph_validators.tokens()` mis-split any word containing a capital
+`İ` (`İlgili` → `['i', 'lgili']`) because Python's `.lower()` emits a combining dot Turkish doesn't
+use. Affected 23% of v2.2 items' candidates. Fixed via `tr_lower()` (`İ`→`i`, `I`→`ı`, then
+`.lower()`); re-validating all 510 train items with the fix changed zero accept/reject verdicts.
 
 ## How to run the notebook
 

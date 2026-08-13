@@ -39,6 +39,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
 
+import morph_annotate as A
+import morph_beir as B
 import morph_validators as V
 from morph_prompts import (ALL_EXEMPLAR_IDS, GENERATION_SCHEMA, JUDGE_SCHEMA, REPAIR_SCHEMA,
                            SYSTEM_INSTRUCTION, WHY_NOT_TO_SUBTYPE, build_generation_prompt,
@@ -788,13 +790,20 @@ def finalize(accepted, rejected, stats, pool, args, elapsed):
     confound = V.confound_report(accepted)
     train, dev, moved = split_train_dev(accepted, args.dev_frac)
 
+    # Morphological annotation + variant groups, in place, before serialising — so the shipped
+    # train/dev JSON already carries `item["morphology"]`/`item["variants"]` rather than needing a
+    # separate post-processing pass every time the dataset regenerates.
+    train, ann_train = A.annotate_dataset(train, use_zeyrek=True)
+    dev, ann_dev = A.annotate_dataset(dev, use_zeyrek=True)
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    extra = {"confound_audit": confound}
+    extra_train = {"confound_audit": confound, "morphology_annotation": ann_train}
+    extra_dev = {"confound_audit": confound, "morphology_annotation": ann_dev}
     (OUT_DIR / f"morph_train_v{VERSION}.json").write_text(
-        json.dumps(dataset_envelope(train, "train", extra), ensure_ascii=False, indent=1),
+        json.dumps(dataset_envelope(train, "train", extra_train), ensure_ascii=False, indent=1),
         encoding="utf-8")
     (OUT_DIR / f"morph_dev_v{VERSION}.json").write_text(
-        json.dumps(dataset_envelope(dev, "dev", extra), ensure_ascii=False, indent=1),
+        json.dumps(dataset_envelope(dev, "dev", extra_dev), ensure_ascii=False, indent=1),
         encoding="utf-8")
     write_pair_views(train, OUT_DIR / f"morph_train_pairs_v{VERSION}.jsonl",
                      OUT_DIR / f"morph_train_paired_v{VERSION}.jsonl")
@@ -802,13 +811,21 @@ def finalize(accepted, rejected, stats, pool, args, elapsed):
                      OUT_DIR / f"morph_dev_paired_v{VERSION}.jsonl")
     _write_rejects(rejected)      # rewrite: stage E added near-duplicate and leakage rejections
 
-    write_report(accepted, train, dev, rejected, stats, pool, confound, moved, elapsed)
+    beir_train = B.export_split(train, "train")
+    beir_dev = B.export_split(dev, "dev")
+
+    write_report(accepted, train, dev, rejected, stats, pool, confound, moved, elapsed,
+                ann_train, ann_dev, beir_train, beir_dev)
     print(f"\nyazıldı: {OUT_DIR}")
     print(f"  train {len(train)} · dev {len(dev)} · red {len(rejected)}")
+    print(f"  biçimbilim eşleşme: train %{ann_train['tier1_coverage']['exact_pct']:.0f} · "
+          f"dev %{ann_dev['tier1_coverage']['exact_pct']:.0f}")
+    print(f"  BEIR: {beir_train['out_dir']}, {beir_dev['out_dir']}")
     print(f"  rapor: {OUT_DIR / 'generation_report.md'}")
 
 
-def write_report(accepted, train, dev, rejected, stats, pool, confound, moved, elapsed):
+def write_report(accepted, train, dev, rejected, stats, pool, confound, moved, elapsed,
+                 ann_train=None, ann_dev=None, beir_train=None, beir_dev=None):
     by_stage = Counter(r["stage"] for r in rejected)
     gate_counts = {k[5:]: v for k, v in stats.items() if k.startswith("gate_")}
     reasons = Counter()
@@ -915,6 +932,47 @@ def write_report(accepted, train, dev, rejected, stats, pool, confound, moved, e
               f"- eksik özellikler: {', '.join(missing) if missing else 'yok'}", "",
               "| özellik | adet |", "|---|---|"]
     lines += [f"| {k} | {v} |" for k, v in feat_cov.most_common()]
+
+    if ann_train and ann_dev:
+        lines += ["", "## Biçimbilim ek anlamlandırması (morph_annotate.py)", "",
+                  "Kural tabanlı Katman 1 (`morph_taxonomy.py`'den ayrıştırılan ek tablosu, sınır "
+                  "araması) + isteğe bağlı Katman 2 (`zeyrek`). Her öğeye `morphology`/`variants` "
+                  "eklenmiş olarak yazıldı — API çağrısı yok, tamamen yerel.", "",
+                  "| ölçüt | train | dev |", "|---|---|---|",
+                  f"| tam eşleşme (`exact`) | %{ann_train['tier1_coverage']['exact_pct']:.1f} | "
+                  f"%{ann_dev['tier1_coverage']['exact_pct']:.1f} |",
+                  f"| çift bulunamadı (`no_pair`) | %{ann_train['tier1_coverage']['no_pair_pct']:.1f} | "
+                  f"%{ann_dev['tier1_coverage']['no_pair_pct']:.1f} |",
+                  f"| bildirilen özellikle uyum | %{ann_train['tier1_target_feature_agreement']['agree_pct']:.1f} | "
+                  f"%{ann_dev['tier1_target_feature_agreement']['agree_pct']:.1f} |",
+                  f"| zeyrek ayrıştırma oranı | %{ann_train['zeyrek_parse_rate_pct']:.1f} | "
+                  f"%{ann_dev['zeyrek_parse_rate_pct']:.1f} |", "",
+                  "`no_pair` öğeleri — kritik sözcük çifti hiçbir şekilde türetilemedi; bu ya "
+                  "üretimde gerçek bir kusur (bkz. örnekler) ya da yalnızca çok sözcüklü bir "
+                  "karşıtlıktır (tek-sözcük eşleştirici bunu yakalayamaz, bu beklenen bir sınırdır):",
+                  ""]
+        for ex in ann_train.get("no_pair_examples", [])[:10]:
+            lines.append(f"- `{ex['query_id']}` ({ex['target_feature']}): "
+                         f"{ex['reported_query']!r} / {ex['reported_counterfactual']!r}")
+        lines += ["", "`target_feature` ile uyuşmayan tam eşleşmeler — Katman 1'in bulduğu gerçek "
+                  "ek, öğenin kendi etiketiyle örtüşmüyor (etiket gürültüsü denetimi):", ""]
+        for ex in ann_train.get("disagreement_examples", [])[:10]:
+            lines.append(f"- `{ex['query_id']}`: bildirilen **{ex['declared']}**, bulunan "
+                         f"**{ex['found']}** (fark {ex['diff']})")
+
+    if beir_train and beir_dev:
+        lines += ["", "## BEIR dışa aktarımı (morph_beir.py)", "",
+                  f"| bölüm | sorgu | havuzlanmış aday | havuzlama kirliliği |",
+                  "|---|---|---|---|",
+                  f"| train | {beir_train['n_queries']} | {beir_train['n_corpus']} | "
+                  f"{beir_train['pooling_contaminated']} sorgu |",
+                  f"| dev | {beir_dev['n_queries']} | {beir_dev['n_corpus']} | "
+                  f"{beir_dev['pooling_contaminated']} sorgu |", "",
+                  "\"Havuzlama kirliliği\": standart BEIR'de tüm adaylar tek bir külliyatta "
+                  "birleştirilir; bu sayı, başka bir sorgunun adayının kendi altınını geride "
+                  "bıraktığı sorgu sayısıdır. Bu projenin geri kalanındaki tüm sayılar "
+                  "`candidate_pool.json` ile sınırlı KAPALI KÜME değerlendirmesidir, havuzlanmış "
+                  "BEIR değil — ayrıntı için `beir/<bölüm>/README.md`.", ""]
 
     lines += ["", "## Sızıntı muhasebesi", "",
               f"- üreticiye örnek olarak gösterilen v1.3.1 öğeleri: "

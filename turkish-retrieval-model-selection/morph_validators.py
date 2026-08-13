@@ -85,8 +85,21 @@ STOPWORDS = {
 _WORD_RE = re.compile(r"[0-9A-Za-zÇĞİÖŞÜçğıöşüÂÎÛâîû]+")
 
 
+def tr_lower(text):
+    """Turkish-correct lowercasing.
+
+    Python's `str.lower()` maps 'İ' (dotted capital I, U+0130) to 'i' PLUS a combining dot above
+    (U+0307) — linguistically correct Unicode casefolding, but it inserts a codepoint the word regex
+    doesn't match, silently splitting the token in two ('İlgili' -> 'i̇lgili' -> ['i', 'lgili']).
+    Turkish also needs 'I' (undotted capital I) to map to 'ı', not 'i', which `.lower()` gets wrong
+    the other direction. Both are fixed by remapping the two capital I's before the generic lower().
+    Measured impact of the bug on v2.2: 456 mis-tokenized occurrences across 23% of items.
+    """
+    return text.replace("İ", "i").replace("I", "ı").lower()
+
+
 def tokens(text):
-    return _WORD_RE.findall(text.lower())
+    return _WORD_RE.findall(tr_lower(text))
 
 
 def _last_vowel(s):
@@ -215,10 +228,10 @@ def check_suffix_region(word, boundary):
 
     # vowel harmony, walking the suffix region and carrying the running vowel forward
     running = _last_vowel(stem)
-    is_loan = any(word.lower().startswith(s) for s in LOAN_FRONT_STEMS)
+    is_loan = any(tr_lower(word).startswith(s) for s in LOAN_FRONT_STEMS)
     if running is not None and not is_loan:
         i = 0
-        low = suffix.lower()
+        low = tr_lower(suffix)
         while i < len(low):
             hit = next((s for s, v in INVARIANT_SUFFIXES if low.startswith(s, i)), None)
             if hit:
@@ -246,7 +259,7 @@ def check_suffix_region(word, boundary):
 def check_critical_pair(w_pos, w_cf):
     """The core morphology gate: are these two forms the same stem differing by a suffix?"""
     problems = []
-    a, b = (w_pos or "").strip().lower(), (w_cf or "").strip().lower()
+    a, b = tr_lower((w_pos or "").strip()), tr_lower((w_cf or "").strip())
     if not a or not b:
         return ["kritik sözcük boş"]
     if a == b:
@@ -282,7 +295,7 @@ def check_critical_pair(w_pos, w_cf):
 
 # --------------------------------------------------------------------------- similarity
 def char_ngrams(text, n=3):
-    s = " " + re.sub(r"\s+", " ", text.lower().strip()) + " "
+    s = " " + re.sub(r"\s+", " ", tr_lower(text).strip()) + " "
     return {s[i:i + n] for i in range(max(0, len(s) - n + 1))}
 
 
@@ -365,7 +378,7 @@ def check_structure(item, n_candidates=11, required_subtypes=()):
     # Two candidates with the same text make the item unanswerable regardless of which is gold.
     # Nothing else catches it: the similarity gates saturate near 1.0 well before they hit exact
     # equality, and the judge sees the duplicate as two separately plausible passages.
-    texts = [(c.get("text") or "").strip().lower() for c in cands]
+    texts = [tr_lower((c.get("text") or "").strip()) for c in cands]
     dupes = {t for t in texts if texts.count(t) > 1 and t}
     if dupes:
         p.append(f"{len(dupes)} aday metni birden fazla kez geçiyor")
@@ -396,14 +409,14 @@ def resolve_critical_pair(item):
     pos_text = pos[0].get("core") or pos[0]["text"]
     cf_text = cf.get("core") or cf["text"]
 
-    w_q = (item.get("critical_word_query") or "").strip().lower()
-    w_cf = (item.get("critical_word_counterfactual") or "").strip().lower()
+    w_q = tr_lower((item.get("critical_word_query") or "").strip())
+    w_cf = tr_lower((item.get("critical_word_counterfactual") or "").strip())
     # The reported pair is a HINT, accepted only when it checks out against the actual texts and
     # is genuinely a single-word suffix contrast. It is never a reason to reject: the model
     # routinely reports a phrase where a word was asked for, and rejecting on that discarded 118
     # otherwise-sound items in v2.1 even though derivation recovers the pair from the texts.
     if (w_q and w_cf and w_q != w_cf and " " not in w_q and " " not in w_cf
-            and w_q in query.lower() and w_cf in cf_text.lower()
+            and w_q in tr_lower(query) and w_cf in tr_lower(cf_text)
             and (_shares_stem(w_q, w_cf) or _shares_ending(w_q, w_cf))):
         mode = "stem" if _shares_stem(w_q, w_cf) else "ending"
         return w_q, w_cf, mode, "reported"

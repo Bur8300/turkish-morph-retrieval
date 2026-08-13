@@ -37,13 +37,19 @@ why — check it before assuming something is undocumented.
     a large morphological retrieval train/dev set with Gemini, gated by rule-based Turkish
     phonology checks and a blind LLM judge. See "Dataset-generation pipeline" below and the
     subproject README for the full design rationale.
+  - `morph_annotate.py`, `morph_beir.py` — **zero-API post-processing** over the generated dataset:
+    morphological annotation (`item["morphology"]`) + variant groups (`item["variants"]`), and a
+    standard BEIR export (`data_morph_v2/beir/`) with sidecars for the closed-set/typed-negative
+    structure BEIR itself can't express. `gen_morph_dataset.py` calls both automatically; each also
+    has its own `--split` CLI to re-run against already-generated files with no regeneration.
   - `docs/literature_review.md` — literature survey backing the pipeline's design choices (81
     sources, each tagged by verification confidence).
-  - `data_morph_v2/` — pipeline output: `morph_{train,dev}_v2.2.json` (current), `archive_v2.0/`
-    and `archive_v2.1/` (earlier iterations, kept as the evidence trail for what each prompt fix
-    changed — see the subproject README's comparison tables), `generation_report.md` (QC report),
-    `rejected.jsonl` (every rejected item with its reason, never silently dropped).
-    `_cache/` and `_usage.json` are local run state, gitignored.
+  - `data_morph_v2/` — pipeline output: `morph_{train,dev}_v2.2.json` (current, annotated in
+    place), `beir/{train,dev,test}/` (BEIR export), `archive_v2.0/` and `archive_v2.1/` (earlier
+    iterations, kept as the evidence trail for what each prompt fix changed — see the subproject
+    README's comparison tables), `generation_report.md` (QC report), `rejected.jsonl` (every
+    rejected item with its reason, never silently dropped). `_cache/` and `_usage.json` are local
+    run state, gitignored.
 - `model_selection_colab_runned_version.ipynb` (repo root) — an **executed snapshot** of
   `model_selection_colab.ipynb` kept for its outputs/results. It can drift slightly from the
   live notebook in the subfolder; treat the subfolder copy as the one to edit.
@@ -82,6 +88,10 @@ conda run -n dl_hw1 python turkish-retrieval-model-selection/gen_morph_dataset.p
 
 # score any split's lexical solvability with no model download
 conda run -n dl_hw1 python turkish-retrieval-model-selection/eval_morph_dev.py --split dev
+
+# annotate an already-generated split in place + export BEIR format — both zero API calls
+conda run -n dl_hw1 python turkish-retrieval-model-selection/morph_annotate.py --split dev
+conda run -n dl_hw1 python turkish-retrieval-model-selection/morph_beir.py --split dev
 ```
 
 There is no `requirements.txt`/`environment.yml` in the repo — the `dl_hw1` conda env is assumed
@@ -112,6 +122,15 @@ configured; `morph_selftest.py` (invoked via `--self-test` above) is the only te
 - Before trusting any change to the validators, run `--self-test`: it checks that all 50 hand-QC'd
   v1.3.1 items pass every gate (with genuine v1.3.1 defects listed explicitly, not silenced) and
   that deliberately corrupted copies fail on the specific gate meant to catch them.
+- **Never use plain `str.lower()`/`str.upper()` on Turkish text.** Python's Unicode casefolding
+  maps `İ` (dotted capital I) to `i̇` — `i` plus a *combining* dot above (U+0307) — not to plain
+  `i`, so a word like `İlgili` silently becomes two tokens under any regex-based tokenizer. Always
+  route through `morph_validators.tr_lower()` (`İ`→`i`, `I`→`ı`, only then `.lower()`) first. This
+  bit 23% of v2.2's candidates before being caught.
+- `morph_annotate.py`'s allomorph matcher prefers the LARGER diff among same-tier matches, not the
+  smaller — a short diff (`'e'`, `'n'`) is coincidentally shared by many unrelated suffixes, so
+  preferring it systematically loses to genuinely longer, far-less-coincidental matches (`evde`/
+  `evden` must resolve to LOC/ABL's `'de'`/`'den'`, not OPT/PTCP.SUBJ's accidental `'e'`/`'en'`).
 
 ## Architecture notes
 

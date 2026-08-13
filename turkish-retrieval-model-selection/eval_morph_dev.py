@@ -4,6 +4,9 @@
     conda run -n dl_hw1 python eval_morph_dev.py                      # dev split, default models
     conda run -n dl_hw1 python eval_morph_dev.py --split test         # the held-out v1.3.1 set
     conda run -n dl_hw1 python eval_morph_dev.py --models BAAI/bge-m3
+    conda run -n dl_hw1 python eval_morph_dev.py --variant deascii    # diacritic-robustness slice
+    conda run -n dl_hw1 python eval_morph_dev.py --pool beir          # pooled BEIR corpus, not
+                                                                       # just each query's own 11
 
 Reports two things per model, because neither alone is interpretable:
 
@@ -29,6 +32,7 @@ from pathlib import Path
 
 import numpy as np
 
+import morph_annotate as A
 import morph_validators as V
 from eval_semantic_encoders import encode, evaluate_run, free, load_model
 
@@ -56,13 +60,32 @@ def load_split(split):
     return json.loads(path.read_text(encoding="utf-8"))["items"]
 
 
+def apply_variant(items, variant):
+    """Return a transformed COPY of `items` for `--variant`; `none` returns `items` unchanged.
+
+    `deascii`: strips diacritics and Turkish-lowercases the query and every candidate (reusing
+    `morph_annotate.deascii`, the same transform used for the dataset's own `variants` field), to
+    score how much a model degrades when a user types without diacritics. Well-defined to run: no
+    generated item has two candidates that collapse to the same string under this transform (the
+    self-test's deascii-invariant check), so every perturbed item still has a unique right answer.
+    """
+    if variant == "none":
+        return items
+    out = []
+    for it in items:
+        out.append({**it, "query": A.deascii(it["query"]),
+                   "candidates": [{**c, "text": A.deascii(c["text"])} for c in it["candidates"]]})
+    return out
+
+
 def sparse_scores(item):
     q = item["query"]
     return {c["id"]: V.text_sim(q, c["text"]) for c in item["candidates"]}
 
 
 def dense_scores(model, cand, items):
-    """One encode pass over every query and candidate in the split."""
+    """One encode pass over every query and candidate in the split; each query scored only
+    against its OWN 11 candidates — the closed-set framing this project reports elsewhere."""
     q_ids = [it["query_id"] for it in items]
     q_emb = encode(model, [it["query"] for it in items], cand["query_prompt"])
     flat = [(it["query_id"], c["id"], c["text"]) for it in items for c in it["candidates"]]
@@ -73,6 +96,29 @@ def dense_scores(model, cand, items):
     for (qid, cid, _), vec in zip(flat, d_emb):
         out[qid][cid] = float(np.dot(q_emb[q_index[qid]], vec))
     return out
+
+
+def pool_corpus(items):
+    """Every candidate across every item, flattened — the pooled BEIR corpus `morph_beir.py`
+    exports, and a genuinely harder task than the closed-set default: a foreign query's candidate
+    can now outrank this query's own gold (measured on dev: 12/90 queries, see morph_beir.py)."""
+    return [(c["id"], c["text"]) for it in items for c in it["candidates"]]
+
+
+def sparse_scores_pooled(item, corpus):
+    q = item["query"]
+    return {cid: V.text_sim(q, text) for cid, text in corpus}
+
+
+def dense_scores_pooled(model, cand, items, corpus):
+    """Full query x corpus similarity matrix — every query scored against EVERY candidate in the
+    split, not just its own. One matmul; trivial at these dataset sizes (dev: 90 x 990)."""
+    q_ids = [it["query_id"] for it in items]
+    q_emb = encode(model, [it["query"] for it in items], cand["query_prompt"])
+    doc_ids = [cid for cid, _ in corpus]
+    d_emb = encode(model, [t for _, t in corpus], cand["doc_prompt"])
+    sims = q_emb @ d_emb.T
+    return {qid: dict(zip(doc_ids, (float(x) for x in sims[i]))) for i, qid in enumerate(q_ids)}
 
 
 def score_split(items, scores_by_query):
@@ -101,18 +147,29 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="dev", choices=["dev", "train", "test"])
     ap.add_argument("--models", nargs="*", default=None)
+    ap.add_argument("--variant", default="none", choices=["none", "deascii"],
+                    help="'deascii' scores the diacritic-stripped robustness slice")
+    ap.add_argument("--pool", default="closed", choices=["closed", "beir"],
+                    help="'closed' (default): each query vs its own 11 candidates, matching the "
+                         "rest of this project. 'beir': every query vs the full pooled corpus, "
+                         "a harder and DIFFERENT task — see morph_beir.py's README.")
     args = ap.parse_args()
 
-    items = load_split(args.split)
-    print(f"{args.split}: {len(items)} sorgu, "
+    items = apply_variant(load_split(args.split), args.variant)
+    print(f"{args.split} (variant={args.variant}, pool={args.pool}): {len(items)} sorgu, "
           f"{sum(len(i['candidates']) for i in items)} aday\n")
 
     cands = DEFAULT_MODELS if not args.models else [
         dict(id=m, short=m.split("/")[-1], query_prompt="", doc_prompt="",
              trust_remote_code=True) for m in args.models]
 
-    rows = {"sparse-char3gram": score_split(
-        items, {it["query_id"]: sparse_scores(it) for it in items})}
+    if args.pool == "closed":
+        rows = {"sparse-char3gram": score_split(
+            items, {it["query_id"]: sparse_scores(it) for it in items})}
+    else:
+        corpus = pool_corpus(items)
+        rows = {"sparse-char3gram": score_split(
+            items, {it["query_id"]: sparse_scores_pooled(it, corpus) for it in items})}
     for cand in cands:
         try:
             model = load_model(cand)
@@ -120,7 +177,11 @@ def main():
             print(f"[atlandı] {cand['id']}: {type(e).__name__}: {str(e)[:120]}")
             continue
         try:
-            rows[cand["short"]] = score_split(items, dense_scores(model, cand, items))
+            if args.pool == "closed":
+                rows[cand["short"]] = score_split(items, dense_scores(model, cand, items))
+            else:
+                rows[cand["short"]] = score_split(
+                    items, dense_scores_pooled(model, cand, items, corpus))
         finally:
             free(model)
 

@@ -28,8 +28,11 @@ are calibrated against, and re-measuring them is how you would re-calibrate):
 """
 import copy
 import json
+import tempfile
 from pathlib import Path
 
+import morph_annotate as A
+import morph_beir as B
 import morph_validators as V
 from morph_taxonomy import N_CANDIDATES, REQUIRED_SUBTYPES
 
@@ -380,6 +383,91 @@ def test_prompt_contract(errors):
         _fail(f"[frame] çerçeve katkısı adaylar arasında değişiyor: {lens}", errors)
 
 
+def test_annotation(errors):
+    """morph_annotate.py + morph_beir.py: the İ tokenizer bug, allomorph canonicalisation
+    (same-key and cross-key), the deascii invariant, and a BEIR export round-trip.
+
+    Every expected value below was measured against the actual code, not assumed — several
+    were wrong on first pass (devoicing direction, a size-based tie-break that preferred
+    coincidental 1-character matches over correct longer ones, an empty-diff side vacuously
+    "belonging" to whichever own-key was checked first) and are pinned here specifically because
+    fixing them changed the reported canonical_morpheme for real dataset items.
+    """
+    for w, expect_lower in (("İlgili", "ilgili"), ("Işık", "ışık"), ("ILGAZ", "ılgaz"),
+                            ("İstanbul", "istanbul")):
+        got = V.tr_lower(w)
+        if got != expect_lower:
+            _fail(f"[annotation] tr_lower({w!r}) = {got!r}, beklenen {expect_lower!r}", errors)
+        toks = V.tokens(w)
+        if len(toks) != 1:
+            _fail(f"[annotation] tokens({w!r}) = {toks!r}, tek belirteç olmalıydı", errors)
+
+    # Same-key own-feature matches.
+    for a, b, own, expect in (
+            ("yaptırmamıştı", "yaptırmıştı", "CAUS.REFL.NEG", "NEG"),
+            ("imzalatılamamıştı", "imzalatılmıştı", "CAUS.PASS.NEG", "NEG.ABIL")):
+        r = A.find_boundary_match(a, b, own_feature=own)
+        if r["match"] != "exact" or r["canonical_morpheme"] != expect:
+            _fail(f"[annotation] {a}/{b} (own={own}) -> {r['canonical_morpheme']!r}, "
+                  f"beklenen {expect!r}", errors)
+
+    # Cross-key: the counterfactual realises a DIFFERENT registered feature's own suffix, found
+    # with no own_feature hint at all (pure global/label-audit path).
+    r = A.find_boundary_match("evde", "evden", own_feature=None)
+    if r["match"] != "exact" or r["canonical_morpheme"] != "LOC->ABL":
+        _fail(f"[annotation] evde/evden -> {r['canonical_morpheme']!r}, beklenen 'LOC->ABL'", errors)
+
+    # Deascii invariant: a query-blind perturbation must not collapse two candidates into the same
+    # string, or the perturbed item would have no unique correct answer. Checked against whatever
+    # generated splits exist locally (gitignored on a clean checkout, so skipped rather than
+    # failed when absent) plus v1.3.1, which is always present.
+    def _check_deascii(items, label):
+        bad = 0
+        for it in items:
+            seen = set()
+            for c in it["candidates"]:
+                d = A.deascii(c["text"])
+                if d in seen:
+                    bad += 1
+                    break
+                seen.add(d)
+        if bad:
+            _fail(f"[annotation] {label}: {bad} öğede deascii sonrası çakışan aday var", errors)
+
+    _check_deascii(_load_v1(), "v1.3.1")
+    for split in ("train", "dev"):
+        paths = sorted((A.DATA_DIR).glob(f"morph_{split}_v*.json"), reverse=True)
+        if paths:
+            _check_deascii(json.loads(paths[0].read_text(encoding="utf-8"))["items"], split)
+
+    # BEIR round-trip: export v1.3.1 (always present, unlike generated splits) to a temp dir,
+    # reload through the plain files, and reproduce eval_morph_dev's closed-set score exactly.
+    from eval_morph_dev import score_split, sparse_scores
+    v1 = _load_v1()
+    reference = score_split(v1, {it["query_id"]: sparse_scores(it) for it in v1})
+    with tempfile.TemporaryDirectory() as tmp:
+        stats = B.export_split(v1, "selftest", out_root=Path(tmp))
+        d = Path(stats["out_dir"])
+        corpus = {json.loads(l)["_id"]: json.loads(l)["text"]
+                 for l in d.joinpath("corpus.jsonl").read_text(encoding="utf-8").splitlines()}
+        queries = {json.loads(l)["_id"]: json.loads(l)["text"]
+                  for l in d.joinpath("queries.jsonl").read_text(encoding="utf-8").splitlines()}
+        pool = json.loads(d.joinpath("candidate_pool.json").read_text(encoding="utf-8"))
+        v1_by_qid = {it["query_id"]: it for it in v1}
+        rebuilt = [{"query_id": qid, "gold_id": v1_by_qid[qid]["gold_id"],
+                   "candidates": [{"id": cid, "role": ("positive" if cid == v1_by_qid[qid]["gold_id"]
+                                                       else "hard_negative")}
+                                 for cid in cand_ids]}
+                  for qid, cand_ids in pool.items()]
+        scores = {qid: {cid: V.text_sim(queries[qid], corpus[cid]) for cid in pool[qid]}
+                 for qid in pool}
+        via_beir = score_split(rebuilt, scores)
+    if (via_beir["nDCG@10"], via_beir["ALL_pairwise"]) != (reference["nDCG@10"], reference["ALL_pairwise"]):
+        _fail(f"[annotation] BEIR round-trip uyuşmadı: dogrudan {reference['nDCG@10']}/"
+              f"{reference['ALL_pairwise']} vs BEIR {via_beir['nDCG@10']}/{via_beir['ALL_pairwise']}",
+              errors)
+
+
 def test_corpus_gates(errors):
     items = _load_v1()
     dups = V.find_near_duplicates(items)
@@ -403,6 +491,7 @@ def run(verbose=True):
     test_no_false_acceptances(errors)
     lg = test_length_gate(errors)
     test_prompt_contract(errors)
+    test_annotation(errors)
     rep = test_corpus_gates(errors)
 
     if verbose:
@@ -419,7 +508,9 @@ def run(verbose=True):
               f"(dengeli, beklenen)")
         print("  faz 5  istem sözleşmesi        : katman tarifi, önbellek anahtarı, "
               "çerçeve montajı")
-        print(f"  faz 6  külliyat kapıları       : yakın-kopya, sızıntı, confound")
+        print("  faz 6  biçimbilim ek. + BEIR   : İ belirteci, aynı-anahtar/çapraz-anahtar "
+              "eşleşme, deascii, BEIR gidiş-dönüş")
+        print(f"  faz 7  külliyat kapıları       : yakın-kopya, sızıntı, confound")
         print()
         print("  v1.3.1 referans confound raporu:")
         for k, v in rep.items():
