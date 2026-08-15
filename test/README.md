@@ -379,7 +379,8 @@ engellenir.
 | `exports.py` | 100/500 freeze, leakage/artefakt kontrolü, private/public/BEIR/qrels export |
 | `evaluation.py` | Retrieval metrikleri, ucuz baseline'lar, ablation ve istatistiksel testler |
 | `selftest.py` | API'siz regression testleri ve kasıtlı hata fixture'ları |
-| `notebooks/morph_baseline_eval_colab_v2.ipynb` | Güncel Colab: 20-preview/frozen modları, encoder cache'i, tam closed-family metrikleri, CI/test/slice/ablation/hata analizi |
+| `notebooks/morph_baseline_eval_preview20_colab.ipynb` | 20-family hızlı pilot: Recall@1, 11/220 aday gold sırası, temel metrikler ve ayrıntılı aday sıralaması |
+| `notebooks/morph_baseline_eval_600_colab.ipynb` | 100 dev + 500 final paper Colab'ı: cache, full-corpus pooling, CI/test/slice/ablation/hata analizi |
 | `notebooks/morph_baseline_eval_colab.ipynb` | Önceki encoder/baseline notebook'u; karşılaştırma için korunur |
 
 ## 12. Deterministic kalite kapıları
@@ -471,7 +472,7 @@ dokümanı tesadüfen relevant olabilir. Bu nedenle yalnız own-family gold qrel
 metrik raporlanmaz. BM25, char n-gram, dense encoder ve reranker top sonuçları pool edilir; yabancı
 query-document çiftleri insanlarca yargılanır. Yargılanmamış doküman otomatik negatif değildir.
 
-V2 notebook ortak corpus sıralamasını encoder embedding'leri üretilirken aynı geçişte hesaplar.
+600-family notebook ortak corpus sıralamasını encoder embedding'leri üretilirken aynı geçişte hesaplar.
 İnsan qrels'i yokken yalnız açıkça etiketlenmiş `known-gold diagnostic` tabloyu ve BM25 + character
 3-gram + word overlap + dense encoder top-20 birleşiminden kör `pooling_judgment_template.jsonl`
 dosyasını üretir. Pooled insan qrels'i eklendiğinde resmi full-corpus Recall/MRR/nDCG/MAP tablosu
