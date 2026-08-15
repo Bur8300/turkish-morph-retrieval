@@ -12,9 +12,15 @@ __pycache__/
 # The finished train/dev sets, generation_report.md, and rejected.jsonl are NOT excluded —
 # those are the deliverables. The cache is ~2000 raw API responses kept only so an interrupted
 # run can resume without re-spending quota; it has no value once a run has finished.
-turkish-retrieval-model-selection/data_morph_v2/_cache/
-turkish-retrieval-model-selection/data_morph_v2/_usage.json
-turkish-retrieval-model-selection/data_morph_v2/run_v*.log
+train/data_morph_v2/_cache/
+train/data_morph_v2/_usage.json
+train/data_morph_v2/run_v*.log
 
 # Stray manual duplicates (e.g. Finder "... copy" files)
-turkish-retrieval-model-selection/data_morph_v2/*copy*
+train/data_morph_v2/*copy*
+
+# New test generation/review state. It contains blinded reviewer work and private sealed qrels.
+test/runs/
+
+# Local Codex preview request cache; finished preview JSON/Markdown files may be committed.
+test/previews/*/cache/

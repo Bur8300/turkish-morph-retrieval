@@ -27,6 +27,7 @@ nDCG@10 over the full candidate set is also reported, reusing `evaluate_run` fro
 """
 import argparse
 import json
+import math
 from collections import defaultdict
 from pathlib import Path
 
@@ -34,11 +35,10 @@ import numpy as np
 
 import morph_annotate as A
 import morph_validators as V
-from eval_semantic_encoders import encode, evaluate_run, free, load_model
 
 HERE = Path(__file__).resolve().parent
 DATA_DIR = HERE / "data_morph_v2"
-V1_PATH = HERE.parent / "morph_eval_set_v1.3.1_review_reviewer_C_fixed.json"
+V1_PATH = HERE / "legacy_test_data" / "morph_eval_set_v1.3.1_review_reviewer_C_fixed.json"
 
 DEFAULT_MODELS = [
     dict(id="newmindai/Mursit-Base-TR-Retrieval", short="Mursit-Base",
@@ -48,6 +48,30 @@ DEFAULT_MODELS = [
 ]
 TYPE_ORDER = ["morph_counterfactual", "partial_trap", "same_feature_wrong_content",
               "state_variant", "easy_negative"]
+
+
+def _dcg(gains):
+    return sum(gain / math.log2(index + 2) for index, gain in enumerate(gains))
+
+
+def evaluate_run(qrels, run, k_ndcg=10, k_mrr=10, ks_recall=(10, 100)):
+    """Dependency-light BEIR metrics; kept local so sparse self-tests do not import torch."""
+    ndcgs, mrrs = [], []
+    recalls = {k: [] for k in ks_recall}
+    for query_id, ranked in run.items():
+        relevant = qrels.get(query_id, {})
+        if not relevant:
+            continue
+        ideal = _dcg(sorted(relevant.values(), reverse=True)[:k_ndcg])
+        ndcgs.append(_dcg([relevant.get(doc_id, 0.0) for doc_id in ranked[:k_ndcg]]) / ideal if ideal else 0.0)
+        mrrs.append(next((1.0 / (index + 1) for index, doc_id in enumerate(ranked[:k_mrr])
+                          if relevant.get(doc_id, 0) > 0), 0.0))
+        n_relevant = sum(value > 0 for value in relevant.values())
+        for k in ks_recall:
+            recalls[k].append(sum(relevant.get(doc_id, 0) > 0 for doc_id in ranked[:k]) / n_relevant)
+    values = {"nDCG@10": np.mean(ndcgs), "MRR@10": np.mean(mrrs)}
+    values.update({f"Recall@{k}": np.mean(recalls[k]) for k in ks_recall})
+    return {name: round(float(value) * 100, 2) for name, value in values.items()}
 
 
 def load_split(split):
@@ -86,6 +110,8 @@ def sparse_scores(item):
 def dense_scores(model, cand, items):
     """One encode pass over every query and candidate in the split; each query scored only
     against its OWN 11 candidates — the closed-set framing this project reports elsewhere."""
+    from eval_semantic_encoders import encode
+
     q_ids = [it["query_id"] for it in items]
     q_emb = encode(model, [it["query"] for it in items], cand["query_prompt"])
     flat = [(it["query_id"], c["id"], c["text"]) for it in items for c in it["candidates"]]
@@ -113,6 +139,8 @@ def sparse_scores_pooled(item, corpus):
 def dense_scores_pooled(model, cand, items, corpus):
     """Full query x corpus similarity matrix — every query scored against EVERY candidate in the
     split, not just its own. One matmul; trivial at these dataset sizes (dev: 90 x 990)."""
+    from eval_semantic_encoders import encode
+
     q_ids = [it["query_id"] for it in items]
     q_emb = encode(model, [it["query"] for it in items], cand["query_prompt"])
     doc_ids = [cid for cid, _ in corpus]
@@ -144,6 +172,8 @@ def score_split(items, scores_by_query):
 
 
 def main():
+    from eval_semantic_encoders import free, load_model
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="dev", choices=["dev", "train", "test"])
     ap.add_argument("--models", nargs="*", default=None)

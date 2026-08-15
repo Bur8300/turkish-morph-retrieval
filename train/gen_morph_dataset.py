@@ -551,7 +551,7 @@ def dataset_envelope(items, split, extra_stats=None):
                  "incelemesinden geçmiş EĞİTİM/GELİŞTİRME kümesi. Tutulan test kümesi "
                  "morph_eval_set_v1.3.1'dir ve bu dosyaya dahil değildir."),
         "conventions": v1["conventions"],
-        "held_out_test_set": "morph_eval_set_v1.3.1_review_reviewer_C_fixed.json",
+        "held_out_test_set": "legacy_test_data/morph_eval_set_v1.3.1_review_reviewer_C_fixed.json",
         "exemplars_shown_to_generator": ALL_EXEMPLAR_IDS,
         "statistics": {
             "n_queries": len(items),

@@ -1,0 +1,79 @@
+{
+  "dataset_name": "turkish_morph_retrieval_test",
+  "version": "3.1.0",
+  "seed": 20260814,
+  "targets": {
+    "development": 100,
+    "sealed_test": 500,
+    "oversample_factor": 3.0,
+    "review_pool_factor": 1.25
+  },
+  "candidate_counts": {
+    "positive": 1,
+    "hard_negative": 8,
+    "easy_negative": 2
+  },
+  "query_sentence_distribution": {
+    "1": 0.75,
+    "2": 0.25
+  },
+  "passage_sentence_distribution": {
+    "1": 0.30,
+    "2": 0.30,
+    "3": 0.30,
+    "4": 0.10
+  },
+  "generalization_distribution": {
+    "standard": 0.40,
+    "lemma_holdout": 0.20,
+    "template_holdout": 0.20,
+    "composition_holdout": 0.20
+  },
+  "non_composition_chain_rate": 0.25,
+  "single_allomorph_rate": 0.1666666667,
+  "domain_shift_fraction": 0.20,
+  "quality": {
+    "candidate_token_ratio_max": 1.65,
+    "gold_to_median_token_ratio_max": 1.25,
+    "near_duplicate_jaccard_max": 0.82,
+    "judge_subtype_agreement_min": 0.90,
+    "judge_naturalness_min": 4
+  },
+  "review": {
+    "reviewer_ids": [
+      "reviewer_1",
+      "reviewer_2",
+      "reviewer_3",
+      "reviewer_4",
+      "reviewer_5"
+    ],
+    "reviews_per_family": 2,
+    "calibration_fraction": 0.10
+  },
+  "generation": {
+    "max_generation_attempts": 2,
+    "workers": 4,
+    "generator": {
+      "provider": "openrouter",
+      "model": "${TEST_GENERATOR_MODEL}",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "base_url": "https://openrouter.ai/api/v1/chat/completions",
+      "temperature": 0.70,
+      "max_tokens": 6500,
+      "requests_per_minute": 20,
+      "timeout_seconds": 180
+    },
+    "judge": {
+      "provider": "openrouter",
+      "model": "${TEST_JUDGE_MODEL}",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "base_url": "https://openrouter.ai/api/v1/chat/completions",
+      "temperature": 0.10,
+      "max_tokens": 5000,
+      "requests_per_minute": 20,
+      "timeout_seconds": 180
+    },
+    "require_distinct_model_families": true,
+    "forbidden_model_families_for_test": ["google"]
+  }
+}

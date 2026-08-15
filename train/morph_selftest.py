@@ -36,7 +36,7 @@ import morph_beir as B
 import morph_validators as V
 from morph_taxonomy import N_CANDIDATES, REQUIRED_SUBTYPES
 
-V1_PATH = Path(__file__).resolve().parent.parent / "morph_eval_set_v1.3.1_review_reviewer_C_fixed.json"
+V1_PATH = Path(__file__).resolve().parent / "legacy_test_data" / "morph_eval_set_v1.3.1_review_reviewer_C_fixed.json"
 
 # Genuine defects in v1.3.1 that the gates correctly surface. Recorded here rather than silenced,
 # because they are real findings about the test set: q18 and q53 are missing a partial_trap, and

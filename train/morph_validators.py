@@ -36,7 +36,7 @@ from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-V1_PATH = HERE.parent / "morph_eval_set_v1.3.1_review_reviewer_C_fixed.json"
+V1_PATH = HERE / "legacy_test_data" / "morph_eval_set_v1.3.1_review_reviewer_C_fixed.json"
 
 # --------------------------------------------------------------------------- Turkish phonology
 VOWELS = set("aeıioöuüâîû")

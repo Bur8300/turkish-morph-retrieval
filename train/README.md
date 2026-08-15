@@ -1,4 +1,9 @@
-# Turkish Embedding Model Selection
+# Legacy train/dev and model-selection system
+
+> Bu dizin geçmiş v2 train/dev üretimini ve model-selection provenance'ını korur. Yeni
+> 100-development + 500-sealed test benchmark'ı burada üretilmez; güncel test sistemi
+> [`../test/`](../test/) altındadır. Aşağıdaki “test” ifadeleri yalnız eski 50-family v1.3.1
+> referans setini anlatır.
 
 Benchmark-backed model comparison for the **Morphology-Aware Contrastive Fine-Tuning for
 Turkish Retrieval** project (inzva AI Projects #10). One notebook, three decisions:
@@ -24,7 +29,7 @@ Turkish Retrieval** project (inzva AI Projects #10). One notebook, three decisio
 
 ## v2.0 morphological train/dev set
 
-`morph_eval_set_v1.3.1_review_reviewer_C_fixed.json` (repo root, 50 queries, hand-QC'd) stays the
+`legacy_test_data/morph_eval_set_v1.3.1_review_reviewer_C_fixed.json` (50 queries, hand-QC'd) stays the
 **held-out test set**. `gen_morph_dataset.py` synthesises a much larger **train + dev** set with
 `gemini-3.5-flash-lite` and never writes to the test set.
 
