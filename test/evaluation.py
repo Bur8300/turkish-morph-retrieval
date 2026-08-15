@@ -6,14 +6,13 @@ import copy
 import csv
 import json
 import math
-import random
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
 from .validators import _bm25_scores, char_ngrams, jaccard, tokens
 
-EVALUATION_API_VERSION = "2.1"
+EVALUATION_API_VERSION = "2.2"
 
 
 def load_items(path: str | Path) -> list[dict[str, Any]]:
@@ -99,8 +98,14 @@ def score_encoder(
     qrels: dict[str, dict[str, float]] | None = None,
     batch_size: int = 32,
     include_full_run: bool = False,
+    full_run_depth: int | None = None,
 ) -> dict[str, Any]:
-    """Encode once, then rank own candidates and optionally the shared corpus too."""
+    """Encode once, then rank own candidates and optionally the shared corpus too.
+
+    ``full_run_depth`` limits only the stored shared-corpus ranking.  Top 100 is sufficient for
+    this benchmark's official metrics and avoids serialising 2.75 million document IDs per model
+    in the 500-query/5,500-document final evaluation.
+    """
     import numpy as np
 
     queries = [query_prefix + item["query"] for item in items]
@@ -119,13 +124,22 @@ def score_encoder(
         indices = [doc_index[doc_id] for doc_id in candidate_ids]
         scores = document_embeddings[indices] @ query_embeddings[query_index]
         order = np.argsort(-scores)
-        run[item["family_id"]] = [candidate_ids[index] for index in order]
+        ranking = [candidate_ids[index] for index in order]
+        run[item["family_id"]] = (
+            ranking[:full_run_depth]
+            if full_corpus and full_run_depth is not None else ranking
+        )
         if full_run is not None:
             if full_corpus:
-                full_run[item["family_id"]] = run[item["family_id"]]
+                ranking = run[item["family_id"]]
+                full_run[item["family_id"]] = (
+                    ranking[:full_run_depth] if full_run_depth is not None else ranking
+                )
             else:
                 all_scores = document_embeddings @ query_embeddings[query_index]
                 all_order = np.argsort(-all_scores)
+                if full_run_depth is not None:
+                    all_order = all_order[:full_run_depth]
                 full_run[item["family_id"]] = [doc_ids[index] for index in all_order]
         own_scores_by_query[item["family_id"]] = {
             candidate["id"]: float(document_embeddings[doc_index[candidate["id"]]] @ query_embeddings[query_index])
@@ -216,10 +230,11 @@ def _word_overlap(query: str, document: str) -> float:
     return len(query_terms & set(tokens(document))) / max(1, len(query_terms))
 
 
-def _f5_overlap(query: str, document: str) -> float:
-    query_roots = {token[:5] for token in tokens(query)}
-    document_roots = {token[:5] for token in tokens(document)}
-    return len(query_roots & document_roots) / max(1, len(query_roots))
+def _prefix5_overlap(query: str, document: str) -> float:
+    """Cheap suffix-reduction control; intentionally not presented as a linguistic lemmatiser."""
+    query_prefixes = {token[:5] for token in tokens(query)}
+    document_prefixes = {token[:5] for token in tokens(document)}
+    return len(query_prefixes & document_prefixes) / max(1, len(query_prefixes))
 
 
 def artifact_baseline_runs(
@@ -236,7 +251,7 @@ def artifact_baseline_runs(
             "most_tokens": [len(tokens(text)) for text in texts],
             "character_3gram": [jaccard(char_ngrams(item["query"]), char_ngrams(text)) for text in texts],
             "word_overlap": [_word_overlap(item["query"], text) for text in texts],
-            "f5_roots_only": [_f5_overlap(item["query"], text) for text in texts],
+            "prefix5_overlap": [_prefix5_overlap(item["query"], text) for text in texts],
             "bm25": _bm25_scores(item["query"], texts),
         }
         if learned_position is not None:
@@ -372,12 +387,16 @@ def re_escape_word(word: str) -> str:
 
 
 def ablate_items(items: list[dict], mode: str) -> list[dict]:
-    """`critical_deleted` removes the signal; `f5_roots` removes most suffix information."""
-    if mode not in {"critical_deleted", "f5_roots"}:
-        raise ValueError("mode critical_deleted veya f5_roots olmalı")
+    """Remove the critical word or truncate tokens to five-character prefixes.
+
+    Prefix truncation is only a cheap suffix-reduction control.  It is not Turkish morphological
+    analysis and must not be reported as a true roots-only or lemma-only experiment.
+    """
+    if mode not in {"critical_deleted", "prefix5"}:
+        raise ValueError("mode critical_deleted veya prefix5 olmalı")
     out = copy.deepcopy(items)
     for item in out:
-        if mode == "f5_roots":
+        if mode == "prefix5":
             item["query"] = " ".join(token[:5] for token in tokens(item["query"]))
             for candidate in item["candidates"]:
                 candidate["text"] = " ".join(token[:5] for token in tokens(candidate["text"]))
@@ -409,13 +428,20 @@ def paired_bootstrap(left, right, n_boot: int = 10000, seed: int = 0) -> dict[st
 
 
 def approximate_randomization(left, right, n_iter: int = 10000, seed: int = 0) -> float:
-    rng = random.Random(seed)
-    differences = [float(a) - float(b) for a, b in zip(left, right)]
-    observed = abs(sum(differences) / len(differences))
+    import numpy as np
+
+    differences = np.asarray(left, dtype=float) - np.asarray(right, dtype=float)
+    if differences.size == 0:
+        raise ValueError("paired vectors boş olamaz")
+    observed = abs(float(differences.mean()))
+    rng = np.random.default_rng(seed)
     extreme = 0
-    for _ in range(n_iter):
-        randomized = [difference if rng.random() < 0.5 else -difference for difference in differences]
-        extreme += abs(sum(randomized) / len(randomized)) >= observed
+    # Chunking keeps memory bounded for the 500-query final test while avoiding slow Python loops.
+    for start in range(0, n_iter, 1000):
+        size = min(1000, n_iter - start)
+        signs = rng.choice((-1.0, 1.0), size=(size, differences.size))
+        randomized = np.abs((signs * differences).mean(axis=1))
+        extreme += int(np.count_nonzero(randomized >= observed))
     return (extreme + 1) / (n_iter + 1)
 
 

@@ -486,7 +486,8 @@ aynı notebook'ta otomatik açılır.
 - Character 3-gram, word overlap ve BM25.
 - Query'siz candidate-only char-TFIDF classifier.
 - Kritik sözcüğü silme.
-- Yalnız yaklaşık kökleri kullanma.
+- Her tokenı ilk beş karaktere indirgeme (`prefix5`); bu gerçek kök/lemma analizi değil,
+  ek bilgisini azaltan ucuz bir kontrol deneyidir.
 
 İstatistiksel raporlama query-level bootstrap `%95 CI`, paired bootstrap, approximate randomization,
 McNemar, Holm düzeltmesi ve query/pasaj/layer/objective/generalization slice sonuçlarını içerir.
