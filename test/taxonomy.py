@@ -68,6 +68,7 @@ FEATURES = (
     F("GEN", "ilgi hâli", CASE, "single", "aitlik/sahiplik ↔ yalın ad", ("-ın", "-in", "-un", "-ün", "-nın", "-nin")),
     F("EQU", "eşitlik hâli", CASE, "single", "ona göre/o biçimde ↔ başka ölçüt", ("-ca", "-ce", "-ça", "-çe")),
     F("PL", "çoğul", AGR, "single", "birden çok ↔ tek", ("-lar", "-ler")),
+    F("V.AGR", "fiilde kişi-sayı uyumu", AGR, "single", "eylemi yapan kişi/sayı ↔ başka kişi/sayı", ("-m", "-ım", "-im", "-sın", "-sin", "-k", "-ız", "-iz", "-siniz", "-lar", "-ler")),
     F("POSS.1SG", "1. tekil iyelik", AGR, "single", "benim ↔ başkasının", ("-ım", "-im", "-um", "-üm", "-m")),
     F("POSS.2SG", "2. tekil iyelik", AGR, "single", "senin ↔ başkasının", ("-ın", "-in", "-un", "-ün", "-n")),
     F("POSS.3SG", "3. tekil iyelik", AGR, "single", "onun ↔ benim/bizim", ("-ı", "-i", "-u", "-ü", "-sı", "-si")),
@@ -152,7 +153,15 @@ HARD_SUBTYPES = (
     "morph_distractor",
     "partial_chain_negative",
     "allomorph_form_function_trap",
+    "noun_possessor_number_trap",
 )
+
+MORPH_HARD_SUBTYPES = frozenset({
+    "minimal_morph_negative", "same_lemma_wrong_inflection", "related_feature_negative",
+    "scope_attachment_trap", "morph_distractor", "partial_chain_negative",
+    "allomorph_form_function_trap", "noun_possessor_number_trap",
+})
+SEMANTIC_HARD_SUBTYPES = frozenset(set(HARD_SUBTYPES) - MORPH_HARD_SUBTYPES)
 
 
 _CORE_HARD_PROFILE = (
@@ -168,11 +177,12 @@ _CORE_HARD_PROFILE = (
 def hard_profile(feature: Feature | dict) -> list[dict[str, str]]:
     """Select eight compatible slots instead of forcing eight universal error classes."""
     if isinstance(feature, dict):
+        key = str(feature["key"])
         layer = str(feature["layer"])
         macro = str(feature["macro"])
         objective = str(feature["objective"])
     else:
-        layer, macro, objective = feature.layer, feature.macro, feature.objective
+        key, layer, macro, objective = feature.key, feature.layer, feature.macro, feature.objective
 
     if objective == "allomorph_invariance":
         extras = (
@@ -183,6 +193,11 @@ def hard_profile(feature: Feature | dict) -> list[dict[str, str]]:
         extras = (
             ("partial_chain_negative", "ek zincirinin yalnız bir parçası doğru"),
             ("scope_attachment_trap", "ek zincirinin kapsamı veya bağlanması yanlış"),
+        )
+    elif macro == AGR and (key == "PL" or key.startswith("POSS.")):
+        extras = (
+            ("noun_possessor_number_trap", "nesnenin sayısı ile sahibin sayısı karıştırılmış"),
+            ("morph_distractor", "hedef biçim yanlış olay veya sözcüğe bağlı"),
         )
     elif macro in {CASE, AGR, VOICE}:
         extras = (

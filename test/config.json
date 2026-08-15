@@ -1,6 +1,6 @@
 {
   "dataset_name": "turkish_morph_retrieval_test",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "seed": 20260814,
   "targets": {
     "development": 100,
@@ -32,10 +32,14 @@
   "non_composition_chain_rate": 0.25,
   "single_allomorph_rate": 0.1666666667,
   "domain_shift_fraction": 0.20,
+  "strict_minimal_pair_fraction": 0.25,
   "quality": {
     "candidate_token_ratio_max": 1.65,
     "gold_to_median_token_ratio_max": 1.25,
     "near_duplicate_jaccard_max": 0.82,
+    "cross_family_candidate_jaccard_max": 0.90,
+    "train_test_jaccard_max": 0.85,
+    "max_abstract_template_reuse": 4,
     "judge_subtype_agreement_min": 0.90,
     "judge_naturalness_min": 4
   },
@@ -53,16 +57,30 @@
   "generation": {
     "max_generation_attempts": 2,
     "workers": 4,
-    "generator": {
-      "provider": "openrouter",
-      "model": "${TEST_GENERATOR_MODEL}",
-      "api_key_env": "OPENROUTER_API_KEY",
-      "base_url": "https://openrouter.ai/api/v1/chat/completions",
-      "temperature": 0.70,
-      "max_tokens": 6500,
-      "requests_per_minute": 20,
-      "timeout_seconds": 180
-    },
+    "generators": [
+      {
+        "id": "generator_a",
+        "provider": "openrouter",
+        "model": "${TEST_GENERATOR_MODEL_A}",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "base_url": "https://openrouter.ai/api/v1/chat/completions",
+        "temperature": 0.70,
+        "max_tokens": 6500,
+        "requests_per_minute": 20,
+        "timeout_seconds": 180
+      },
+      {
+        "id": "generator_b",
+        "provider": "openrouter",
+        "model": "${TEST_GENERATOR_MODEL_B}",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "base_url": "https://openrouter.ai/api/v1/chat/completions",
+        "temperature": 0.70,
+        "max_tokens": 6500,
+        "requests_per_minute": 20,
+        "timeout_seconds": 180
+      }
+    ],
     "judge": {
       "provider": "openrouter",
       "model": "${TEST_JUDGE_MODEL}",

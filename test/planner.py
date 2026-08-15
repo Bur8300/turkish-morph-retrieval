@@ -82,6 +82,13 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
     target_split = _weighted_value(
         {"development": 1 / 6, "sealed_test": 5 / 6}, index, 6, seed, "split"
     )
+    strict_minimal_pair = _weighted_value(
+        {"no": 1.0 - float(cfg["strict_minimal_pair_fraction"]),
+         "yes": float(cfg["strict_minimal_pair_fraction"])},
+        index, 4, seed, "strict_minimal_pair",
+    ) == "yes"
+    generator_ids = [row["id"] for row in cfg["generation"]["generators"]]
+    generator_id = _round_robin(generator_ids, index, seed, "generator")
 
     if bucket == "composition_holdout":
         layer = "chain"
@@ -164,6 +171,8 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
         "passage_sentence_count": passage_sentence_count,
         "critical_sentence_position": critical_sentence_position,
         "hard_profile": hard_profile(feature),
+        "strict_minimal_pair": strict_minimal_pair,
+        "generator_id": generator_id,
         "template": dict(template),
         "semantic_frame_id": f"frame_{index:05d}",
         "lemma_policy": "test_only_critical_lemma" if bucket == "lemma_holdout" else "open_critical_lemma",
@@ -182,6 +191,7 @@ def plan_statistics(slots: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
         "target_split", "generalization_bucket", "objective", "layer", "macro_phenomenon",
         "domain", "register", "query_sentence_count", "passage_sentence_count",
         "critical_sentence_position",
+        "strict_minimal_pair", "generator_id",
     )
     return {
         field: dict(sorted(Counter(str(slot[field]) for slot in slots).items())) for field in fields

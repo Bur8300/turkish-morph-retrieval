@@ -131,10 +131,10 @@ def initialise_run(run_id: str, cfg: dict[str, Any], slots: list[dict[str, Any]]
         "plan_sha256": current_hash,
         "plan_size": len(slots),
         "plan_statistics": plan_statistics(slots),
-        "generator": {
-            "provider": cfg["generation"]["generator"]["provider"],
-            "model": cfg["generation"]["generator"]["model"],
-        },
+        "generators": [
+            {"id": spec["id"], "provider": spec["provider"], "model": spec["model"]}
+            for spec in cfg["generation"]["generators"]
+        ],
         "judge": {
             "provider": cfg["generation"]["judge"]["provider"],
             "model": cfg["generation"]["judge"]["model"],
@@ -144,7 +144,7 @@ def initialise_run(run_id: str, cfg: dict[str, Any], slots: list[dict[str, Any]]
         previous = json.loads(paths.manifest.read_text(encoding="utf-8"))
         invariant_keys = (
             "dataset_version", "prompt_version", "pipeline_source_sha256", "config_sha256",
-            "plan_sha256", "generator", "judge"
+            "plan_sha256", "generators", "judge"
         )
         changed = [key for key in invariant_keys if previous.get(key) != manifest.get(key)]
         if changed:
@@ -167,7 +167,8 @@ def _request_provenance(response) -> dict[str, Any]:
     }
 
 
-def _process_slot(slot, cfg, generator, judge) -> tuple[str, dict[str, Any]]:
+def _process_slot(slot, cfg, generators, judge) -> tuple[str, dict[str, Any]]:
+    generator = generators[slot["generator_id"]]
     generation_provenance = []
     previous = None
     validation_problems: list[str] = []
@@ -202,6 +203,7 @@ def _process_slot(slot, cfg, generator, judge) -> tuple[str, dict[str, Any]]:
     judge_response = judge.call_json(JUDGE_SYSTEM, build_judge_prompt(family), JUDGE_SCHEMA, "blind_judge")
     judge_problems, judge_metadata = interpret_judge(family, judge_response.data, cfg)
     family["provenance"] = {
+        "generator_id": slot["generator_id"],
         "generator_attempts": generation_provenance,
         "judge": _request_provenance(judge_response),
         "prompt_version": PROMPT_VERSION,
@@ -233,7 +235,10 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     }
     pending = [slot for slot in slots if slot["slot_id"] not in processed]
     metadata = {"dataset_version": cfg["version"], "prompt_version": PROMPT_VERSION}
-    generator = make_provider(cfg["generation"]["generator"], paths.cache / "generator", metadata)
+    generators = {
+        spec["id"]: make_provider(spec, paths.cache / spec["id"], metadata)
+        for spec in cfg["generation"]["generators"]
+    }
     judge = make_provider(cfg["generation"]["judge"], paths.cache / "judge", metadata)
     write_lock = threading.Lock()
     counts = Counter()
@@ -243,7 +248,7 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     worker_count = int(workers or cfg["generation"].get("workers", 4))
     with ThreadPoolExecutor(max_workers=max(1, worker_count)) as executor:
         future_to_slot = {
-            executor.submit(_process_slot, slot, cfg, generator, judge): slot for slot in pending
+            executor.submit(_process_slot, slot, cfg, generators, judge): slot for slot in pending
         }
         for future in as_completed(future_to_slot):
             slot = future_to_slot[future]
@@ -283,6 +288,8 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
         "accepted_by_passage_sentence_count": dict(
             Counter(str(item["passage_sentence_count"]) for item in accepted)
         ),
+        "accepted_by_generator": dict(Counter(item["generator_id"] for item in accepted)),
+        "accepted_strict_minimal_pairs": sum(bool(item["strict_minimal_pair"]) for item in accepted),
         "rejection_stages": dict(Counter(item.get("stage", "unknown") for item in rejected)),
         "uncaught_errors_this_call": errors,
     }

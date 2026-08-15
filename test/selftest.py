@@ -6,7 +6,7 @@ from collections import Counter
 from copy import deepcopy
 
 from .config import load_config
-from .evaluation import evaluate_run
+from .evaluation import build_pool_rows, evaluate_run, validate_binary_qrels
 from .planner import build_plan, make_slot, plan_statistics
 from .selection import select_balanced
 from .taxonomy import FEATURE_BY_KEY, hard_profile
@@ -32,6 +32,8 @@ def _fixture_slot(cfg):
         "hard_profile": hard_profile(FEATURE_BY_KEY["NEG"]),
         "template": {"id": "event_report", "description": "doğal bir olay bildirimi"},
         "semantic_frame_id": "frame_fixture",
+        "strict_minimal_pair": False,
+        "generator_id": "generator_a",
     })
     return slot
 
@@ -57,6 +59,10 @@ def _fixture_raw():
         "critical_word_query": "tamamlamadı",
         "critical_word_positive": "bitirmedi",
         "feature_delta": "NEG korunur; minimal negatifte NEG kaldırılır",
+        "edit_script": {
+            "applies": False, "positive_form": "", "minimal_negative_form": "",
+            "operation": "", "changed_feature": "", "invariants": [],
+        },
         "query": "Ece raporu toplantıdan önce tamamlamadı.",
         "context_sentences": [],
         "candidates": [
@@ -81,6 +87,17 @@ def run() -> list[str]:
         failures.append("tek-gold düzende MAP@10 ile MRR@10 eşleşmiyor")
     if metric_summary.get("mean_rank") != 1.5 or len(metric_rows) != 2:
         failures.append(f"rank özeti yanlış: {metric_summary}")
+    condensed, condensed_rows = evaluate_run(
+        {"q1": {"d1": 1.0, "n1": 0.0}}, {"q1": ["unjudged", "d1", "n1"]},
+        unjudged_policy="condensed",
+    )
+    if condensed.get("recall@1") != 1.0 or condensed_rows[0].get("judged@1") != 0.0:
+        failures.append(f"unjudged condensed evaluation yanlış: {condensed} / {condensed_rows}")
+    try:
+        validate_binary_qrels({"q1": {"d1": 2.0, "n1": 0.0}})
+        failures.append("binary qrels relevance=2 değerini reddetmedi")
+    except ValueError:
+        pass
 
     cfg = load_config(runtime=False)
     slots_600 = build_plan(cfg, 600)
@@ -93,6 +110,8 @@ def run() -> list[str]:
             "composition_holdout": 120, "lemma_holdout": 120,
             "standard": 240, "template_holdout": 120,
         },
+        "strict_minimal_pair": {"False": 450, "True": 150},
+        "generator_id": {"generator_a": 300, "generator_b": 300},
     }
     for field, wanted in expected.items():
         if stats[field] != wanted:
@@ -139,6 +158,8 @@ def run() -> list[str]:
             "macro_phenomenon": slot_item["macro_phenomenon"],
             "target_feature": slot_item["feature"]["key"],
             "critical_lemma": f"lemma_{slot_item['index']}",
+            "strict_minimal_pair": slot_item["strict_minimal_pair"],
+            "generator_id": slot_item["generator_id"],
             "qc": {"quality_score": 1.0},
         })
     try:
@@ -157,6 +178,15 @@ def run() -> list[str]:
                 failures.append(f"{split} query dağılımı yanlış: {query_actual}")
             if passage_actual != passage_expected:
                 failures.append(f"{split} passage dağılımı yanlış: {passage_actual}")
+            strict_expected = 25 if split == "development" else 125
+            if sum(item["strict_minimal_pair"] for item in split_items) != strict_expected:
+                failures.append(f"{split} strict minimal-pair kotası yanlış")
+            generator_expected = (
+                {"generator_a": 50, "generator_b": 50} if split == "development"
+                else {"generator_a": 250, "generator_b": 250}
+            )
+            if dict(Counter(item["generator_id"] for item in split_items)) != generator_expected:
+                failures.append(f"{split} generator dengesi yanlış")
             for passage_count in (2, 3, 4):
                 position_counts = Counter(
                     item["critical_sentence_position"] for item in split_items
@@ -184,6 +214,36 @@ def run() -> list[str]:
     expected_hard = {item["slot"]: item["subtype"] for item in slot["hard_profile"]}
     if hard != expected_hard:
         failures.append("fixture uyarlanabilir sekiz hard slotu kapsamıyor")
+    pool_rows = build_pool_rows(
+        [family], {"fixture_system": {family["family_id"]: [family["gold_id"]]}}, depth=20,
+        seed_closed_family_labels=True,
+    )
+    if len(pool_rows) != 11 or Counter(row["relevance"] for row in pool_rows) != {0: 10, 1: 1}:
+        failures.append("pooling kendi family binary etiketlerini doğru seed etmedi")
+
+    strict_slot = deepcopy(slot)
+    strict_slot["strict_minimal_pair"] = True
+    strict_raw = _fixture_raw()
+    strict_raw["critical_word_positive"] = "tamamlamadı"
+    positive_raw = next(row for row in strict_raw["candidates"] if row["candidate_slot"] == "positive_01")
+    minimal_raw = next(row for row in strict_raw["candidates"] if row["candidate_slot"] == "hard_01")
+    positive_raw.update({
+        "critical_sentence": "Ece raporu toplantıdan önce tamamlamadı.",
+        "critical_word": "tamamlamadı",
+    })
+    minimal_raw.update({
+        "critical_sentence": "Ece raporu toplantıdan önce tamamladı.",
+        "critical_word": "tamamladı",
+    })
+    strict_raw["edit_script"] = {
+        "applies": True, "positive_form": "tamamlamadı",
+        "minimal_negative_form": "tamamladı", "operation": "NEG ekini kaldır",
+        "changed_feature": "NEG", "invariants": ["lemma", "token_order", "event"],
+    }
+    strict_family = normalize_family(strict_raw, strict_slot)
+    strict_problems = validate_family(strict_family, strict_slot, cfg)
+    if strict_problems:
+        failures.append(f"geçerli strict minimal pair reddedildi: {strict_problems}")
 
     long_slot = deepcopy(slot)
     long_slot.update({

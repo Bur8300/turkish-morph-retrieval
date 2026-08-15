@@ -112,6 +112,7 @@ def _accept(raw: dict, slot: dict, cfg: dict, provenance: dict) -> tuple[dict | 
         return None, [f"normalizasyon hatası: {type(exc).__name__}: {exc}"]
     if problems:
         return family, problems
+    family["generator_id"] = "codex_preview"
     family["source_type"] = "codex_cli_preview_unjudged"
     family["preview_only"] = True
     family["provenance"] = provenance
@@ -248,7 +249,10 @@ def generate_codex_preview(
         "accepted": len(accepted),
         "rejected": len(rejected),
         "plan_sha256": plan_hash(slots),
-        "plan_statistics": plan_statistics(slots),
+        "plan_statistics": {
+            **plan_statistics(slots),
+            "generator_id": {"codex_preview": len(slots)},
+        },
         "accepted_role_counts": dict(Counter(
             candidate["role"] for family in accepted for candidate in family["candidates"]
         )),

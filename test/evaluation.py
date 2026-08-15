@@ -10,9 +10,10 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+from .taxonomy import MORPH_HARD_SUBTYPES, SEMANTIC_HARD_SUBTYPES
 from .validators import _bm25_scores, char_ngrams, jaccard, tokens
 
-EVALUATION_API_VERSION = "2.2"
+EVALUATION_API_VERSION = "3.0"
 
 
 def load_items(path: str | Path) -> list[dict[str, Any]]:
@@ -43,14 +44,32 @@ def load_qrels(path: str | Path) -> dict[str, dict[str, float]]:
     return dict(out)
 
 
+def validate_binary_qrels(qrels: dict[str, dict[str, float]], require_nonrelevant: bool = True) -> None:
+    values = [score for judgments in qrels.values() for score in judgments.values()]
+    invalid = sorted({score for score in values if score not in {0, 0.0, 1, 1.0}})
+    if invalid:
+        raise ValueError(f"Binary qrels yalnız 0/1 içerebilir; bulunan: {invalid}")
+    if not all(any(score == 1 for score in judgments.values()) for judgments in qrels.values()):
+        raise ValueError("Her query için en az bir relevant=1 judgment gerekli")
+    if require_nonrelevant and not any(score == 0 for score in values):
+        raise ValueError("Bu own-gold-only qrels görünüyor; pooled full-corpus qrels değil")
+
+
 def evaluate_run(
     qrels: dict[str, dict[str, float]],
     run: dict[str, list[str]],
     recall_ks: tuple[int, ...] = (1, 5, 10, 100),
+    unjudged_policy: str = "nonrelevant",
 ) -> tuple[dict[str, float], list[dict[str, Any]]]:
+    if unjudged_policy not in {"nonrelevant", "condensed"}:
+        raise ValueError("unjudged_policy nonrelevant veya condensed olmalı")
     per_query = []
     for query_id, relevant in qrels.items():
-        ranked = run.get(query_id, [])
+        original_ranked = run.get(query_id, [])
+        ranked = (
+            [doc_id for doc_id in original_ranked if doc_id in relevant]
+            if unjudged_policy == "condensed" else original_ranked
+        )
         positives = {doc_id for doc_id, score in relevant.items() if score > 0}
         if not positives:
             continue
@@ -65,6 +84,22 @@ def evaluate_run(
             "mrr@10": 1.0 / first_rank if first_rank and first_rank <= 10 else 0.0,
             "ndcg@10": dcg / ideal if ideal else 0.0,
         }
+        judged_nonrelevant = {doc_id for doc_id, score in relevant.items() if score <= 0}
+        bpref_denominator = max(1, min(len(positives), len(judged_nonrelevant)))
+        rank_index = {doc_id: index for index, doc_id in enumerate(original_ranked)}
+        bpref_values = []
+        for doc_id in positives:
+            if doc_id not in rank_index:
+                bpref_values.append(0.0)
+                continue
+            nonrel_above = sum(
+                rank_index[negative] < rank_index[doc_id]
+                for negative in judged_nonrelevant if negative in rank_index
+            )
+            bpref_values.append(
+                1.0 - min(nonrel_above, len(positives)) / bpref_denominator
+            )
+        row["bpref"] = sum(bpref_values) / len(bpref_values)
         hits = 0
         precision_sum = 0.0
         for index, doc_id in enumerate(ranked[:10], start=1):
@@ -74,6 +109,10 @@ def evaluate_run(
         row["map@10"] = precision_sum / min(len(positives), 10)
         for k in recall_ks:
             row[f"recall@{k}"] = len(positives & set(ranked[:k])) / len(positives)
+            if unjudged_policy == "condensed":
+                row[f"judged@{k}"] = (
+                    sum(doc_id in relevant for doc_id in original_ranked[:k]) / max(1, min(k, len(original_ranked)))
+                )
         per_query.append(row)
     metric_names = [key for key in per_query[0] if key not in {"query_id", "rank"}] if per_query else []
     summary = {name: sum(row[name] for row in per_query) / len(per_query) for name in metric_names}
@@ -99,6 +138,7 @@ def score_encoder(
     batch_size: int = 32,
     include_full_run: bool = False,
     full_run_depth: int | None = None,
+    unjudged_policy: str = "nonrelevant",
 ) -> dict[str, Any]:
     """Encode once, then rank own candidates and optionally the shared corpus too.
 
@@ -146,7 +186,7 @@ def score_encoder(
             for candidate in item["candidates"]
         }
     resolved_qrels = qrels if qrels is not None else closed_qrels(items)
-    summary, per_query = evaluate_run(resolved_qrels, run)
+    summary, per_query = evaluate_run(resolved_qrels, run, unjudged_policy=unjudged_policy)
     row_by_query = {row["query_id"]: row for row in per_query}
     for item in items:
         row = row_by_query.get(item["family_id"])
@@ -159,6 +199,14 @@ def score_encoder(
         easy_candidates = [candidate for candidate in item["candidates"] if candidate.get("role") == "easy_negative"]
         minimal_candidates = [
             candidate for candidate in hard_candidates if candidate.get("subtype") == "minimal_morph_negative"
+        ]
+        morph_hards = [
+            candidate for candidate in hard_candidates
+            if candidate.get("subtype") in MORPH_HARD_SUBTYPES
+        ]
+        semantic_hards = [
+            candidate for candidate in hard_candidates
+            if candidate.get("subtype") in SEMANTIC_HARD_SUBTYPES
         ]
         hard_ranking = sorted(
             [gold_id] + [candidate["id"] for candidate in hard_candidates],
@@ -183,6 +231,25 @@ def score_encoder(
             "pairwise_easy_accuracy": (
                 sum(pairwise_win(candidate) for candidate in easy_candidates) / len(easy_candidates)
                 if easy_candidates else 0.0
+            ),
+            "pairwise_morph_hard_accuracy": (
+                sum(pairwise_win(candidate) for candidate in morph_hards) / len(morph_hards)
+                if morph_hards else None
+            ),
+            "pairwise_semantic_hard_accuracy": (
+                sum(pairwise_win(candidate) for candidate in semantic_hards) / len(semantic_hards)
+                if semantic_hards else None
+            ),
+            "morph_hard_family_consistency": (
+                float(all(pairwise_win(candidate) == 1.0 for candidate in morph_hards))
+                if morph_hards else None
+            ),
+            "semantic_hard_family_consistency": (
+                float(all(pairwise_win(candidate) == 1.0 for candidate in semantic_hards))
+                if semantic_hards else None
+            ),
+            "all_hard_family_consistency": float(
+                bool(hard_candidates) and all(pairwise_win(candidate) == 1.0 for candidate in hard_candidates)
             ),
             "pairwise_all_accuracy": (
                 sum(pairwise_win(candidate) for candidate in hard_candidates + easy_candidates)
@@ -210,6 +277,9 @@ def score_encoder(
     for metric in (
         "hard_only_recall@1", "hard_only_recall@5", "hard_only_mrr@10", "hard_only_ndcg@10",
         "pairwise_hard_accuracy", "pairwise_easy_accuracy", "pairwise_all_accuracy",
+        "pairwise_morph_hard_accuracy", "pairwise_semantic_hard_accuracy",
+        "morph_hard_family_consistency", "semantic_hard_family_consistency",
+        "all_hard_family_consistency",
         "contrast_consistency", "minimal_margin", "hardest_hard_margin", "hardest_negative_margin",
     ):
         values = [row[metric] for row in per_query if metric in row]
@@ -304,12 +374,44 @@ def full_corpus_sparse_runs(items: list[dict[str, Any]]) -> dict[str, dict[str, 
     return runs
 
 
+def rerank_union(
+    items: list[dict[str, Any]], system_runs: dict[str, dict[str, list[str]]], reranker,
+    input_depth: int = 50, output_depth: int = 100, batch_size: int = 32,
+) -> dict[str, list[str]]:
+    """Rerank the union of sparse/dense top results with a query-document cross encoder."""
+    document_text = {
+        candidate["id"]: candidate["text"] for item in items for candidate in item["candidates"]
+    }
+    run = {}
+    for item in items:
+        query_id = item["family_id"]
+        candidate_ids = sorted({
+            doc_id for system_run in system_runs.values()
+            for doc_id in system_run.get(query_id, [])[:input_depth]
+        })
+        pairs = [[item["query"], document_text[doc_id]] for doc_id in candidate_ids]
+        if hasattr(reranker, "compute_score"):
+            scores = reranker.compute_score(
+                pairs, batch_size=batch_size, max_length=512, normalize=True
+            )
+        else:
+            scores = reranker.predict(pairs, batch_size=batch_size)
+        if not isinstance(scores, (list, tuple)):
+            scores = scores.tolist()
+        ranking = sorted(
+            range(len(candidate_ids)), key=lambda index: (-float(scores[index]), candidate_ids[index])
+        )
+        run[query_id] = [candidate_ids[index] for index in ranking[:output_depth]]
+    return run
+
+
 def build_pool_rows(
     items: list[dict[str, Any]],
     system_runs: dict[str, dict[str, list[str]]],
     depth: int = 20,
+    seed_closed_family_labels: bool = False,
 ) -> list[dict[str, Any]]:
-    """Union system top-k results into a blind, unjudged pooling template."""
+    """Union top-k results; labels stay blind unless private closed-family seeding is requested."""
     document_text = {
         candidate["id"]: candidate["text"] for item in items for candidate in item["candidates"]
     }
@@ -320,9 +422,19 @@ def build_pool_rows(
         for system, run in system_runs.items():
             for rank, doc_id in enumerate(run.get(query_id, [])[:depth], start=1):
                 membership[doc_id].append({"system": system, "rank": rank})
+        for candidate in item["candidates"]:
+            membership.setdefault(candidate["id"], []).append(
+                {"system": "closed_family_inclusion", "rank": None}
+            )
         ordered = sorted(
             membership.items(),
-            key=lambda pair: (min(entry["rank"] for entry in pair[1]), pair[0]),
+            key=lambda pair: (
+                min(
+                    (entry["rank"] for entry in pair[1] if entry["rank"] is not None),
+                    default=10**9,
+                ),
+                pair[0],
+            ),
         )
         for doc_id, systems in ordered:
             rows.append({
@@ -331,8 +443,22 @@ def build_pool_rows(
                 "query": item["query"],
                 "document": document_text[doc_id],
                 "systems": systems,
-                "min_rank": min(entry["rank"] for entry in systems),
-                "relevance": None,
+                "min_rank": min(
+                    (entry["rank"] for entry in systems if entry["rank"] is not None),
+                    default=None,
+                ),
+                "relevance": (
+                    int(doc_id == item["gold_id"])
+                    if seed_closed_family_labels and any(
+                        candidate["id"] == doc_id for candidate in item["candidates"]
+                    )
+                    else None
+                ),
+                "judgment_source": (
+                    "closed_family_verified" if seed_closed_family_labels and any(
+                        candidate["id"] == doc_id for candidate in item["candidates"]
+                    ) else "unjudged"
+                ),
             })
     return rows
 
@@ -481,9 +607,10 @@ def slice_summary(per_query: list[dict], items: list[dict], metric: str = "recal
     for field in (
         "query_sentence_count", "passage_sentence_count", "critical_sentence_position",
         "layer", "objective", "generalization_bucket", "macro_phenomenon", "target_feature",
+        "strict_minimal_pair", "generator_id",
     ):
         groups = defaultdict(list)
         for row in per_query:
-            groups[str(metadata[row["query_id"]][field])].append(float(row[metric]))
+            groups[str(metadata[row["query_id"]].get(field, "unknown"))].append(float(row[metric]))
         out[field] = {group: {"n": len(values), "mean": sum(values) / len(values)} for group, values in sorted(groups.items())}
     return out

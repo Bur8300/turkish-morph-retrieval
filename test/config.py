@@ -64,28 +64,33 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
     if set(cfg["passage_sentence_distribution"]) != {"1", "2", "3", "4"}:
         raise ConfigError("Pasaj uzunluk katmanları 1, 2, 3 ve 4 cümle olmalı")
     _check_distribution("generalization_distribution", cfg["generalization_distribution"])
+    if float(cfg.get("strict_minimal_pair_fraction", 0)) != 0.25:
+        raise ConfigError("Final plan tam olarak %25 strict minimal-pair (150/600) olmalı")
     if len(cfg["review"]["reviewer_ids"]) != 5:
         raise ConfigError("İnsan denetimi için tam olarak beş reviewer kimliği tanımlanmalı")
 
     if runtime:
-        gen = cfg["generation"]["generator"]
+        generators = cfg["generation"].get("generators", [])
+        if len(generators) != 2 or {row.get("id") for row in generators} != {"generator_a", "generator_b"}:
+            raise ConfigError("Ana test üretimi generator_a + generator_b olmak üzere iki generator ister")
         judge = cfg["generation"]["judge"]
-        for label, spec in (("generator", gen), ("judge", judge)):
+        for label, spec in (*((row["id"], row) for row in generators), ("judge", judge)):
             if not spec.get("model") or str(spec["model"]).startswith("${"):
                 raise ConfigError(f"{label} model kimliği ayarlanmamış")
             if not os.getenv(spec["api_key_env"]):
                 raise ConfigError(f"{label} için {spec['api_key_env']} tanımlı değil")
         if cfg["generation"].get("require_distinct_model_families", True):
-            if model_family(gen["model"]) == model_family(judge["model"]):
+            families = [model_family(row["model"]) for row in generators] + [model_family(judge["model"])]
+            if len(families) != len(set(families)):
                 raise ConfigError(
-                    "Generator ve judge farklı model ailelerinden olmalı "
-                    f"({gen['model']} vs {judge['model']})"
+                    "İki generator ve judge üç farklı model ailesinden olmalı: "
+                    + ", ".join(row["model"] for row in [*generators, judge])
                 )
         forbidden = {
             str(value).lower()
             for value in cfg["generation"].get("forbidden_model_families_for_test", [])
         }
-        used = {model_family(gen["model"]), model_family(judge["model"])}
+        used = {model_family(row["model"]) for row in [*generators, judge]}
         if forbidden & used:
             raise ConfigError(
                 "Test generator/judge, legacy train model ailesinden bağımsız olmalı; "

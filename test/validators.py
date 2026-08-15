@@ -6,7 +6,7 @@ import hashlib
 import math
 import random
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import Any
 
 _TOKEN_RE = re.compile(r"[a-zçğıöşü0-9]+", re.I)
@@ -40,6 +40,18 @@ def jaccard(left: set, right: set) -> float:
 
 def _contains_word(text: str, word: str) -> bool:
     return tr_lower(word).strip(".,;:!?()[]{}\"'") in tr_lower(text)
+
+
+def _critical_skeleton(sentence: str, critical_word: str) -> list[str] | None:
+    """Replace one token sequence with a marker for strict minimal-pair comparison."""
+    sentence_tokens = tokens(sentence)
+    word_tokens = tokens(critical_word)
+    if not word_tokens:
+        return None
+    for start in range(len(sentence_tokens) - len(word_tokens) + 1):
+        if sentence_tokens[start : start + len(word_tokens)] == word_tokens:
+            return sentence_tokens[:start] + ["<morph>"] + sentence_tokens[start + len(word_tokens) :]
+    return None
 
 
 def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any]:
@@ -84,12 +96,15 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
         "passage_sentence_count": slot["passage_sentence_count"],
         "critical_sentence_position": slot["critical_sentence_position"],
         "hard_profile": list(slot["hard_profile"]),
+        "strict_minimal_pair": bool(slot["strict_minimal_pair"]),
+        "generator_id": slot["generator_id"],
         "semantic_frame_id": raw.get("semantic_frame_id"),
         "template_id": raw.get("template_id"),
         "critical_lemma": raw.get("critical_lemma"),
         "critical_word_query": raw.get("critical_word_query"),
         "critical_word_positive": raw.get("critical_word_positive"),
         "feature_delta": raw.get("feature_delta"),
+        "edit_script": raw.get("edit_script"),
         "query": raw.get("query"),
         "context_sentences": context_sentences,
         "candidates": candidates,
@@ -204,6 +219,45 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
         elif not _contains_word(candidate.get("critical_sentence", ""), critical):
             problems.append(f"{candidate.get('id')} critical_word kritik cümlede yok")
 
+    edit_script = family.get("edit_script")
+    if not isinstance(edit_script, dict):
+        problems.append("edit_script eksik veya object değil")
+    elif bool(edit_script.get("applies")) != bool(slot["strict_minimal_pair"]):
+        problems.append("edit_script.applies strict_minimal_pair planıyla uyuşmuyor")
+    if slot["strict_minimal_pair"] and positives:
+        minimal = next(
+            (candidate for candidate in candidates if candidate.get("candidate_slot") == "hard_01"),
+            None,
+        )
+        if minimal is None:
+            problems.append("strict minimal pair için hard_01 yok")
+        else:
+            positive_skeleton = _critical_skeleton(
+                positives[0].get("critical_sentence", ""), positives[0].get("critical_word", "")
+            )
+            negative_skeleton = _critical_skeleton(
+                minimal.get("critical_sentence", ""), minimal.get("critical_word", "")
+            )
+            if positive_skeleton is None or negative_skeleton is None:
+                problems.append("strict minimal pair kritik sözcüğü ayrıştırılamadı")
+            elif positive_skeleton != negative_skeleton:
+                problems.append("strict minimal pair positive/hard_01 yalnız kritik biçimde ayrışmıyor")
+            if minimal.get("subtype") != "minimal_morph_negative":
+                problems.append("strict minimal pair hard_01 minimal_morph_negative olmalı")
+            if isinstance(edit_script, dict):
+                expected_forms = {
+                    tr_lower(positives[0].get("critical_word", "")).strip(),
+                    tr_lower(minimal.get("critical_word", "")).strip(),
+                }
+                recorded_forms = {
+                    tr_lower(str(edit_script.get("positive_form", ""))).strip(),
+                    tr_lower(str(edit_script.get("minimal_negative_form", ""))).strip(),
+                }
+                if expected_forms != recorded_forms:
+                    problems.append("edit_script yüzey biçimleri positive/hard_01 ile uyuşmuyor")
+                if not str(edit_script.get("changed_feature", "")).strip():
+                    problems.append("strict edit_script.changed_feature boş")
+
     if family["objective"] == "allomorph_invariance":
         if positives and positives[0].get("morph_relation") != "allomorph_equivalent":
             problems.append("allomorph family positive ilişkisi allomorph_equivalent olmalı")
@@ -294,6 +348,22 @@ def corpus_problems(items: list[dict[str, Any]], cfg: dict[str, Any]) -> list[st
     ids = [item["family_id"] for item in items]
     if len(ids) != len(set(ids)):
         problems.append("family_id tekrarı var")
+    normalized_queries: dict[str, list[str]] = defaultdict(list)
+    normalized_candidates: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    for item in items:
+        normalized_queries[" ".join(tokens(item["query"]))].append(item["family_id"])
+        for candidate in item["candidates"]:
+            normalized_candidates[" ".join(tokens(candidate["text"]))].append(
+                (item["family_id"], candidate["id"])
+            )
+    for text, family_ids in normalized_queries.items():
+        if text and len(set(family_ids)) > 1:
+            problems.append(f"birebir query kopyası: {sorted(set(family_ids))}")
+    for text, rows in normalized_candidates.items():
+        families = {family_id for family_id, _ in rows}
+        if text and len(families) > 1:
+            problems.append(f"cross-family birebir candidate kopyası: {rows[:8]}")
+
     query_grams = [(item["family_id"], char_ngrams(item["query"])) for item in items]
     threshold = float(cfg["quality"]["near_duplicate_jaccard_max"])
     for left in range(len(query_grams)):
@@ -305,7 +375,106 @@ def corpus_problems(items: list[dict[str, Any]], cfg: dict[str, Any]) -> list[st
                 )
                 if len(problems) >= 100:
                     return problems
+
+    records = []
+    for item in items:
+        records.append((item["family_id"], f"query:{item['family_id']}", "query", item["query"]))
+        for candidate in item["candidates"]:
+            records.append((item["family_id"], candidate["id"], "candidate", candidate["text"]))
+    candidate_threshold = float(cfg["quality"].get("cross_family_candidate_jaccard_max", 0.90))
+    for left, right, score in _candidate_near_duplicates(records, candidate_threshold):
+        if left[0] == right[0]:
+            continue
+        if left[2] == "query" and right[2] == "query":
+            continue
+        kind = "query-candidate" if left[2] != right[2] else "candidate-candidate"
+        problems.append(f"cross-family yakın {kind} kopyası: {left[1]} / {right[1]} ({score:.3f})")
+        if len(problems) >= 100:
+            return problems
+
+    template_members: dict[str, list[str]] = defaultdict(list)
+    for item in items:
+        positive = next((row for row in item["candidates"] if row.get("role") == "positive"), None)
+        if positive:
+            skeleton = _critical_skeleton(
+                positive.get("critical_sentence", ""), positive.get("critical_word", "")
+            )
+            if skeleton:
+                template_members[" ".join(skeleton)].append(item["family_id"])
+    reuse_limit = int(cfg["quality"].get("max_abstract_template_reuse", 4))
+    for signature, family_ids in template_members.items():
+        if len(family_ids) > reuse_limit:
+            problems.append(
+                f"soyut kritik şablon {reuse_limit} kezden fazla tekrarlandı: "
+                f"{family_ids[:8]} | {signature[:120]}"
+            )
     return problems
+
+
+def _word_shingles(text: str, width: int = 5) -> set[tuple[str, ...]]:
+    values = tokens(text)
+    if not values:
+        return set()
+    if len(values) <= width:
+        return {tuple(values)}
+    return {tuple(values[index : index + width]) for index in range(len(values) - width + 1)}
+
+
+def _candidate_near_duplicates(
+    records: list[tuple[str, str, str, str]], threshold: float
+) -> list[tuple[tuple, tuple, float]]:
+    """Find plausible near duplicates via a word-shingle index, then verify with char Jaccard."""
+    index: dict[tuple[str, ...], list[int]] = defaultdict(list)
+    grams = []
+    for record_index, record in enumerate(records):
+        grams.append(char_ngrams(record[3]))
+        for shingle in _word_shingles(record[3]):
+            index[shingle].append(record_index)
+    candidate_pairs = set()
+    for members in index.values():
+        if len(members) > 80:
+            continue
+        for left_at in range(len(members)):
+            for right_at in range(left_at + 1, len(members)):
+                left, right = members[left_at], members[right_at]
+                if records[left][0] != records[right][0]:
+                    candidate_pairs.add((left, right))
+    found = []
+    for left, right in sorted(candidate_pairs):
+        score = jaccard(grams[left], grams[right])
+        if score > threshold:
+            found.append((records[left], records[right], score))
+    return found
+
+
+def train_test_leakage_problems(
+    test_items: list[dict[str, Any]], train_items: list[dict[str, Any]], cfg: dict[str, Any]
+) -> list[str]:
+    """Audit exact and fuzzy query/candidate leakage across future train and frozen test."""
+    records = []
+    for source, items in (("test", test_items), ("train", train_items)):
+        for item in items:
+            family_id = f"{source}:{item.get('family_id', item.get('id', 'unknown'))}"
+            query = item.get("query")
+            if isinstance(query, str):
+                records.append((family_id, f"{family_id}:query", source, query))
+            for candidate in item.get("candidates", []):
+                text = candidate.get("text") if isinstance(candidate, dict) else None
+                if isinstance(text, str):
+                    records.append((family_id, f"{family_id}:{candidate.get('id', 'candidate')}", source, text))
+    threshold = float(cfg["quality"].get("train_test_jaccard_max", 0.85))
+    problems = []
+    normalized: dict[str, set[str]] = defaultdict(set)
+    for family_id, record_id, source, text in records:
+        normalized[" ".join(tokens(text))].add(source)
+        if len(normalized[" ".join(tokens(text))]) > 1:
+            problems.append(f"train-test birebir kopya: {record_id}")
+    for left, right, score in _candidate_near_duplicates(records, threshold):
+        if left[2] != right[2]:
+            problems.append(f"train-test yakın kopya: {left[1]} / {right[1]} ({score:.3f})")
+        if len(problems) >= 200:
+            break
+    return sorted(set(problems))
 
 
 def _bm25_scores(query: str, docs: list[str]) -> list[float]:
@@ -348,10 +517,17 @@ def artifact_report(items: list[dict[str, Any]]) -> dict[str, Any]:
         wins["character_3gram"] += int(gold_index == max(range(11), key=trigram.__getitem__))
         wins["bm25"] += int(gold_index == max(range(11), key=bm25.__getitem__))
     n = max(1, len(items))
+    generator_prefixes: dict[str, Counter] = defaultdict(Counter)
+    for item in items:
+        generator_id = str(item.get("generator_id", "unknown"))
+        generator_prefixes[generator_id][" ".join(tokens(item["query"])[:3])] += 1
     return {
         "n_families": len(items),
         "chance_recall_at_1": round(1 / 11, 4),
         "recall_at_1": {name: round(value / n, 4) for name, value in sorted(wins.items())},
         "gold_position_counts": dict(sorted(gold_positions.items())),
         "longest_gold_rate": round(wins["longest_candidate"] / n, 4),
+        "generator_query_prefix_top10": {
+            generator: counts.most_common(10) for generator, counts in sorted(generator_prefixes.items())
+        },
     }

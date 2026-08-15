@@ -4,13 +4,24 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
+from .config import load_config
+from .evaluation import load_items
 from .exports import finalize
 from .pipeline import default_run_id, generate, paths_for, read_jsonl, write_plan
+from .pooling import finalize_binary_qrels, load_pool_rows, pool_status
 from .preview import generate_codex_preview
 from .review import merge_reviews, prepare_review, review_file
 from .selftest import run as run_selftest
-from .validators import artifact_report
+from .validators import artifact_report, train_test_leakage_problems
+
+
+def _load_flexible(path: str) -> list[dict]:
+    source = Path(path)
+    if source.suffix == ".jsonl":
+        return [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return load_items(source)
 
 
 def main() -> int:
@@ -19,7 +30,7 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     plan = sub.add_parser("plan", help="API çağrısı yapmadan kapsam planı üret")
-    plan.add_argument("--run-id", default="planned_test_v31")
+    plan.add_argument("--run-id", default="planned_test_v32")
     plan.add_argument("--size", type=int, default=None)
 
     generation = sub.add_parser("generate", help="üret + deterministic QC + kör judge")
@@ -52,6 +63,23 @@ def main() -> int:
     audit = sub.add_parser("audit", help="accepted veya frozen internal veri üzerinde ucuz artefakt denetimi")
     audit.add_argument("--run-id", required=True)
 
+    leakage = sub.add_parser("audit-leakage", help="train ile test arasında exact/fuzzy kopya ara")
+    leakage.add_argument("--test", required=True)
+    leakage.add_argument("--train", required=True)
+
+    morph = sub.add_parser("morph-audit", help="opsiyonel Stanza lemma/UFeats denetimi")
+    morph.add_argument("--input", required=True)
+    morph.add_argument("--output", required=True)
+    morph.add_argument("--download-model", action="store_true")
+    morph.add_argument("--use-gpu", action="store_true")
+
+    pool_check = sub.add_parser("pool-status", help="binary pooling şablonunun doluluk durumunu göster")
+    pool_check.add_argument("--input", required=True)
+
+    pool_final = sub.add_parser("pool-finalize", help="tamamlanmış 0/1 pool JSONL'ını qrels TSV'ye çevir")
+    pool_final.add_argument("--input", required=True)
+    pool_final.add_argument("--output", required=True)
+
     sub.add_parser("self-test", help="API kullanmadan regression testleri")
     args = parser.parse_args()
 
@@ -77,6 +105,21 @@ def main() -> int:
     elif args.command == "audit":
         run = paths_for(args.run_id)
         result = artifact_report(read_jsonl(run.accepted))
+    elif args.command == "audit-leakage":
+        cfg = load_config(args.config, runtime=False)
+        problems = train_test_leakage_problems(
+            _load_flexible(args.test), _load_flexible(args.train), cfg
+        )
+        result = {"problem_count": len(problems), "problems": problems}
+    elif args.command == "morph-audit":
+        from .morphology import run_morphology_audit
+        result = run_morphology_audit(
+            args.input, args.output, args.download_model, args.use_gpu
+        )
+    elif args.command == "pool-status":
+        result = pool_status(load_pool_rows(args.input))
+    elif args.command == "pool-finalize":
+        result = finalize_binary_qrels(args.input, args.output)
     else:
         failures = run_selftest()
         if failures:

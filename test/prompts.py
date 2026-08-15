@@ -12,7 +12,7 @@ import random
 from .taxonomy import HARD_SUBTYPES
 
 
-PROMPT_VERSION = "test-prompts-3.1.0"
+PROMPT_VERSION = "test-prompts-3.2.0"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -42,6 +42,7 @@ _HARD_DESCRIPTIONS = {
     "morph_distractor": "Hedef biçimbilim metinde var ama yanlış yükleme/olaya bağlı; sorguyu yanıtlamıyor.",
     "partial_chain_negative": "Ek zincirinin yalnız bir bölümü doğru; zincirin tamamı sorgunun anlamını vermiyor.",
     "allomorph_form_function_trap": "Yüzeyce benzer ek/biçim var; fakat gramatik işlev geçerli allomorf eşdeğeri değil.",
+    "noun_possessor_number_trap": "Adın/nesnenin çoğulluğu ile sahibin çoğulluğu karıştırılmış; örneğin çok nesne ile çok sahip aynı şey değildir.",
 }
 
 
@@ -74,6 +75,16 @@ def build_generation_prompt(slot: dict) -> str:
         "gerçekleştir; bu birleşim gelecekteki train exclusion manifestine girecek."
         if "domain_shift" in slot["generalization_tags"]
         else "Domain/register doğal çeşitlilik içindir; yapay jargon ekleme."
+    )
+    strict_rule = (
+        "Bu STRICT MINIMAL-PAIR family’sidir. Positive ile hard_01 aynı kritik lemmayı, aynı "
+        "sözdizimsel şablonu ve aynı sözcük dizisini korumalı; yalnız kritik çekimli sözcüğün "
+        "hedef eki/ek zinciri değişmelidir. Noktalama dahil diğer tokenlar aynı kalmalıdır. "
+        "edit_script.applies=true olmalı; iki yüzey biçimini, tek işlemi, değişen feature'ı ve "
+        "korunan invariants alanlarını açıkça kaydet."
+        if slot["strict_minimal_pair"] else
+        "Bu family strict minimal-pair slice'ında değildir. hard_01 yine yerel ve kontrollü olsun; "
+        "edit_script.applies=false, diğer edit_script string/dizi alanları boş olabilir."
     )
 
     return f"""\
@@ -108,6 +119,7 @@ BİÇİMBİLİM
 - {allomorph_rule}
 - Yüzey biçimleri yalnız rehberdir: {feature['surface_forms']}.
 - Anlam karşıtlığı: {feature['meaning_contrast']}.
+- {strict_rule}
 
 GENERALİZASYON
 - {bucket_rule}

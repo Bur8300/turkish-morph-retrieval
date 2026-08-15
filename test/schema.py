@@ -50,6 +50,22 @@ GENERATION_SCHEMA = {
             "critical_word_query": {"type": "string", "minLength": 2},
             "critical_word_positive": {"type": "string", "minLength": 2},
             "feature_delta": {"type": "string", "minLength": 3},
+            "edit_script": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "applies": {"type": "boolean"},
+                    "positive_form": {"type": "string"},
+                    "minimal_negative_form": {"type": "string"},
+                    "operation": {"type": "string"},
+                    "changed_feature": {"type": "string"},
+                    "invariants": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": [
+                    "applies", "positive_form", "minimal_negative_form", "operation",
+                    "changed_feature", "invariants",
+                ],
+            },
             "query": {"type": "string", "minLength": 8},
             "context_sentences": {
                 "type": "array",
@@ -66,7 +82,7 @@ GENERATION_SCHEMA = {
         },
         "required": [
             "semantic_frame_id", "template_id", "critical_lemma", "critical_word_query",
-            "critical_word_positive", "feature_delta", "query", "context_sentences",
+            "critical_word_positive", "feature_delta", "edit_script", "query", "context_sentences",
             "candidates", "generation_notes",
         ],
     },

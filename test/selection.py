@@ -124,6 +124,51 @@ def _fit_query_availability(
     return fitted
 
 
+def _rebalance_flag(
+    selected: list[dict], available_by_cell: dict, field: str, wanted_value: Any,
+    target_count: int, preserve_fields: tuple[str, ...] = (),
+) -> list[dict]:
+    """Swap inside fixed length/bucket cells so global source/slice quotas stay exact."""
+    selected = list(selected)
+    selected_ids = {item["family_id"] for item in selected}
+    current = sum(item.get(field) == wanted_value for item in selected)
+    while current != target_count:
+        need_wanted = current < target_count
+        outgoing = [
+            item for item in selected if (item.get(field) == wanted_value) != need_wanted
+        ]
+        swap = None
+        for old in sorted(outgoing, key=lambda item: item["family_id"]):
+            cell = (
+                old["generalization_bucket"], int(old["passage_sentence_count"]),
+                int(old["query_sentence_count"]),
+            )
+            replacements = [
+                item for item in available_by_cell.get(cell, [])
+                if item["family_id"] not in selected_ids
+                and (item.get(field) == wanted_value) == need_wanted
+                and all(item.get(name) == old.get(name) for name in preserve_fields)
+            ]
+            if replacements:
+                replacements.sort(key=lambda item: (
+                    item.get("critical_sentence_position") != old.get("critical_sentence_position"),
+                    -float(item.get("qc", {}).get("quality_score", 0.0)), item["family_id"],
+                ))
+                swap = old, replacements[0]
+                break
+        if swap is None:
+            raise ValueError(
+                f"{field}={wanted_value} kotası hücre marjinleri korunarak sağlanamıyor: "
+                f"{current}/{target_count}"
+            )
+        old, new = swap
+        selected[selected.index(old)] = new
+        selected_ids.remove(old["family_id"])
+        selected_ids.add(new["family_id"])
+        current += 1 if need_wanted else -1
+    return selected
+
+
 def select_balanced(
     items: list[dict[str, Any]],
     cfg: dict[str, Any],
@@ -167,6 +212,17 @@ def select_balanced(
             raise ValueError(f"{split} dengeli seçim için yetersiz hücreler: {shortages}")
         if len(split_selected) != target:
             raise AssertionError(f"{split} seçim sayısı {len(split_selected)} != {target}")
+        strict_target = int(round(target * float(cfg["strict_minimal_pair_fraction"])))
+        split_selected = _rebalance_flag(
+            split_selected, by_cell, "strict_minimal_pair", True, strict_target,
+            preserve_fields=("critical_sentence_position",),
+        )
+        generator_ids = [row["id"] for row in cfg["generation"]["generators"]]
+        first_generator_target = target // 2
+        split_selected = _rebalance_flag(
+            split_selected, by_cell, "generator_id", generator_ids[0], first_generator_target,
+            preserve_fields=("strict_minimal_pair", "critical_sentence_position"),
+        )
         if split == "development":
             selected_dev_lemmas = {
                 str(item.get("critical_lemma", "")).strip().lower() for item in split_selected
@@ -180,6 +236,7 @@ def selection_statistics(items: list[dict[str, Any]]) -> dict[str, Any]:
         "target_split", "generalization_bucket", "query_sentence_count",
         "passage_sentence_count", "critical_sentence_position", "layer", "objective",
         "macro_phenomenon", "target_feature", "domain", "register",
+        "strict_minimal_pair", "generator_id",
     )
     statistics = {}
     for field in fields:

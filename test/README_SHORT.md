@@ -26,8 +26,13 @@ Generalizasyon:
 - Yaklaşık `%20` ayrıca `domain_shift` etiketi alır.
 
 Sekiz hard negative, her family'de altı çekirdek hata + fenomene uygun iki özel hata olarak
-planlanır. Kod 6 macro grup altında toplam 64 hedef morfolojik fenomen içerir: 50 single ve 14
+planlanır. Kod 6 macro grup altında toplam 65 hedef morfolojik fenomen içerir: 51 single ve 14
 composition/chain. Geçerli allomorph hiçbir zaman negative değildir.
+
+600 family'sinin tam **150'si strict minimal pair** dilimidir: positive ile ana `hard_01` aynı
+lemma ve cümle şablonunda kalır, yalnız hedef çekimli sözcük değişir. `edit_script` bu tek değişimi
+kaydeder. Yeni hedefler arasında fiilde kişi-sayı uyumu (`V.AGR`) vardır; adın sayısı ile sahibin
+sayısını karıştırma ise özel bir hard-negative senaryosudur.
 
 ## Kodun mantığı
 
@@ -36,7 +41,7 @@ config + taxonomy
         ↓
 1.800 deterministic ham slot
         ↓
-LLM generator → strict JSON
+iki farklı LLM generator (900 + 900 ham slot) → strict JSON
         ↓
 pasajları kodla birleştir + deterministic QC
         ↓
@@ -69,7 +74,9 @@ Development ayar/model/evaluation kararları içindir. Final test insanlarca kö
 | `validators.py` | Otomatik kalite kapıları |
 | `review.py` | Beş kişilik kör insan review'u |
 | `exports.py` | 100/500 freeze ve BEIR/qrels export |
-| `evaluation.py` | Retrieval, baseline, ablation ve istatistik |
+| `evaluation.py` | Retrieval, morph/semantic-hard, baseline, ablation ve istatistik |
+| `morphology.py` | Opsiyonel Stanza lemma/UFeats audit'i |
+| `pooling.py` | Binary full-corpus pool'u qrels'e çevirme |
 | `preview.py` | API key'siz GPT-5.6 Sol preview üretimi |
 
 ## Hızlı komutlar
@@ -79,13 +86,14 @@ Development ayar/model/evaluation kararları içindir. Final test insanlarca kö
 python3 -m test self-test
 
 # Yalnız plan
-python3 -m test plan --run-id test_v31
+python3 -m test plan --run-id test_v32
 
-# Ana paper üretimi: OpenRouter generator + farklı-family judge
+# Ana paper üretimi: iki generator + onlardan farklı-family judge
 export OPENROUTER_API_KEY="..."
-export TEST_GENERATOR_MODEL="provider-a/model-a"
-export TEST_JUDGE_MODEL="provider-b/model-b"
-python3 -m test generate --run-id test_v31
+export TEST_GENERATOR_MODEL_A="provider-a/model-a"
+export TEST_GENERATOR_MODEL_B="provider-b/model-b"
+export TEST_JUDGE_MODEL="provider-c/model-c"
+python3 -m test generate --run-id test_v32
 
 # API key'siz, ChatGPT oturumuyla 20-family Sol preview
 python3 -m test preview-codex \
@@ -93,6 +101,9 @@ python3 -m test preview-codex \
   --count 20 --batch-size 10 \
   --model gpt-5.6-sol --reasoning-effort medium
 ```
+
+`qrels`, retrieval'ın cevap anahtarıdır: `query_id + corpus_id + 0/1`. `1` ilgili, `0` açıkça
+ilgisiz, pool dışındaki/yargılanmamış belge ise bilinmeyendir ve otomatik `0` sayılmaz.
 
 Codex preview deterministic QC'den geçer fakat bağımsız LLM judge ve insan review'u içermez;
 paper verisi değil, yalnız tasarımı görmek içindir. Üretilen `preview_review.md` dosyası örnekleri
