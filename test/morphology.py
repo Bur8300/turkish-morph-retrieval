@@ -141,7 +141,7 @@ def run_morphology_audit(
         "backend": "stanza:tokenize,mwt,pos,lemma",
         "note": (
             "Bu audit lemma ve UD morphological features (UFeats) kontrolüdür; gerçek morfem "
-            "segmentasyonu veya morfem sayısı olduğunu iddia etmez. Uyarılar insan incelemesine gider."
+            "segmentasyonu veya morfem sayısı olduğunu iddia etmez. Uyarılar audit raporunda kalır."
         ),
         "counts": dict(counts),
         "families": family_rows,

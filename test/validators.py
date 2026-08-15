@@ -75,6 +75,7 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
     family_id = f"family_{slot['slot_id']}"
     for index, candidate in enumerate(candidates, start=1):
         candidate["id"] = f"{family_id}_c{index:02d}"
+        candidate["relevance"] = int(candidate.get("role") == "positive")
 
     positives = [candidate for candidate in candidates if candidate.get("role") == "positive"]
     gold_id = positives[0]["id"] if len(positives) == 1 else None
@@ -109,7 +110,8 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
         "context_sentences": context_sentences,
         "candidates": candidates,
         "gold_id": gold_id,
-        "source_type": "llm_generated_pending_human_review",
+        "qrels": {candidate["id"]: candidate["relevance"] for candidate in candidates},
+        "source_type": "llm_generated_pending_llm_judge",
         "generation_notes": raw.get("generation_notes", ""),
     }
 
@@ -159,6 +161,13 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
     ids = [candidate.get("id") for candidate in candidates]
     if len(ids) != len(set(ids)) or any(not candidate_id for candidate_id in ids):
         problems.append("candidate id'leri eksik veya benzersiz değil")
+    expected_qrels = {
+        candidate.get("id"): int(candidate.get("role") == "positive") for candidate in candidates
+    }
+    if family.get("qrels") != expected_qrels:
+        problems.append("family qrels 1 gold + 10 negative ile uyuşmuyor")
+    if any(candidate.get("relevance") != expected_qrels.get(candidate.get("id")) for candidate in candidates):
+        problems.append("candidate relevance etiketi role ile uyuşmuyor")
     texts = [candidate.get("text") for candidate in candidates]
     if any(not isinstance(text, str) or not text.strip() for text in texts):
         problems.append("boş/non-string candidate text var")
@@ -297,6 +306,7 @@ def interpret_judge(
     agreement = 0
     naturalness_values: list[int] = []
     morphology_failures = []
+    relevance_mismatches = []
     for row in assessments:
         candidate = candidates[row["id"]]
         intended = "positive" if candidate["role"] == "positive" else (
@@ -307,11 +317,16 @@ def interpret_judge(
             naturalness_values.append(row["naturalness"])
         if not row.get("morphology_ok", False):
             morphology_failures.append(row["id"])
+        expected_relevance = "relevant" if candidate["role"] == "positive" else "not_relevant"
+        if row.get("relevance") != expected_relevance:
+            relevance_mismatches.append(row["id"])
     agreement_rate = agreement / max(1, len(candidates))
     if agreement_rate < float(cfg["quality"]["judge_subtype_agreement_min"]):
         problems.append(f"judge subtype uyumu düşük: {agreement_rate:.3f}")
     if morphology_failures:
         problems.append(f"judge bozuk biçimbilim işaretledi: {morphology_failures}")
+    if relevance_mismatches:
+        problems.append(f"judge binary qrels ile anlaşmadı: {relevance_mismatches}")
     if verdict.get("length_or_style_artifact"):
         problems.append("judge uzunluk/üslup artefaktı buldu")
     if verdict.get("allomorph_treated_as_wrong"):

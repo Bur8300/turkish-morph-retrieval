@@ -1,4 +1,4 @@
-"""Freeze the human-approved 100/500 split and export private/public/BEIR views."""
+"""Freeze the automatically verified 100/500 split and export private/public/BEIR views."""
 
 from __future__ import annotations
 
@@ -85,7 +85,8 @@ def _export_beir(base: Path, items: list[dict], include_qrels: bool) -> list[Pat
         qrels.parent.mkdir(parents=True, exist_ok=True)
         qrels.write_text(
             "query-id\tcorpus-id\tscore\n" + "".join(
-                f"{item['family_id']}\t{item['gold_id']}\t1\n" for item in items
+                f"{item['family_id']}\t{candidate['id']}\t{candidate['relevance']}\n"
+                for item in items for candidate in item["candidates"]
             ),
             encoding="utf-8",
         )
@@ -142,38 +143,15 @@ def _critical_position_audit(items: list[dict]) -> tuple[dict[str, dict[str, int
 def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
     cfg = load_config(config_path, runtime=False)
     run = paths_for(run_id)
-    review_dir = run.root / "review"
-    status_rows = {row["family_id"]: row for row in read_jsonl(review_dir / "review_status.jsonl")}
-    private_pool = read_jsonl(review_dir / "review_pool_private.jsonl")
-    approved = []
-    for item in private_pool:
-        status = status_rows.get(item["family_id"], {})
-        if status.get("status") != "approved":
-            continue
-        ratings = [
-            summary.get("review", {}).get("family_naturalness")
-            for summary in status.get("reviewer_summaries", [])
-            if isinstance(summary.get("review", {}).get("family_naturalness"), int)
-        ]
-        human_mean = sum(ratings) / len(ratings) if ratings else 0.0
-        item["human_review"] = {
-            "n_completed": status.get("n_completed", 0),
-            "mean_naturalness": round(human_mean, 3),
-            "agreement_resolved": True,
-        }
-        item.setdefault("qc", {})["quality_score"] = round(
-            float(item.get("qc", {}).get("quality_score", 0.0)) + human_mean, 5
-        )
-        approved.append(item)
+    accepted = read_jsonl(run.accepted)
     selected = select_balanced(
-        approved,
+        accepted,
         cfg,
         {"development": cfg["targets"]["development"], "sealed_test": cfg["targets"]["sealed_test"]},
     )
     for item in selected:
         item["split"] = item.pop("target_split")
-        item["source_type"] = "llm_generated_human_verified"
-        item["human_review_status"] = "approved"
+        item["source_type"] = "llm_generated_auto_verified"
     dev = [item for item in selected if item["split"] == "development"]
     sealed = [item for item in selected if item["split"] == "sealed_test"]
     position_audit, position_problems = _critical_position_audit(selected)
@@ -198,8 +176,11 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
     _write_json(blind_path, _envelope(cfg, "sealed_test_blind", [_blind_item(item) for item in sealed]))
     _write_json(internal_path, _envelope(cfg, "sealed_test", sealed))
     _write_jsonl(qrels_path, [
-        {"query_id": item["family_id"], "corpus_id": item["gold_id"], "relevance": 1}
-        for item in sealed
+        {
+            "query_id": item["family_id"], "corpus_id": candidate["id"],
+            "relevance": candidate["relevance"],
+        }
+        for item in sealed for candidate in item["candidates"]
     ])
 
     beir_files = []
@@ -209,7 +190,8 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
     private_beir_qrels.parent.mkdir(parents=True, exist_ok=True)
     private_beir_qrels.write_text(
         "query-id\tcorpus-id\tscore\n" + "".join(
-            f"{item['family_id']}\t{item['gold_id']}\t1\n" for item in sealed
+            f"{item['family_id']}\t{candidate['id']}\t{candidate['relevance']}\n"
+            for item in sealed for candidate in item["candidates"]
         ), encoding="utf-8"
     )
 
@@ -240,7 +222,10 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
         "critical_sentence_position_audit": position_audit,
         "artifact_audit": artifacts,
         "files": {str(path.relative_to(run.root)): _sha256(path) for path in hashed_files},
-        "warning": "BEIR test qrels here contain only own-family gold. Full-corpus metrics require separately pooled human judgments; unjudged foreign documents are not negatives.",
+        "qrels_definition": (
+            "Her query için kendi family'sindeki gold=1 ve 10 generated negative=0. "
+            "Başka family belgeleri etiketlenmez; full-corpus sonuç yalnız tanısaldır."
+        ),
     }
     freeze_path = release / "freeze_manifest.json"
     _write_json(freeze_path, freeze_manifest)

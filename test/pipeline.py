@@ -222,6 +222,7 @@ def _process_slot(slot, cfg, generators, judge) -> tuple[str, dict[str, Any]]:
             "family": family,
             "judge_raw": judge_response.data,
         }
+    family["source_type"] = "llm_generated_llm_judged"
     return "accepted", family
 
 

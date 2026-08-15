@@ -10,9 +10,7 @@ from .config import load_config
 from .evaluation import load_items
 from .exports import finalize
 from .pipeline import default_run_id, generate, paths_for, read_jsonl, write_plan
-from .pooling import finalize_binary_qrels, load_pool_rows, pool_status
 from .preview import generate_codex_preview
-from .review import merge_reviews, prepare_review, review_file
 from .selftest import run as run_selftest
 from .validators import artifact_report, train_test_leakage_problems
 
@@ -47,17 +45,10 @@ def main() -> int:
     preview.add_argument("--model", default="gpt-5.6-sol")
     preview.add_argument("--reasoning-effort", default="medium")
 
-    review = sub.add_parser("prepare-review", help="beş reviewer için kör dosyalar hazırla")
-    review.add_argument("--run-id", required=True)
-    review.add_argument("--force", action="store_true")
-
-    merge = sub.add_parser("merge-reviews", help="review agreement/adjudication durumunu çıkar")
-    merge.add_argument("--run-id", required=True)
-
-    reviewer = sub.add_parser("review-file", help="bir reviewer assignment dosyasını interaktif doldur")
-    reviewer.add_argument("--path", required=True)
-
-    freeze = sub.add_parser("finalize", help="onaylı 100 dev + 500 sealed testi dondur")
+    freeze = sub.add_parser(
+        "finalize",
+        help="otomatik doğrulanmış 100 dev + 500 sealed testi dondur",
+    )
     freeze.add_argument("--run-id", required=True)
 
     audit = sub.add_parser("audit", help="accepted veya frozen internal veri üzerinde ucuz artefakt denetimi")
@@ -73,13 +64,6 @@ def main() -> int:
     morph.add_argument("--download-model", action="store_true")
     morph.add_argument("--use-gpu", action="store_true")
 
-    pool_check = sub.add_parser("pool-status", help="binary pooling şablonunun doluluk durumunu göster")
-    pool_check.add_argument("--input", required=True)
-
-    pool_final = sub.add_parser("pool-finalize", help="tamamlanmış 0/1 pool JSONL'ını qrels TSV'ye çevir")
-    pool_final.add_argument("--input", required=True)
-    pool_final.add_argument("--output", required=True)
-
     sub.add_parser("self-test", help="API kullanmadan regression testleri")
     args = parser.parse_args()
 
@@ -94,12 +78,6 @@ def main() -> int:
             args.run_id, args.count, args.batch_size, args.model,
             args.reasoning_effort, args.config,
         )
-    elif args.command == "prepare-review":
-        result = prepare_review(args.run_id, args.config, args.force)
-    elif args.command == "merge-reviews":
-        result = merge_reviews(args.run_id, args.config)
-    elif args.command == "review-file":
-        result = review_file(args.path)
     elif args.command == "finalize":
         result = finalize(args.run_id, args.config)
     elif args.command == "audit":
@@ -116,10 +94,6 @@ def main() -> int:
         result = run_morphology_audit(
             args.input, args.output, args.download_model, args.use_gpu
         )
-    elif args.command == "pool-status":
-        result = pool_status(load_pool_rows(args.input))
-    elif args.command == "pool-finalize":
-        result = finalize_binary_qrels(args.input, args.output)
     else:
         failures = run_selftest()
         if failures:

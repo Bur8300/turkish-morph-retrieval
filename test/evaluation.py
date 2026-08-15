@@ -13,7 +13,7 @@ from typing import Any
 from .taxonomy import MORPH_HARD_SUBTYPES, SEMANTIC_HARD_SUBTYPES
 from .validators import _bm25_scores, char_ngrams, jaccard, tokens
 
-EVALUATION_API_VERSION = "3.0"
+EVALUATION_API_VERSION = "3.1"
 
 
 def load_items(path: str | Path) -> list[dict[str, Any]]:
@@ -22,7 +22,13 @@ def load_items(path: str | Path) -> list[dict[str, Any]]:
 
 
 def closed_qrels(items: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
-    return {item["family_id"]: {item["gold_id"]: 1.0} for item in items}
+    return {
+        item["family_id"]: {
+            str(candidate_id): float(score)
+            for candidate_id, score in item.get("qrels", {item["gold_id"]: 1}).items()
+        }
+        for item in items
+    }
 
 
 def load_qrels(path: str | Path) -> dict[str, dict[str, float]]:
@@ -52,7 +58,7 @@ def validate_binary_qrels(qrels: dict[str, dict[str, float]], require_nonrelevan
     if not all(any(score == 1 for score in judgments.values()) for judgments in qrels.values()):
         raise ValueError("Her query için en az bir relevant=1 judgment gerekli")
     if require_nonrelevant and not any(score == 0 for score in values):
-        raise ValueError("Bu own-gold-only qrels görünüyor; pooled full-corpus qrels değil")
+        raise ValueError("Binary qrels içinde en az bir açık negative=0 etiketi gerekli")
 
 
 def evaluate_run(
@@ -330,137 +336,6 @@ def artifact_baseline_runs(
             order = sorted(range(len(ids)), key=lambda index: (-scores[index], ids[index]))
             runs[name][item["family_id"]] = [ids[index] for index in order]
     return dict(runs)
-
-
-def full_corpus_sparse_runs(items: list[dict[str, Any]]) -> dict[str, dict[str, list[str]]]:
-    """Rank the shared corpus with cached BM25, char-3gram and word-overlap features."""
-    documents = [candidate for item in items for candidate in item["candidates"]]
-    doc_ids = [candidate["id"] for candidate in documents]
-    doc_token_lists = [tokens(candidate["text"]) for candidate in documents]
-    doc_token_sets = [set(value) for value in doc_token_lists]
-    doc_term_frequencies = [Counter(value) for value in doc_token_lists]
-    doc_char3 = [char_ngrams(candidate["text"]) for candidate in documents]
-    document_frequency = Counter(term for terms in doc_token_sets for term in terms)
-    average_length = sum(map(len, doc_token_lists)) / max(1, len(doc_token_lists))
-    runs: dict[str, dict[str, list[str]]] = {"bm25": {}, "character_3gram": {}, "word_overlap": {}}
-
-    for item in items:
-        query_terms = tokens(item["query"])
-        query_term_set = set(query_terms)
-        query_char3 = char_ngrams(item["query"])
-        bm25_scores = []
-        for terms, frequencies in zip(doc_token_lists, doc_term_frequencies):
-            score = 0.0
-            for term in query_terms:
-                frequency = frequencies[term]
-                if not frequency:
-                    continue
-                df = document_frequency[term]
-                idf = math.log(1 + (len(doc_ids) - df + 0.5) / (df + 0.5))
-                score += idf * frequency * 2.2 / (
-                    frequency + 1.2 * (0.25 + 0.75 * len(terms) / max(1, average_length))
-                )
-            bm25_scores.append(score)
-        scores_by_system = {
-            "bm25": bm25_scores,
-            "character_3gram": [jaccard(query_char3, grams) for grams in doc_char3],
-            "word_overlap": [
-                len(query_term_set & terms) / max(1, len(query_term_set)) for terms in doc_token_sets
-            ],
-        }
-        for system, scores in scores_by_system.items():
-            order = sorted(range(len(doc_ids)), key=lambda index: (-scores[index], doc_ids[index]))
-            runs[system][item["family_id"]] = [doc_ids[index] for index in order]
-    return runs
-
-
-def rerank_union(
-    items: list[dict[str, Any]], system_runs: dict[str, dict[str, list[str]]], reranker,
-    input_depth: int = 50, output_depth: int = 100, batch_size: int = 32,
-) -> dict[str, list[str]]:
-    """Rerank the union of sparse/dense top results with a query-document cross encoder."""
-    document_text = {
-        candidate["id"]: candidate["text"] for item in items for candidate in item["candidates"]
-    }
-    run = {}
-    for item in items:
-        query_id = item["family_id"]
-        candidate_ids = sorted({
-            doc_id for system_run in system_runs.values()
-            for doc_id in system_run.get(query_id, [])[:input_depth]
-        })
-        pairs = [[item["query"], document_text[doc_id]] for doc_id in candidate_ids]
-        if hasattr(reranker, "compute_score"):
-            scores = reranker.compute_score(
-                pairs, batch_size=batch_size, max_length=512, normalize=True
-            )
-        else:
-            scores = reranker.predict(pairs, batch_size=batch_size)
-        if not isinstance(scores, (list, tuple)):
-            scores = scores.tolist()
-        ranking = sorted(
-            range(len(candidate_ids)), key=lambda index: (-float(scores[index]), candidate_ids[index])
-        )
-        run[query_id] = [candidate_ids[index] for index in ranking[:output_depth]]
-    return run
-
-
-def build_pool_rows(
-    items: list[dict[str, Any]],
-    system_runs: dict[str, dict[str, list[str]]],
-    depth: int = 20,
-    seed_closed_family_labels: bool = False,
-) -> list[dict[str, Any]]:
-    """Union top-k results; labels stay blind unless private closed-family seeding is requested."""
-    document_text = {
-        candidate["id"]: candidate["text"] for item in items for candidate in item["candidates"]
-    }
-    rows = []
-    for item in items:
-        query_id = item["family_id"]
-        membership: dict[str, list[dict[str, Any]]] = defaultdict(list)
-        for system, run in system_runs.items():
-            for rank, doc_id in enumerate(run.get(query_id, [])[:depth], start=1):
-                membership[doc_id].append({"system": system, "rank": rank})
-        for candidate in item["candidates"]:
-            membership.setdefault(candidate["id"], []).append(
-                {"system": "closed_family_inclusion", "rank": None}
-            )
-        ordered = sorted(
-            membership.items(),
-            key=lambda pair: (
-                min(
-                    (entry["rank"] for entry in pair[1] if entry["rank"] is not None),
-                    default=10**9,
-                ),
-                pair[0],
-            ),
-        )
-        for doc_id, systems in ordered:
-            rows.append({
-                "query_id": query_id,
-                "corpus_id": doc_id,
-                "query": item["query"],
-                "document": document_text[doc_id],
-                "systems": systems,
-                "min_rank": min(
-                    (entry["rank"] for entry in systems if entry["rank"] is not None),
-                    default=None,
-                ),
-                "relevance": (
-                    int(doc_id == item["gold_id"])
-                    if seed_closed_family_labels and any(
-                        candidate["id"] == doc_id for candidate in item["candidates"]
-                    )
-                    else None
-                ),
-                "judgment_source": (
-                    "closed_family_verified" if seed_closed_family_labels and any(
-                        candidate["id"] == doc_id for candidate in item["candidates"]
-                    ) else "unjudged"
-                ),
-            })
-    return rows
 
 
 def learn_gold_position(dev_items: list[dict[str, Any]]) -> int:

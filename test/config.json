@@ -1,12 +1,11 @@
 {
   "dataset_name": "turkish_morph_retrieval_test",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "seed": 20260814,
   "targets": {
     "development": 100,
     "sealed_test": 500,
-    "oversample_factor": 3.0,
-    "review_pool_factor": 1.25
+    "oversample_factor": 3.0
   },
   "candidate_counts": {
     "positive": 1,
@@ -42,17 +41,6 @@
     "max_abstract_template_reuse": 4,
     "judge_subtype_agreement_min": 0.90,
     "judge_naturalness_min": 4
-  },
-  "review": {
-    "reviewer_ids": [
-      "reviewer_1",
-      "reviewer_2",
-      "reviewer_3",
-      "reviewer_4",
-      "reviewer_5"
-    ],
-    "reviews_per_family": 2,
-    "calibration_fraction": 0.10
   },
   "generation": {
     "max_generation_attempts": 2,

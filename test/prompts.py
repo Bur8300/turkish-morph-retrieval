@@ -12,7 +12,7 @@ import random
 from .taxonomy import HARD_SUBTYPES
 
 
-PROMPT_VERSION = "test-prompts-3.2.0"
+PROMPT_VERSION = "test-prompts-3.2.1"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -180,7 +180,8 @@ Aşağıdaki family’yi etiketleri görmeden değerlendir.
 
 KURALLAR
 1. `answers_query`: sorguyu bütünüyle doğru yanıtlayan bütün aday kimlikleri. Kısmi aday ekleme.
-2. Her aday için relevance, 1–5 naturalness, morphology_ok ve inferred_type ver.
+2. Her aday için binary relevance (`relevant`/`not_relevant`), 1–5 naturalness,
+   morphology_ok ve inferred_type ver. Kısmi relevance kullanma.
 3. Olası inferred_type değerleri: positive, {', '.join(allowed)}, easy_negative, unclear.
 4. Bir hard aday dilbilgisel olarak bozuksa morphology_ok=false; bozukluk zorluk sayılamaz.
 5. Allomorph invariance hedefinde geçerli yüzey değişkesini yanlış sayma.

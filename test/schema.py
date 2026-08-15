@@ -108,7 +108,7 @@ JUDGE_SCHEMA = {
                     "additionalProperties": False,
                     "properties": {
                         "id": {"type": "string"},
-                        "relevance": {"type": "string", "enum": ["fully", "partially", "not_relevant"]},
+                        "relevance": {"type": "string", "enum": ["relevant", "not_relevant"]},
                         "naturalness": {"type": "integer", "minimum": 1, "maximum": 5},
                         "inferred_type": {"type": "string", "enum": JUDGE_TYPES},
                         "morphology_ok": {"type": "boolean"},

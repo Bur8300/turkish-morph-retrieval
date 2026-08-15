@@ -1,567 +1,264 @@
-# Turkish Morph Retrieval Test Pipeline — ayrıntılı açıklama
+# Turkish Morph Retrieval Test — v3.2.1
 
-Bu dizin, Türkçe retrieval modellerinin eklerin taşıdığı anlamı gerçekten ayırt edip etmediğini
-ölçen, insan denetimli test benchmark'ını üretir. Legacy train üretimi ve eski JSON verileri
-[`../train/`](../train/) altında kalır. Test generator'ı eski test cümlelerini few-shot örneği
-olarak kullanmaz.
+Bu dizin Türkçe encoder'ların küçük fakat anlam değiştiren morfolojik farkları ayırt edip
+etmediğini ölçen benchmark'ı üretir ve değerlendirir. Train sistemi [`../train/`](../train/)
+altında ayrıdır; test üretiminde eski JSON cümleleri few-shot örneği olarak kullanılmaz.
 
-Kısa kullanım ve veri özeti için [`README_SHORT.md`](README_SHORT.md) dosyasına bakın.
+## Veri tasarımı
 
-## 1. Benchmark neyi ölçüyor?
-
-Her **contrast family** tek bir query ve aynı bağlamda yazılmış 11 aday pasaj içerir:
-
-- 1 positive: query'nin anlamını ve hedef morfolojik özelliği doğru karşılar.
-- 8 hard negative: konu ve sözcük bakımından query'ye yakındır; küçük ama anlamlı bir
-  morfolojik/semantik fark nedeniyle yanlıştır.
-- 2 easy negative: açıkça ilgisizdir; temel retrieval davranışının da ölçülmesini sağlar.
-
-Ana iddia, modelin yalnız sözcük benzerliğine değil Türkçe morfolojik anlama duyarlı olup
-olmadığıdır. Benchmark tek başına genel amaçlı veya long-context retrieval benchmark'ı değildir.
-Genel retrieval yeteneği ayrıca pooled full-corpus ve harici Turkish-BEIR/TR-MTEB deneyleriyle
-raporlanmalıdır.
-
-## 2. Dondurulmuş veri tasarımı
-
-### Split ve aday sayıları
-
-| Bölüm | Development | Final/sealed test | Toplam |
+| Özellik | Development | Final test | Toplam |
 |---|---:|---:|---:|
 | Contrast family/query | 100 | 500 | 600 |
 | Aday/family | 11 | 11 | 11 |
 | Aday pasaj | 1.100 | 5.500 | 6.600 |
+| Strict minimal pair | 25 | 125 | 150 |
+| Generator A/B | 50/50 | 250/250 | 300/300 |
 
-Her family tam olarak `1 positive + 8 hard_negative + 2 easy_negative` içerir.
+Her family tam olarak şunları içerir:
 
-Tam 150 family (`25 development + 125 final`) ayrıca `strict_minimal_pair=true` taşır. Bu dilimde
-positive ve `hard_01` aynı lemma/cümle şablonunu korur; yalnız hedef eki taşıyan kritik sözcük
-değişir. Makinece doğrulanan `edit_script` değişen biçimi ve korunan alanları kaydeder. İki generator
-her splitte eşit tutulur: development'ta 50+50, finalde 250+250.
+- 1 query
+- 1 positive/gold
+- 8 hard negative
+- 2 easy negative
+- Otomatik binary qrels: gold `1`, diğer 10 aday `0`
 
-### Query ve pasaj uzunluğu
+Uzunluk dağılımı:
 
-Query ile aday pasaj uzunluğu ayrı planlanır:
+- Query: `%75` bir cümle, `%25` iki cümle.
+- Pasaj: `%30/%30/%30/%10` oranında 1/2/3/4 cümle.
+- Ortak bağlam cümleleri family içindeki 11 adayda aynıdır.
+- Yalnız kritik cümle değişir; kritik cümlenin pasaj konumu dengelenir.
 
-| Uzunluk | Development | Final test | Toplam |
-|---|---:|---:|---:|
-| 1 cümle query | 75 | 375 | 450 |
-| 2 cümle query | 25 | 125 | 150 |
-| 1 cümle pasaj | 30 | 150 | 180 |
-| 2 cümle pasaj | 30 | 150 | 180 |
-| 3 cümle pasaj | 30 | 150 | 180 |
-| 4 cümle pasaj | 10 | 50 | 60 |
+Generalizasyon dağılımı:
 
-Query iki cümle olduğunda ikinci cümle yeni bir bilgi ihtiyacı açmaz; ilk önermeyi doğal biçimde
-sınırlar. Dört cümlelik pasaj dilimi morfolojik sinyalin bağlam içinde seyrelmesine karşı bir
-robustness dilimidir; “long-context retrieval” iddiası için yeterli değildir.
+- `%40 standard`
+- `%20 lemma_holdout`
+- `%20 template_holdout`
+- `%20 composition_holdout`
+- Yaklaşık `%20` ek `domain_shift` etiketi
 
-### Generalizasyon dağılımı
+`development` model/ayar seçimi içindir. `sealed_test`, kararlar tamamlandıktan sonra yalnız final
+sonuç için kullanılır; kapalı tutulması gereken şey veri metni değil, model seçerken final gold
+sonuçlarına tekrar tekrar bakmamaktır.
 
-| Grup | Development | Final test | Toplam | Amaç |
-|---|---:|---:|---:|---|
-| `standard` | 40 | 200 | 240 | Normal test dağılımı |
-| `lemma_holdout` | 20 | 100 | 120 | Kritik lemma development/train'den ayrılır |
-| `template_holdout` | 20 | 100 | 120 | Soyut cümle kalıbı ayrılır |
-| `composition_holdout` | 20 | 100 | 120 | Ekler tek tek görülür, tam zincir testte tutulur |
+## Tek üretim akışı
 
-`domain_shift`, bu dört gruba rakip beşinci bir split değildir. Yaklaşık `%20` family'ye eklenen
-ortogonal bir analiz etiketidir. Domain/register birleşimlerinin sonuçları ayrıca raporlanabilir.
+```text
+config + taxonomy
+        ↓
+1.800 deterministic slot
+        ↓
+iki farklı LLM generator (900 + 900)
+        ↓
+strict JSON + deterministic QC
+        ↓
+generator'lardan farklı model ailesinden blind LLM judge
+        ↓
+geçen kayıtlardan dengeli 100 dev + 500 final seçim
+        ↓
+duplicate/leakage/artefakt kontrolü + otomatik qrels + freeze
+```
 
-## 3. Development ve sealed test neden ayrı?
+İki generator ve judge üç farklı model ailesinden olmalıdır. Legacy train Gemini ile üretildiği
+için `google/*` test generator/judge rollerinde varsayılan olarak yasaktır. Model, prompt, config,
+request hash, kullanım ve git commit bilgileri manifestte saklanır.
 
-`development` model seçmek, prompt/QC eşiklerini ayarlamak, değerlendirme kodunu hata ayıklamak ve
-ablation kararlarını vermek içindir. `sealed_test`, bu kararlar bittikten sonra yalnız nihai paper
-sonuçlarını ölçmek içindir.
+## Strict minimal pairs
 
-Sealed şu anlama gelmez: “Hiçbir insan veriyi görmeyecek.” Beş insan reviewer, family'leri gold ve
-rol etiketlerini görmeden kontrol edebilir. Sealed'ın anlamı şudur:
+600 family'sinin 150'sinde positive ile `hard_01`:
 
-- Model/prompt/eşik geliştiren kişi final-test gold sonuçlarına bakarak karar vermez.
-- İnsan düzeltmeleri tamamlanınca 500 family hash/manifest ile dondurulur.
-- Final test üzerinde tekrar tekrar model veya prompt seçilmez.
-- Yeni karar gerekiyorsa 100-family development kullanılır.
+- aynı kritik lemmayı,
+- aynı sözdizimsel şablonu,
+- aynı token sırasını ve olayı korur,
+- yalnız hedef eki veya ek zincirini taşıyan kritik sözcükte ayrışır.
 
-Tüm 600 family'yi tek test olarak kullanmak ilk skoru büyütür; fakat sonuç görüldükten sonra yapılan
-her model/prompt değişikliği test setine dolaylı tuning olur. Paper hedefi nedeniyle `100 dev + 500
-final` ayrımı korunur. İsim kafa karıştırıyorsa raporda `development` ve `final_test` denebilir;
-kodda `sealed_test` etiketi, yanlışlıkla tuning yapılmasını önleyen protokol adıdır.
+`edit_script`, positive biçimi, minimal-negative biçimi, değişen feature ve korunan alanları
+kaydeder. Validator iki kritik cümlenin sözcük iskeletini otomatik karşılaştırır.
 
-## 4. Bir family nasıl oluşturuluyor?
+## Fenomenler ve hard negatifler
 
-Generator 11 tam pasajı bağımsız yazmaz. Önce şu parçaları üretir:
+Kod 6 macro grup altında 65 hedef taşır: 51 single ve 14 composition/chain.
 
-- `query`: 1 veya 2 cümle.
-- `context_sentences`: pasaj uzunluğuna göre 0–3 ortak tam cümle.
-- Her aday için tek bir `critical_sentence`.
+- Hâl, konum ve yön
+- Çoğul, iyelik ve fiilde kişi-sayı uyumu (`V.AGR`)
+- Zaman, görünüş, kip ve kanıtsallık
+- Olumsuzluk, çatı ve valency
+- Ulaç, sıfat-fiil, türetim ve allomorph
+- Ek-zinciri composition
 
-Kod, kritik cümleyi planlanan `critical_sentence_position` konumuna yerleştirir. Ortak bağlam
-cümleleri bütün 11 adayda byte-identical kalır. Böylece doğru aday:
+Her family'deki altı çekirdek hard:
 
-- daha uzun olduğu için,
-- daha ayrıntılı olduğu için,
-- kritik bilgi hep ilk/son cümlede olduğu için
+1. `minimal_morph_negative`
+2. `same_lemma_wrong_inflection`
+3. `related_feature_negative`
+4. `same_morph_wrong_content`
+5. `state_participant_time_trap`
+6. `close_paraphrase_wrong_meaning`
 
-kolayca seçilemez. Adaylar arasındaki karar mümkün olduğunca yerel kritik cümlede kalır.
+Son iki hard fenomene göre seçilir:
 
-Örnek sadeleştirilmiş internal kayıt:
+- Hâl/fiil uyumu/çatı: `argument_role_reversal`, `morph_distractor`
+- Ad çoğulluğu/iyelik: `noun_possessor_number_trap`, `morph_distractor`
+- TAM/türetim: `scope_attachment_trap`, `morph_distractor`
+- Composition: `partial_chain_negative`, `scope_attachment_trap`
+- Allomorph: `allomorph_form_function_trap`, `morph_distractor`
+
+Geçerli allomorph negative değildir. Örneğin `-da/-de/-ta/-te` aynı bulunma işlevinin yüzey
+biçimleri olabilir; `şubesinde` ile `şubesinden` ise LOC/ABL anlam karşıtlığıdır.
+
+## Kayıt ve qrels yapısı
+
+Sadeleştirilmiş internal family:
 
 ```json
 {
-  "family_id": "family_raw_00042_xxxxxxxxxx",
-  "target_split": "sealed_test",
-  "generalization_bucket": "composition_holdout",
-  "objective": "composition",
-  "target_feature": "POSS.PL.ABL",
-  "query_sentence_count": 1,
-  "passage_sentence_count": 3,
-  "critical_sentence_position": 2,
-  "query": "Arkadaşlarımızdan biri yanlış otobüse bindi.",
-  "context_sentences": [
-    "Grup sabah havaalanında toplandı.",
-    "Rehber yolcuları çıkışta yeniden saydı."
-  ],
+  "family_id": "family_raw_00042_xxx",
+  "split": "sealed_test",
+  "query": "Ekip raporu zamanında tamamlamadı.",
+  "gold_id": "family_raw_00042_xxx_c03",
+  "qrels": {
+    "family_raw_00042_xxx_c01": 0,
+    "family_raw_00042_xxx_c02": 0,
+    "family_raw_00042_xxx_c03": 1
+  },
   "candidates": [
     {
-      "id": "family_raw_00042_xxxxxxxxxx_c01",
-      "candidate_slot": "positive_01",
+      "id": "family_raw_00042_xxx_c03",
       "role": "positive",
-      "subtype": "equivalence_positive",
-      "critical_sentence": "Bizim gruptaki arkadaşlarımızdan biri yanlış otobüse bindi.",
-      "text": "...kod tarafından birleştirilmiş tam pasaj...",
-      "critical_word": "arkadaşlarımızdan",
-      "morph_relation": "target_preserved",
-      "reason": "Hedef çoğul + iyelik + ayrılma zinciri korunuyor."
+      "relevance": 1,
+      "text": "Ekip raporu vaktinde bitirmedi."
     }
-  ],
-  "gold_id": "family_raw_00042_xxxxxxxxxx_c01",
-  "qc": {},
-  "provenance": {}
+  ]
 }
 ```
 
-`role`, `subtype`, `gold_id`, kritik sözcükler ve generator gerekçeleri private/internal görünümde
-kalır. Blind final-test görünümünde model yalnız query, aday ID'leri, aday metinleri ve izin verilen
-analiz metadata'sını görür.
+Qrels, retrieval cevap anahtarıdır: `query_id + candidate_id + relevance`.
 
-## 5. Hard-negative taksonomisi
+- `1`: query'yi karşılayan tek gold.
+- `0`: aynı family için üretilmiş ve LLM judge tarafından yanlış olduğu doğrulanmış negatif.
 
-Sekiz, family başına hard aday **sayısıdır**. Her morfolojik fenomene zorla aynı sekiz hata türü
-uygulanmaz. Taksonomide toplam 12 olası hard senaryo vardır.
+Bu qrels yalnız query'nin kendi 11 adayını etiketler. Başka family'lerin belgeleri otomatik `0`
+sayılmaz; tesadüfen ilgili olabilirler. Bu nedenle ortak 5.500-belge gold sırası notebook'ta
+korunur fakat yalnız tanısal stres testi olarak raporlanır. Ana paper sonucu kontrollü 11-aday
+contrast deneyidir.
 
-Her family'deki altı çekirdek senaryo:
+## Otomatik kalite kontrolleri
 
-1. `minimal_morph_negative`: yalnız hedef morfolojik karşıtlık yanlış.
-2. `same_lemma_wrong_inflection`: aynı kritik lemma, ilgili fakat yanlış çekim.
-3. `related_feature_negative`: hedefe komşu ikinci morfolojik özellik yanlış.
-4. `same_morph_wrong_content`: hedef morfoloji doğru, olay/nesne/referans yanlış.
-5. `state_participant_time_trap`: durum, katılımcı, kişi veya zaman yanlış.
-6. `close_paraphrase_wrong_meaning`: sözcüksel olarak yakın, temel önerme yanlış.
+Family düzeyi:
 
-Fenomene göre eklenen iki senaryo:
+- Tam `1 positive + 8 hard + 2 easy`
+- Eksiksiz ve benzersiz candidate slot/ID'leri
+- Query/pasaj için planlanan cümle sayısı
+- Kritik sözcüğün gerçekten metinde bulunması
+- Strict minimal-pair iskeleti ve `edit_script` uyumu
+- Allomorph/function ayrımı
+- Candidate uzunluk dengesi ve gold-length bias
+- Tek ve doğru gold qrels
+- Blind LLM judge ile benzersiz positive, doğallık, morfoloji ve subtype kontrolü
 
-| Family türü | Ek iki hard senaryo |
-|---|---|
-| Hâl, fiil uyumu ve çatı | `argument_role_reversal`, `morph_distractor` |
-| Ad çoğulluğu ve iyelik | `noun_possessor_number_trap`, `morph_distractor` |
-| TAM ve türetim | `scope_attachment_trap`, `morph_distractor` |
-| Ek zinciri/composition | `partial_chain_negative`, `scope_attachment_trap` |
-| Allomorph invariance | `allomorph_form_function_trap`, `morph_distractor` |
+Corpus/freeze düzeyi:
 
-Bozuk Türkçe, imkânsız ek dizisi veya anlamsız cümle hard negative değildir; bunlar ucuz
-dilbilgisi ipucu olur ve family reddedilir.
+- Exact ve fuzzy query tekrarları
+- Cross-family candidate tekrarları
+- Cross-family query–candidate yakın kopyaları
+- Aşırı kullanılan soyut cümle şablonları
+- Generator'a göre tekrarlanan başlangıç kalıpları
+- Lemma/template/composition/domain leakage
+- Candidate ve kritik-cümle konum bias'ı
+- Train üretildikten sonra exact/fuzzy train–test leakage
 
-### Allomorph ile anlam karşıtlığı
+Opsiyonel [Stanza](https://stanfordnlp.github.io/stanza/pipeline.html) audit'i kritik lemma ve UD
+`UFeats` bilgisini kontrol eder. Bu gerçek morfem segmentasyonu değildir; audit uyarıları otomatik
+gold değiştirmez.
 
-`-da/-de/-ta/-te` gibi aynı işlevin geçerli yüzey biçimleri anlamı koruyabilir ve negative
-olamaz. Buna karşılık `şubesinde` (LOC) ile `şubesinden` (ABL), birbirinin allomorphu değildir;
-farklı hâl ve anlam taşır. Kod `allomorph_invariance` ile `morpheme_sensitivity` objective'lerini
-ayrı tutar ve geçerli allomorphu negatif yapan family'yi engeller.
+## Evaluation
 
-### Tam morfolojik fenomen kataloğu
+Ana metrikler:
 
-Kodda toplam **65 hedef fenomen** bulunur: 51 single-layer fenomen ve 14 composition/chain.
+- `Recall@1/5/10`, `MRR@10`, `nDCG@10`, `MAP@10`
+- `hard_only_recall@1/5`, `hard_only_mrr@10`, `hard_only_ndcg@10`
+- `pairwise_hard_accuracy`
+- `pairwise_morph_hard_accuracy`
+- `pairwise_semantic_hard_accuracy`
+- `all_hard_family_consistency`
+- `minimal_margin`, `hardest_hard_margin`, `hardest_negative_margin`
 
-- **Olumsuzluk, çatı ve valency (7):** `NEG` olumsuzluk, `ABIL` yeterlilik, `NEG.ABIL`
-  yetersizlik, `CAUS` ettirgen, `PASS` edilgen, `REFL` dönüşlü, `RECP` işteş.
-- **Zaman, görünüş, kip ve kanıtsallık (10):** `PST` görülen geçmiş, `PRF.EVID` duyulan
-  geçmiş/kanıtsallık, `PRS.PROG` şimdiki zaman, `FUT` gelecek, `AOR` geniş zaman, `NEC`
-  gereklilik, `OPT` istek, `IMP.3` üçüncü kişi emir, `COND` koşul, `PRSM` tahmin/kesinlik.
-- **Hâl, konum ve yön (7):** `ACC` belirtme, `DAT` yönelme, `LOC` bulunma, `ABL` ayrılma,
-  `INS` vasıta/birliktelik, `GEN` ilgi, `EQU` eşitlik hâli.
-- **Çoğul, fiil uyumu, kişi ve iyelik (8):** `PL`, `V.AGR`, `POSS.1SG`, `POSS.2SG`, `POSS.3SG`, `POSS.1PL`,
-  `POSS.2PL`, `POSS.3PL`.
-- **Ulaç, sıfat-fiil, türetim ve allomorph (19):** `CVB.WHEN` -ince, `CVB.BY` -erek,
-  `CVB.AND` -ip, `CVB.WITHOUT` -meden, `CVB.ASLONG` -dikçe, `CVB.WHILE` -ken,
-  `NMLZ.MEK` -mek adlaştırması, `PTCP.SUBJ` özne sıfat-fiili, `PTCP.FUT` gelecek
-  sıfat-fiili, `PRIV` yoksunluk, `PROP` varlık/bulunma, `REL.KI` aitlik -ki, `AGT`
-  meslek/uğraş, `ABST` soyutlama, `DISTR` üleştirme, `ALLO.LOC`, `ALLO.ABL`, `ALLO.DAT`,
-  `ALLO.ACC`.
-- **Ek-zinciri composition (14):** `NEG.AOR`, `PLUPRF`, `PST.PROG`, `FUT.PST`, `CNTR`,
-  `NMLZ.DIK`, `PL.POSS.CASE`, `CAUS.PASS.NEG`, `EVID.COND.NEG`, `NMLZ.CASE.CNTR`,
-  `TENSE.PERS.NEG`, `EVID.POSS.NEG`, `RECP.CAUS`, `POSS.PL.ABL`.
+Artefakt kontrolleri:
 
-Objective dağılımı katalog düzeyinde 47 `morpheme_sensitivity`, 4 `allomorph_invariance` ve
-14 `composition` seçeneğidir.
+- Longest candidate / most tokens / candidate position
+- Character 3-gram / word overlap / BM25
+- Query'siz candidate-only char-TFIDF
+- Kritik sözcük silme
+- `prefix5` suffix-reduction kontrolü; gerçek lemma/kök analizi değildir
 
-## 6. Uçtan uca ana üretim akışı
+İstatistikler query-level bootstrap `%95 CI`, paired bootstrap, approximate randomization,
+McNemar, Holm düzeltmesi ve slice sonuçlarını içerir. Tekil 65 fenomen küçük örnekli tanısal
+tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyindedir.
 
-Ana paper pipeline şu sırayla çalışır:
-
-1. **Config doğrulama:** Hedef sayılar, dağılımlar, model aileleri ve reviewer sayısı kontrol edilir.
-2. **Deterministic plan:** Seed ile 1.800 ham slot hazırlanır. Prefix-stable plan aynı config/seed ile
-   yeniden üretilebilir.
-3. **LLM generation:** İki farklı model ailesi slotları tam yarı yarıya paylaşır; query, ortak
-   bağlam ve 11 kritik cümleyi strict JSON schema ile üretir.
-4. **Normalize/assemble:** Kod aday ID'lerini nötr biçimde karıştırır ve tam pasajları birleştirir.
-5. **Deterministic QC:** Rol/slot sayıları, cümle sayısı, kritik sözcük, allomorph, uzunluk bias'ı,
-   tekrar ve şema hataları kontrol edilir. Başarısız family en fazla bir kez yeniden yazdırılır.
-6. **Blind LLM judge:** Generator'dan farklı model ailesi, etiketleri görmeden family'yi değerlendirir.
-7. **Oversampling/select:** Geçen ham havuzdan dengeli 750 family insan review'una seçilir.
-8. **Blind human review:** Normal family'yi iki reviewer; `%10` kalibrasyon family'sini beş reviewer
-   değerlendirir. Anlaşmazlıklar adjudication'a gider.
-9. **Final selection:** İnsan onaylı havuzdan dağılımı koruyan 100 dev + 500 final seçilir.
-10. **Freeze/export:** Leakage, yakın-kopya, aday pozisyonu, kritik-cümle konumu ve artefakt
-    kontrolleri geçerse JSON/BEIR/qrels dosyaları hash manifestiyle dondurulur.
-
-Ana üretimde iki generator ve judge üç farklı model ailesinden olmalıdır. Legacy train Gemini ile
-üretildiği için varsayılan test config'i `google/*` model ailesini de bu üç rol için reddeder.
-
-## 7. LLM-as-a-judge tam olarak neye karar veriyor?
-
-Judge'a gösterilenler:
-
-- Query.
-- Hedef morfolojik feature, objective ve layer.
-- Nötr sırada yalnız aday ID + tam aday metni.
-
-Judge'a **gösterilmeyenler**:
-
-- Hangi adayın positive/hard/easy olduğu.
-- Gold ID.
-- Generator'ın subtype etiketi, gerekçesi ve candidate slotu.
-
-Judge şu kararları verir:
-
-1. Query'yi bütünüyle karşılayan bütün aday ID'leri hangileri?
-2. Her aday `fully`, `partially` veya `not_relevant` mı?
-3. Her aday doğal Türkçe mi (`naturalness` 1–5)?
-4. Biçimbilim ve ek zinciri dilbilgisel olarak geçerli mi?
-5. Adayın gözlenen hata türü intended subtype ile uyumlu mu?
-6. Geçerli allomorph yanlışlıkla negatif yapılmış mı?
-7. Uzunluk, üslup veya ayrıntı gold'u ele veriyor mu?
-8. Family'nin genel doğallığı yeterli mi?
-
-Otomatik kabul için mevcut kod:
-
-- Judge'ın relevant kümesi tam olarak tek gold olmalı.
-- Subtype agreement en az `0.90` olmalı.
-- `morphology_ok=false` aday bulunmamalı.
-- Allomorph veya uzunluk/üslup artefaktı uyarısı olmamalı.
-- Family naturalness en az `4/5` olmalı.
-
-Dolayısıyla judge yalnız hard/easy etiketini kontrol etmez; positive'ın benzersizliğini, bütün
-negatiflerin gerçekten negatif olmasını, doğallığı, biçimbilimi ve artefaktları birlikte denetler.
-
-### Birden fazla LLM judge kullanmak
-
-Paper sürümü için birden fazla judge faydalıdır; fakat aynı modelin üç kez çalıştırılması bağımsız
-kanıt sayılmaz. Önerilen gelecek tasarım:
-
-- Generator'dan farklı en az iki judge model ailesi.
-- Judge A: relevance ve tek-gold kararı.
-- Judge B: Türkçe biçimbilim, allomorph ve ek-zinciri denetimi.
-- İstenirse Judge C: doğallık ve artefakt denetimi.
-- Tüm judge'lar aynı blind aday görünümünü alır; birbirlerinin kararını görmez.
-- Hepsi tek gold ve geçerli morphology üzerinde anlaşırsa family insan havuzuna geçer.
-- Herhangi bir anlaşmazlık otomatik çoğunlukla bastırılmaz; insan review/adjudication'a gider.
-- Model kimliği, prompt sürümü, request hash'i ve ham kararlar saklanır.
-
-Bu repository'de şu anda **tek bağımsız LLM judge + insan reviewer sistemi** uygulanmıştır.
-Multi-judge ensemble yukarıdaki biçimde planlanan sonraki geliştirmedir.
-
-## 8. İnsan review protokolü
-
-Beş reviewer tanımlıdır. Normal family başına iki bağımsız review atanır; toplam review havuzunun
-`%10` kalibrasyon dilimini beş reviewer da görür. Reviewer aday rollerini ve gold'u görmez; aday
-sırası reviewer'a özel deterministik olarak karıştırılır.
-
-Reviewer şunları işaretler:
-
-- Tam doğru/relevant aday ID'leri.
-- Doğal olmayan adaylar.
-- Biçimbilim sorunu olan adaylar.
-- Family doğallığı 1–5.
-- Uzunluk/üslup artefaktı.
-- `approve` veya `reject` ve opsiyonel not.
-
-Family ancak reviewer'ın seçtiği relevant kümesi tek gold ise, doğallık en az 4 ise, bozuk aday ve
-artefakt yoksa otomatik review-pass alır. İki reviewer anlaşmazsa üçüncü adjudication kararı gerekir.
-
-## 9. Provider'lar ve iki ayrı üretim modu
-
-### Paper ana üretimi: OpenRouter
-
-Ana `generate` komutu üç farklı model ailesi kullanır: iki eşit generator ve bir blind judge.
+## Komutlar
 
 ```bash
+# API'siz regresyon testi ve plan
+python3 -m test self-test
+python3 -m test plan --run-id test_v32
+
+# İki generator + bağımsız blind judge
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
 python3 -m test generate --run-id test_v32
-```
 
-Bu mod deterministic QC + bağımsız judge çalıştırır ve paper veri hattına girebilir.
-
-### API key'siz Codex preview
-
-Yerelde ChatGPT ile oturum açmış Codex CLI varsa GPT-5.6 Sol ile küçük preview üretilebilir:
-
-```bash
-codex login status
-python3 -m test preview-codex \
-  --run-id sol_preview_20_v31 \
-  --count 20 \
-  --batch-size 10 \
-  --model gpt-5.6-sol \
-  --reasoning-effort medium
-```
-
-Bu yol API key istemez; ChatGPT/Codex kullanım kotasını kullanır. Çıktı strict schema ve bütün
-deterministic QC kapılarından geçer. Ancak generator ve değerlendiren aynı Codex sistemi olacağı
-için bağımsız LLM judge çalıştırılmaz. Bu nedenle çıktılar `preview_only=true` ve
-`codex_cli_preview_unjudged` olarak işaretlenir; doğrudan benchmark'a dondurulamaz.
-
-## 10. Komutlar
-
-Repo kökünden çalıştırın:
-
-```bash
-# API kullanmadan config/plan/QC regression testleri
-python3 -m test self-test
-
-# API çağırmadan 1.800-slot planı yaz
-python3 -m test plan --run-id test_v32
-
-# Küçük OpenRouter pilotu
-python3 -m test generate --run-id test_v32_pilot --limit 30
-
-# Tam ham üretim; JSONL checkpoint ve cache ile devam edebilir
-python3 -m test generate --run-id test_v32
-
-# 750 family'yi beş reviewera dağıt
-python3 -m test prepare-review --run-id test_v32
-
-# Bir reviewer dosyasını interaktif doldur
-python3 -m test review-file \
-  --path test/runs/test_v32/review/assignments/reviewer_1.jsonl
-
-# Agreement ve adjudication durumu
-python3 -m test merge-reviews --run-id test_v32
-
-# Bütün anlaşmazlıklar çözüldükten sonra freeze
+# Geçen kayıtlardan otomatik 100/500 freeze + qrels export
 python3 -m test finalize --run-id test_v32
+
+# Train üretildikten sonra leakage audit
+python3 -m test audit-leakage --test TEST.json --train TRAIN.json
+
+# Opsiyonel lemma/UFeats audit
+python3 -m test morph-audit --input TEST.json --output morph_audit.json --download-model
+
+# API key'siz yalnız preview
+python3 -m test preview-codex --run-id sol_preview_20_v32 --count 20 \
+  --batch-size 10 --model gpt-5.6-sol --reasoning-effort medium
 ```
 
-Run kimliğiyle yeniden başlatma; aynı plan/config/prompt/model hash'leri değişmediyse mevcut JSONL
-checkpoint ve request cache'inden devam eder. Aynı run ID altında model/config karıştırılması
-engellenir.
+Codex preview deterministic QC ve otomatik qrels içerir fakat bağımsız LLM judge çalıştırmaz;
+paper verisine dondurulmaz.
 
-## 11. Modüller ne yapıyor?
+## Ana dosyalar
 
-| Dosya | Sorumluluk |
+| Dosya | Görev |
 |---|---|
-| `config.json` | Sayılar, dağılımlar, kalite eşikleri, reviewer ve provider ayarları |
-| `config.py` | Config/env çözümleme ve güvenlik doğrulaması |
-| `taxonomy.py` | Türkçe feature kataloğu, macro/layer yapısı, domain/template ve hard profilleri |
-| `planner.py` | Seed'li, prefix-stable ham slot planı ve holdout politikaları |
-| `schema.py` | Generator ve judge strict JSON Schema sözleşmeleri |
-| `prompts.py` | Zero-shot generator, repair ve blind judge promptları |
-| `providers.py` | OpenRouter JSON çağrısı ve API key'siz yerel Codex CLI preview provider'ı |
-| `pipeline.py` | Plan → generate → repair → deterministic QC → judge → checkpoint akışı |
-| `preview.py` | GPT-5.6 Sol ile preview-only batch üretimi ve blind/internal export |
-| `validators.py` | Cümle, rol, slot, allomorph, uzunluk, duplicate, judge ve artefakt kapıları |
-| `selection.py` | Bucket × query/pasaj dağılımını ve kritik-cümle konumunu dengeli seçme |
-| `review.py` | Beş reviewer assignment'ı, interaktif checkpoint, agreement ve adjudication |
-| `exports.py` | 100/500 freeze, leakage/artefakt kontrolü, private/public/BEIR/qrels export |
-| `evaluation.py` | Retrieval metrikleri, ucuz baseline'lar, ablation ve istatistiksel testler |
-| `morphology.py` | Opsiyonel Stanza lemma ve UD UFeats denetimi; morfem segmentasyonu iddiası yapmaz |
-| `pooling.py` | `null/0/1` pooling şablonunu doğrulayıp binary qrels TSV üretme |
-| `selftest.py` | API'siz regression testleri ve kasıtlı hata fixture'ları |
-| `notebooks/morph_baseline_eval_preview20_colab.ipynb` | 20-family hızlı pilot: Recall@1, 11/220 aday gold sırası, temel metrikler ve ayrıntılı aday sıralaması |
-| `notebooks/morph_baseline_eval_600_colab.ipynb` | 100 dev + 500 final paper Colab'ı: cache, full-corpus pooling, CI/test/slice/ablation/hata analizi |
-| `notebooks/morph_baseline_eval_colab.ipynb` | Önceki encoder/baseline notebook'u; karşılaştırma için korunur |
+| `config.json` | Sayılar, dağılımlar, eşikler ve modeller |
+| `taxonomy.py` | Fenomen ve hard-negative kataloğu |
+| `planner.py` | 1.800 dengeli slot ve iki-generator ataması |
+| `schema.py`, `prompts.py` | Strict üretim/judge sözleşmesi |
+| `pipeline.py` | Generate → QC → LLM judge → checkpoint |
+| `validators.py` | Family/corpus/duplicate/leakage kontrolleri ve qrels |
+| `selection.py` | Otomatik 100/500 dengeli seçim |
+| `exports.py` | Freeze, blind/internal JSON, BEIR ve qrels |
+| `morphology.py` | Opsiyonel Stanza audit'i |
+| `evaluation.py` | Metrikler, baseline, ablation ve istatistik |
+| `notebooks/morph_baseline_eval_preview20_colab.ipynb` | 20-family hızlı test |
+| `notebooks/morph_baseline_eval_600_colab.ipynb` | 100 dev + 500 final paper değerlendirmesi |
 
-## 12. Deterministic kalite kapıları
-
-Başlıca family-level kontroller:
-
-- Tam 11 aday ve doğru `1/8/2` rol dağılımı.
-- `positive_01`, `hard_01..08`, `easy_01..02` slotlarının eksiksiz ve benzersiz olması.
-- Family feature'ına atanmış uyarlanabilir sekiz hard subtype'ın birebir bulunması.
-- Strict dilimde positive/hard_01 cümle iskeletinin aynı, yalnız kritik biçimin farklı olması ve
-  `edit_script` kaydının metinle uyuşması.
-- Query ve pasajların planlanan tam cümle sayısına uyması.
-- Her `critical_sentence` ve ortak context parçasının tek tam cümle olması.
-- Kritik sözcüklerin gerçekten query/critical sentence içinde bulunması.
-- Positive'ın doğru morph relation taşıması.
-- Geçerli allomorphun hiçbir negatifte eşdeğer diye kullanılmaması.
-- Adayların birebir tekrar etmemesi.
-- Candidate token uzunluk oranı ve gold/median uzunluk bias sınırları.
-- Soru/meta-arama dili (`kaydı bul`, `arıyorum`) kullanılmaması.
-
-Corpus/freeze düzeyinde ayrıca exact/near query ve candidate kopyaları, cross-family
-query-candidate kopyaları, soyut kritik şablon tekrarı, generator başlangıç kalıpları,
-lemma/template/composition/domain leakage, candidate-position bias, kritik-cümle-position bias ve
-longest-gold oranı kontrol edilir. Gelecekteki train JSON'u için `audit-leakage` exact + fuzzy
-train/test taraması yapar.
-
-## 13. Çıktı dizinleri
-
-Ana run:
+Freeze çıktıları:
 
 ```text
 test/runs/<run_id>/
 ├── plan.json
-├── run_manifest.json
 ├── accepted.jsonl
 ├── rejected.jsonl
-├── failures.jsonl
-├── cache/
-├── review/
-│   ├── review_pool_private.jsonl
-│   ├── assignments/
-│   ├── review_status.jsonl
-│   └── adjudication.jsonl
+├── generation_report.json
 ├── release/
-│   ├── morph_dev_v3.2.0.json
-│   ├── morph_test_blind_v3.2.0.json
+│   ├── morph_dev_v3.2.1.json
+│   ├── morph_test_blind_v3.2.1.json
 │   ├── artifact_audit.json
-│   ├── freeze_manifest.json
-│   └── beir/
+│   └── freeze_manifest.json
 └── private/
-    ├── morph_test_internal_v3.2.0.json
+    ├── morph_test_internal_v3.2.1.json
     ├── private_qrels.jsonl
     ├── beir_test_qrels.tsv
     └── train_exclusion_holdouts.json
 ```
-
-Codex preview:
-
-```text
-test/previews/<run_id>/
-├── accepted.jsonl
-├── rejected.jsonl
-├── preview_internal.json
-├── preview_blind.json
-├── preview_review.md
-├── artifact_audit.json
-├── manifest.json
-└── cache/
-```
-
-`preview_internal.json` roller/gold/subtype içerir; `preview_blind.json` insanın etiketsiz biçimde
-örneklere bakması içindir. `preview_review.md`, aynı kör görünümün doğrudan okunabilen Markdown
-sürümüdür.
-
-## 14. Evaluation katmanları
-
-### Closed-family contrast
-
-Her query yalnız kendi 11 adayı arasında değerlendirilir. Ana sonuçlar:
-
-- `hard_only_recall@1/5`, `hard_only_mrr@10`, `hard_only_ndcg@10`: gold, 8 hard arasındaki sıralamada nerede?
-- `pairwise_hard_accuracy`: gold, sekiz hard negatifin ne kadarını skor olarak geçiyor?
-- `pairwise_morph_hard_accuracy` ve `pairwise_semantic_hard_accuracy`: başarının morfolojik
-  hard'lardan mı semantik hard'lardan mı geldiğini ayırır.
-- `morph_hard_family_consistency`, `semantic_hard_family_consistency` ve
-  `all_hard_family_consistency`: gold ilgili grubun bütün negatiflerini aynı family'de geçiyor mu?
-- `contrast_consistency`: gold özellikle minimal morfolojik karşıtın üstünde mi?
-- `minimal_margin`, `hardest_hard_margin`, `hardest_negative_margin`: karar güvenliği ne kadar?
-- `Recall@1/5/10/100`, `MRR@10`, `nDCG@10`, `MAP@10` ve ortalama/medyan gold sırası.
-
-Tek relevant belge bulunan closed-family düzende `MAP@10`, `MRR@10` ile aynıdır. `Recall@100`
-11 adaylık deneyde doygundur; asıl full-corpus raporunda anlam taşır.
-
-### Full-corpus retrieval
-
-Final testte 500 query ve 5.500 aday doküman ortak corpus'a konabilir. Fakat başka family'nin
-dokümanı tesadüfen relevant olabilir. Bu nedenle yalnız own-family gold qrels'iyle full-corpus
-metrik raporlanmaz. BM25, char n-gram, dense encoder ve reranker top sonuçları pool edilir; yabancı
-query-document çiftleri insanlarca yargılanır. Yargılanmamış doküman otomatik negatif değildir.
-
-`qrels` (**query relevance judgments**) retrieval cevap anahtarıdır. Her satır
-`query-id, corpus-id, score` taşır. Bu sürümde binary tanım kullanılır:
-
-- `1`: belge query'yi karşılıyor.
-- `0`: belge incelendi ve karşılamıyor.
-- Pool JSONL'ındaki `null`: henüz yargılanmadı; qrels'e yazılmaz ve `0` değildir.
-
-Notebook'un kör pooling şablonu bütün label alanlarını `null` bırakır. Private bir akışta
-`seed_closed_family_labels=True` seçilirse kendi family'sindeki doğrulanmış gold `1`, on kendi
-negatif `0` ile başlatılabilir; bu kopya kör değerlendirene verilmez. Bütün pool satırları 0/1
-olduğunda `pool-finalize` TSV qrels üretir. Resmî hesapta unjudged belgeler atılarak condensed
-ranking kullanılır; `bpref` ve
-`judged@1/5/10/100` kapsam göstergeleri de raporlanır.
-
-600-family notebook ortak corpus sıralamasını encoder embedding'leri üretilirken aynı geçişte hesaplar.
-Binary pooled qrels yokken yalnız açıkça etiketlenmiş `known-gold diagnostic` tabloyu ve BM25 +
-character 3-gram + word overlap + dense encoder + BGE reranker top-20 birleşiminden
-`pooling_judgment_template.jsonl`
-dosyasını üretir. Pooled insan qrels'i eklendiğinde resmi full-corpus Recall/MRR/nDCG/MAP tablosu
-aynı notebook'ta otomatik açılır.
-
-### Artefakt ve ablation
-
-`evaluation.py` ve notebook şu ucuz baseline/ablation'ları destekler:
-
-- Longest candidate ve most tokens.
-- Candidate position.
-- Character 3-gram, word overlap ve BM25.
-- Query'siz candidate-only char-TFIDF classifier.
-- Kritik sözcüğü silme.
-- Her tokenı ilk beş karaktere indirgeme (`prefix5`); bu gerçek kök/lemma analizi değil,
-  ek bilgisini azaltan ucuz bir kontrol deneyidir.
-
-İstatistiksel raporlama query-level bootstrap `%95 CI`, paired bootstrap, approximate randomization,
-McNemar, Holm düzeltmesi ve query/pasaj/layer/objective/generalization slice sonuçlarını içerir.
-
-### Yeni audit/pooling komutları
-
-```bash
-# Test ile ileride üretilecek train arasında exact/fuzzy kopya taraması
-python3 -m test audit-leakage --test TEST.json --train TRAIN.json
-
-# Opsiyonel gerçek lemma + UD morphology feature audit'i
-python3 -m test morph-audit --input TEST.json --output morph_audit.json --download-model
-
-# Pool'da kaç null/0/1 var?
-python3 -m test pool-status --input pooling_judgment_template.jsonl
-
-# Null kalmayınca binary qrels üret
-python3 -m test pool-finalize --input pooling_judgment_template.jsonl \
-  --output pooled_binary_qrels.tsv
-```
-
-Stanza audit'i kritik lemmanın çözümlemesini, supported hedeflerde UD `UFeats` işaretlerini ve
-strict çiftte aynı lemma/farklı feature beklentisini denetler. Bu, gerçek morfem segmentasyonu veya
-morfem sayımı değildir; uyarıları otomatik gold değişikliğine değil inceleme kuyruğuna yollar.
-Uygulama [Stanza lemma/POS processor belgelerini](https://stanfordnlp.github.io/stanza/pipeline.html)
-ve pooling reranker'ı için resmi
-[BAAI/bge-reranker-v2-m3 model kartını](https://huggingface.co/BAAI/bge-reranker-v2-m3) izler.
-
-## 15. Reproducibility ve paper kuralları
-
-Her run manifestinde dataset/prompt sürümü, config ve plan SHA-256, kaynak dosya hash'leri, model
-kimlikleri, request hash'leri, token/çalışma bilgisi ve başlangıç git commit'i tutulur. Freeze
-manifesti yayımlanan her dosyanın SHA-256 değerini kaydeder.
-
-Paper için zorunlu ayrımlar:
-
-- Codex preview ile bağımsız-judge + insan-onaylı final veri karıştırılmaz.
-- Development üzerinde yapılan bütün kararlar kaydedilir.
-- Final test yalnız kararlar dondurulduktan sonra çalıştırılır.
-- LLM judge insan review'un yerine geçmez; yalnız pahalı insan havuzuna girecek family'leri süzer.
-- Train generator, `train_exclusion_holdouts.json` içindeki final-test lemma/template/zincir/domain
-  ve metin hash'lerini dışlar.
-- Closed-family ve pooled full-corpus sonuçları iki ayrı deney olarak raporlanır.

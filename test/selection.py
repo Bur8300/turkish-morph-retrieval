@@ -1,4 +1,4 @@
-"""Deterministic balanced selection for the review pool and frozen 600-family release."""
+"""Deterministic balanced selection for the frozen 600-family release."""
 
 from __future__ import annotations
 

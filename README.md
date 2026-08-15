@@ -6,12 +6,11 @@ araştırma projesi. Repo artık veri yaşam döngüsünü iki bağımsız parç
 | Dizin | Amaç |
 |---|---|
 | [`train/`](train/) | Eski Gemini train/dev generator'ı, model-selection araçları ve v2.0–v2.2 JSON geçmişi. Bu bölüm korunmuş legacy sistemdir. |
-| [`test/`](test/) | Yeni paper-grade test generator'ı: 100 development + 500 sealed test, iki generator, farklı-model judge, otomatik QC ve freeze/export. |
+| [`test/`](test/) | 100 development + 500 final test; iki generator, bağımsız LLM judge, otomatik QC/qrels/freeze. |
 | [`test/notebooks/morph_baseline_eval_preview20_colab.ipynb`](test/notebooks/morph_baseline_eval_preview20_colab.ipynb) | 20-family hızlı pilot: Recall@1, 11/220 aday gold sırası ve temel metrikler. |
 | [`test/notebooks/morph_baseline_eval_600_colab.ipynb`](test/notebooks/morph_baseline_eval_600_colab.ipynb) | 100 development + 500 final için eksiksiz paper değerlendirmesi. |
-| [`test/notebooks/morph_baseline_eval_colab.ipynb`](test/notebooks/morph_baseline_eval_colab.ipynb) | Önceki baseline notebook'u; karşılaştırma amacıyla korunur. |
 
-Eski, iki insan turundan geçmiş 50-family JSON ve önceki reviewer sürümü
+Eski 50-family JSON ve önceki veri sürümü
 [`train/legacy_test_data/`](train/legacy_test_data/) altında provenance amacıyla saklanır. Yeni test
 generator'ı bu metinleri few-shot olarak kullanmaz.
 
@@ -25,14 +24,11 @@ generator'ı bu metinleri few-shot olarak kullanmaz.
 - Standard, lemma-holdout, template-holdout ve compositional-holdout dilimleri.
 - Allomorph invariance ile anlam değiştiren morfem karşıtlığı ayrı objective'lerdir.
 - 150 strict minimal-pair family; iki generator finalde 300+300 dengelenir.
-- 3× ham üretim → deterministic QC → farklı model ailesinden kör judge → 750-family insan review
-  havuzu → 100/500 dengeli seçim → hash/manifest ile freeze.
-- Beş reviewer; normal family başına iki bağımsız karar, %10 ortak kalibrasyon ve anlaşmazlıklarda
-  adjudication.
-- Test qrels'i private kalır. Full-corpus evaluation için yabancı family dokümanları ayrıca
-  pool edilip insanlarca yargılanmadan “negatif” kabul edilmez.
+- 3× ham üretim → deterministic QC → farklı model ailesinden blind judge → otomatik 100/500
+  dengeli seçim → hash/manifest ile freeze.
+- Qrels family oluşturulurken hazırdır: gold `1`, aynı family'deki 10 negatif `0`.
 
-Ayrıntılı şema, uyarlanabilir hard-negative taksonomisi, review formatı ve komutlar:
+Ayrıntılı şema, uyarlanabilir hard-negative taksonomisi ve komutlar:
 [`test/README.md`](test/README.md). Daha kısa başlangıç özeti:
 [`test/README_SHORT.md`](test/README_SHORT.md).
 
@@ -64,8 +60,7 @@ komutları kullanın.
 ## Paper değerlendirme katmanları
 
 1. Her query'nin kendi 11 adayı üzerindeki kontrollü morfolojik contrast sonucu.
-2. Binary pooling qrels'i tamamlandıktan sonra ortak 5.500 test dokümanı üzerinde full-corpus
-   retrieval.
+2. Ortak 5.500 test dokümanında tanısal gold-rank stres testi.
 3. Genel retrieval yeteneğinin korunması için harici Turkish-BEIR/TR-MTEB sonuçları.
 
 ## Lisans

@@ -6,7 +6,7 @@ from collections import Counter
 from copy import deepcopy
 
 from .config import load_config
-from .evaluation import build_pool_rows, evaluate_run, validate_binary_qrels
+from .evaluation import evaluate_run, validate_binary_qrels
 from .planner import build_plan, make_slot, plan_statistics
 from .selection import select_balanced
 from .taxonomy import FEATURE_BY_KEY, hard_profile
@@ -163,10 +163,11 @@ def run() -> list[str]:
             "qc": {"quality_score": 1.0},
         })
     try:
-        review_selection = select_balanced(fake_items, cfg, {"development": 125, "sealed_test": 625})
-        final_selection = select_balanced(review_selection, cfg, {"development": 100, "sealed_test": 500})
-        if len(review_selection) != 750 or len(final_selection) != 600:
-            failures.append("750 review / 600 final balanced selection sayıları yanlış")
+        final_selection = select_balanced(
+            fake_items, cfg, {"development": 100, "sealed_test": 500}
+        )
+        if len(final_selection) != 600:
+            failures.append("600-family final balanced selection sayısı yanlış")
         for split, query_expected, passage_expected in (
             ("development", {1: 75, 2: 25}, {1: 30, 2: 30, 3: 30, 4: 10}),
             ("sealed_test", {1: 375, 2: 125}, {1: 150, 2: 150, 3: 150, 4: 50}),
@@ -214,12 +215,8 @@ def run() -> list[str]:
     expected_hard = {item["slot"]: item["subtype"] for item in slot["hard_profile"]}
     if hard != expected_hard:
         failures.append("fixture uyarlanabilir sekiz hard slotu kapsamıyor")
-    pool_rows = build_pool_rows(
-        [family], {"fixture_system": {family["family_id"]: [family["gold_id"]]}}, depth=20,
-        seed_closed_family_labels=True,
-    )
-    if len(pool_rows) != 11 or Counter(row["relevance"] for row in pool_rows) != {0: 10, 1: 1}:
-        failures.append("pooling kendi family binary etiketlerini doğru seed etmedi")
+    if Counter(family["qrels"].values()) != {0: 10, 1: 1}:
+        failures.append("family oluşturulurken 1 gold + 10 negative qrels üretilmedi")
 
     strict_slot = deepcopy(slot)
     strict_slot["strict_minimal_pair"] = True
@@ -277,7 +274,7 @@ def run() -> list[str]:
             "easy_negative" if candidate["role"] == "easy_negative" else candidate["subtype"]
         )
         assessments.append({
-            "id": candidate["id"], "relevance": "fully" if candidate["role"] == "positive" else "not_relevant",
+            "id": candidate["id"], "relevance": "relevant" if candidate["role"] == "positive" else "not_relevant",
             "naturalness": 5, "inferred_type": intended, "morphology_ok": True, "reason": "fixture",
         })
     judge = {

@@ -66,9 +66,6 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
     _check_distribution("generalization_distribution", cfg["generalization_distribution"])
     if float(cfg.get("strict_minimal_pair_fraction", 0)) != 0.25:
         raise ConfigError("Final plan tam olarak %25 strict minimal-pair (150/600) olmalı")
-    if len(cfg["review"]["reviewer_ids"]) != 5:
-        raise ConfigError("İnsan denetimi için tam olarak beş reviewer kimliği tanımlanmalı")
-
     if runtime:
         generators = cfg["generation"].get("generators", [])
         if len(generators) != 2 or {row.get("id") for row in generators} != {"generator_a", "generator_b"}:
@@ -113,7 +110,3 @@ def final_target(cfg: dict[str, Any]) -> int:
 
 def raw_target(cfg: dict[str, Any]) -> int:
     return int(round(final_target(cfg) * float(cfg["targets"]["oversample_factor"])))
-
-
-def review_target(cfg: dict[str, Any]) -> int:
-    return int(round(final_target(cfg) * float(cfg["targets"]["review_pool_factor"])))
