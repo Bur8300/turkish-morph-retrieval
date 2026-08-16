@@ -44,6 +44,9 @@ def main() -> int:
     preview.add_argument("--batch-size", type=int, default=5)
     preview.add_argument("--model", default="gpt-5.6-sol")
     preview.add_argument("--reasoning-effort", default="medium")
+    preview.add_argument("--workers", type=int, default=1)
+    preview.add_argument("--reserve-slots", type=int, default=0)
+    preview.add_argument("--cache-only", action="store_true")
 
     freeze = sub.add_parser(
         "finalize",
@@ -76,7 +79,8 @@ def main() -> int:
     elif args.command == "preview-codex":
         result = generate_codex_preview(
             args.run_id, args.count, args.batch_size, args.model,
-            args.reasoning_effort, args.config,
+            args.reasoning_effort, args.config, args.workers, args.reserve_slots,
+            args.cache_only,
         )
     elif args.command == "finalize":
         result = finalize(args.run_id, args.config)

@@ -258,12 +258,17 @@ python3 -m test audit-leakage --test TEST.json --train TRAIN.json
 python3 -m test morph-audit --input TEST.json --output morph_audit.json --download-model
 
 # API key'siz yalnız preview
-python3 -m test preview-codex --run-id sol_preview_20_v33 --count 20 \
-  --batch-size 10 --model gpt-5.6-sol --reasoning-effort medium
+python3 -m test preview-codex --run-id sol_preview_20_v35 --count 20 \
+  --batch-size 5 --workers 3 --reserve-slots 6 \
+  --model gpt-5.6-sol --reasoning-effort medium
 ```
 
 Codex preview deterministic QC ve otomatik qrels içerir fakat bağımsız LLM judge çalıştırmaz;
-paper verisine dondurulmaz.
+paper verisine dondurulmaz. Bu yol API key/API faturası kullanmaz; yerel ChatGPT oturumunun Codex
+kullanım kotasından harcar. `workers` batch'leri paralelleştirir. `reserve-slots`, reddedilenlerin
+yerine geçebilecek ek slotları planlar ve çıktı yine `count` accepted family ile sınırlandırılır.
+Yalnız daha önce tamamlanmış cache'i yeni kullanım olmadan yeniden doğrulamak için `--cache-only`
+eklenebilir.
 
 ## Ana dosyalar
 

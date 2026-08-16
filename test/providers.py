@@ -204,6 +204,8 @@ class CodexCliProvider:
                 cached["data"], cached.get("usage", {}), True, request_hash,
                 self.model, self.provider,
             )
+        if self.spec.get("cache_only"):
+            raise ProviderError(f"Codex cache-only modunda yanıt bulunamadı: {request_hash}")
 
         request_dir = self.cache_dir / request_hash
         request_dir.mkdir(parents=True, exist_ok=True)
