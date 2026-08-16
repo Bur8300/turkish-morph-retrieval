@@ -320,17 +320,17 @@ tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyinde
 ```bash
 # API'siz regresyon testi ve plan
 python3 -m test self-test
-python3 -m test plan --run-id test_v35
+python3 -m test plan --run-id test_v36
 
 # İki generator + bağımsız blind judge
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v35
+python3 -m test generate --run-id test_v36
 
 # Tamamlanan 100/500 kotasını doğrula, freeze et ve qrels export et
-python3 -m test finalize --run-id test_v35
+python3 -m test finalize --run-id test_v36
 
 # Train üretildikten sonra leakage audit
 python3 -m test audit-leakage --test TEST.json --train TRAIN.json
@@ -339,7 +339,7 @@ python3 -m test audit-leakage --test TEST.json --train TRAIN.json
 python3 -m test morph-audit --input TEST.json --output morph_audit.json --download-model
 
 # API key'siz yalnız preview
-python3 -m test preview-codex --run-id sol_preview_20_v35 --count 20 \
+python3 -m test preview-codex --run-id sol_preview_20_v36 --count 20 \
   --batch-size 5 --workers 3 --reserve-slots 6 \
   --model gpt-5.6-sol --reasoning-effort medium
 ```

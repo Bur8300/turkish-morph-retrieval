@@ -385,7 +385,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -675,7 +675,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -961,7 +961,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -1245,7 +1245,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -1531,7 +1531,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -1813,7 +1813,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -2099,7 +2099,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -2395,7 +2395,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -2682,7 +2682,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -2968,7 +2968,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -3254,7 +3254,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -3538,7 +3538,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -3821,7 +3821,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -4103,7 +4103,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -4384,7 +4384,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -4671,7 +4671,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -4959,7 +4959,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -5242,7 +5242,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -5530,7 +5530,7 @@
       "query_expression": "morph_explicit",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },
@@ -5816,7 +5816,7 @@
       "query_expression": "semantic_paraphrase",
       "version": "3.6.0",
       "curation": {
-        "source": "sol_preview_20_v35",
+        "source": "legacy_sol_preview_20_v35@be034c4",
         "semantic_review": "manual",
         "version": "v3.6"
       },

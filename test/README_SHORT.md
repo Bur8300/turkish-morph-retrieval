@@ -53,14 +53,14 @@ Komutlar:
 
 ```bash
 python3 -m test self-test
-python3 -m test plan --run-id test_v35
+python3 -m test plan --run-id test_v36
 
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v35
-python3 -m test finalize --run-id test_v35
+python3 -m test generate --run-id test_v36
+python3 -m test finalize --run-id test_v36
 ```
 
 Detaylar: [`README.md`](README.md). Final Colab:
