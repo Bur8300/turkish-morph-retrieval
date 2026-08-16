@@ -11,9 +11,13 @@
 Tek akış:
 
 ```text
-1.800 slot → iki LLM generator → deterministic QC → blind LLM judge
-→ otomatik 100/500 seçim → duplicate/leakage kontrolü → freeze
+600 dengeli slot → iki LLM generator (300 + 300) → deterministic QC → blind LLM judge
+→ kalan slot için taze replacement → duplicate/leakage kontrolü → freeze
 ```
+
+Bir family kontrolden kalırsa fenomeni, split'i, generator'ı ve uzunluk kotası değişmez; yalnız
+örnek yeniden üretilir. Üç refill turu yetmezse aynı komut yeniden çalıştırıldığında kaldığı yerden
+devam eder. Amaç fazladan 1.800 örnek yazmak değil, tam 600 kabul edilmiş family elde etmektir.
 
 Lexical artefakt kapısı gold ile hard overlap'ını dengeler, en az dört içerik-koruyan hard ister
 ve word-overlap/char-3gram/BM25 sonuçlarını tie-aware hesaplar.
@@ -37,14 +41,14 @@ Komutlar:
 
 ```bash
 python3 -m test self-test
-python3 -m test plan --run-id test_v33
+python3 -m test plan --run-id test_v34
 
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v33
-python3 -m test finalize --run-id test_v33
+python3 -m test generate --run-id test_v34
+python3 -m test finalize --run-id test_v34
 ```
 
 Detaylar: [`README.md`](README.md). Final Colab:

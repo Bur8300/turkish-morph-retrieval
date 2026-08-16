@@ -24,8 +24,8 @@ generator'ı bu metinleri few-shot olarak kullanmaz.
 - Standard, lemma-holdout, template-holdout ve compositional-holdout dilimleri.
 - Allomorph invariance ile anlam değiştiren morfem karşıtlığı ayrı objective'lerdir.
 - 150 strict minimal-pair family; iki generator finalde 300+300 dengelenir.
-- 3× ham üretim → deterministic QC → farklı model ailesinden blind judge → otomatik 100/500
-  dengeli seçim → hash/manifest ile freeze.
+- 600 dengeli slot → deterministic QC → farklı model ailesinden blind judge. Kalan örnek aynı
+  slotun kotasını koruyan taze üretimle hemen değiştirilir → hash/manifest ile freeze.
 - Qrels family oluşturulurken hazırdır: gold `1`, aynı family'deki 10 negatif `0`; full-corpus
   retrieval farklı semantic frame'lerdeki bütün test belgelerini ortak corpus olarak sıralar.
 
@@ -39,7 +39,7 @@ Yeni test kodu planlama/QC tarafında yalnız Python standart kütüphanesini ku
 
 ```bash
 python3 -m test self-test
-python3 -m test plan --run-id test_v33
+python3 -m test plan --run-id test_v34
 ```
 
 API üretimi için:
@@ -49,7 +49,7 @@ export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v33_pilot --limit 30
+python3 -m test generate --run-id test_v34_pilot --limit 30
 ```
 
 İki generator ve judge üç farklı OpenRouter model ailesinden değilse kod çalışmayı reddeder. Model kimlikleri,

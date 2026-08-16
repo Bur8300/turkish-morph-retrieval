@@ -68,7 +68,10 @@ def _git_commit() -> str | None:
 
 
 def _pipeline_source_hashes() -> dict[str, str]:
-    names = ("config.py", "planner.py", "prompts.py", "schema.py", "taxonomy.py", "validators.py")
+    names = (
+        "config.py", "pipeline.py", "planner.py", "prompts.py", "schema.py", "taxonomy.py",
+        "validators.py",
+    )
     return {
         name: hashlib.sha256((HERE / name).read_bytes()).hexdigest()
         for name in names
@@ -167,63 +170,109 @@ def _request_provenance(response) -> dict[str, Any]:
     }
 
 
-def _process_slot(slot, cfg, generators, judge) -> tuple[str, dict[str, Any]]:
+def _process_slot(
+    slot, cfg, generators, judge, start_refill_round: int = 0
+) -> tuple[str, dict[str, Any]]:
     generator = generators[slot["generator_id"]]
-    generation_provenance = []
-    previous = None
-    validation_problems: list[str] = []
     max_attempts = int(cfg["generation"]["max_generation_attempts"])
-    family = None
-    for attempt in range(max_attempts):
-        prompt = (
-            build_generation_prompt(slot)
-            if attempt == 0
-            else build_repair_prompt(slot, previous or {}, validation_problems)
-        )
-        response = generator.call_json(GENERATOR_SYSTEM, prompt, GENERATION_SCHEMA, "generate_test_family")
-        generation_provenance.append(_request_provenance(response))
-        previous = response.data
-        try:
-            family = normalize_family(response.data, slot)
-            validation_problems = validate_family(family, slot, cfg)
-        except Exception as exc:
-            validation_problems = [f"normalizasyon hatası: {type(exc).__name__}: {exc}"]
-            family = None
-        if not validation_problems:
-            break
-    if family is None or validation_problems:
-        return "rejected", {
-            "slot_id": slot["slot_id"],
-            "stage": "deterministic_validation",
-            "problems": validation_problems,
-            "last_raw": previous,
-            "provenance": {"generator_attempts": generation_provenance},
-        }
+    refill_count = int(cfg["generation"]["refill_rounds_per_call"])
+    refill_history: list[dict[str, Any]] = []
+    last_raw = None
+    last_family = None
+    last_stage = "deterministic_validation"
+    last_problems: list[str] = []
 
-    judge_response = judge.call_json(JUDGE_SYSTEM, build_judge_prompt(family), JUDGE_SCHEMA, "blind_judge")
-    judge_problems, judge_metadata = interpret_judge(family, judge_response.data, cfg)
-    family["provenance"] = {
-        "generator_id": slot["generator_id"],
-        "generator_attempts": generation_provenance,
-        "judge": _request_provenance(judge_response),
-        "prompt_version": PROMPT_VERSION,
-    }
-    family["qc"] = {
-        "deterministic": "pass",
-        "judge": judge_metadata,
-        "quality_score": None,
-    }
-    family["qc"]["quality_score"] = round(quality_score(family), 5)
-    if judge_problems:
-        return "rejected", {
-            "slot_id": slot["slot_id"],
-            "stage": "blind_judge",
-            "problems": judge_problems,
-            "family": family,
-            "judge_raw": judge_response.data,
+    for refill_round in range(start_refill_round, start_refill_round + refill_count):
+        # The nonce makes a replacement a fresh cached request while every balancing attribute
+        # (feature, split, generator, lengths and holdout bucket) remains fixed to the slot.
+        prompt_slot = {**slot, "refill_round": refill_round}
+        generation_provenance = []
+        previous = None
+        validation_problems: list[str] = []
+        family = None
+        for attempt in range(max_attempts):
+            prompt = (
+                build_generation_prompt(prompt_slot)
+                if attempt == 0
+                else build_repair_prompt(prompt_slot, previous or {}, validation_problems)
+            )
+            response = generator.call_json(
+                GENERATOR_SYSTEM, prompt, GENERATION_SCHEMA, "generate_test_family"
+            )
+            generation_provenance.append(_request_provenance(response))
+            previous = response.data
+            try:
+                family = normalize_family(response.data, slot)
+                validation_problems = validate_family(family, slot, cfg)
+            except Exception as exc:
+                validation_problems = [f"normalizasyon hatası: {type(exc).__name__}: {exc}"]
+                family = None
+            if not validation_problems:
+                break
+
+        last_raw = previous
+        last_family = family
+        if family is None or validation_problems:
+            last_stage = "deterministic_validation"
+            last_problems = validation_problems
+            refill_history.append({
+                "refill_round": refill_round,
+                "stage": last_stage,
+                "problems": validation_problems,
+                "generator_attempts": generation_provenance,
+            })
+            continue
+
+        judge_response = judge.call_json(
+            JUDGE_SYSTEM, build_judge_prompt(family), JUDGE_SCHEMA, "blind_judge"
+        )
+        judge_problems, judge_metadata = interpret_judge(family, judge_response.data, cfg)
+        if judge_problems:
+            last_stage = "blind_judge"
+            last_problems = judge_problems
+            refill_history.append({
+                "refill_round": refill_round,
+                "stage": last_stage,
+                "problems": judge_problems,
+                "generator_attempts": generation_provenance,
+                "judge": _request_provenance(judge_response),
+            })
+            continue
+
+        family["provenance"] = {
+            "generator_id": slot["generator_id"],
+            "refill_round": refill_round,
+            "rejected_replacements_before_acceptance": refill_history,
+            "generator_attempts": generation_provenance,
+            "judge": _request_provenance(judge_response),
+            "prompt_version": PROMPT_VERSION,
         }
-    family["source_type"] = "llm_generated_llm_judged"
-    return "accepted", family
+        family["qc"] = {
+            "deterministic": "pass",
+            "judge": judge_metadata,
+            "quality_score": round(quality_score(family), 5),
+        }
+        family["source_type"] = "llm_generated_llm_judged"
+        return "accepted", family
+
+    return "rejected", {
+        "slot_id": slot["slot_id"],
+        "stage": last_stage,
+        "problems": last_problems,
+        "last_raw": last_raw,
+        "last_family": last_family,
+        "next_refill_round": start_refill_round + refill_count,
+        "refill_history": refill_history,
+    }
+
+
+def _resume_refill_rounds(rejected: list[dict[str, Any]]) -> dict[str, int]:
+    rounds: dict[str, int] = {}
+    for row in rejected:
+        slot_id = row.get("slot_id")
+        if slot_id:
+            rounds[slot_id] = max(rounds.get(slot_id, 0), int(row.get("next_refill_round", 0)))
+    return rounds
 
 
 def generate(run_id: str, config_path: str | None = None, limit: int | None = None, workers: int | None = None) -> dict[str, Any]:
@@ -231,10 +280,11 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     all_slots = build_plan(cfg)
     slots = all_slots[:limit] if limit is not None else all_slots
     paths = initialise_run(run_id, cfg, all_slots)
-    processed = {
-        row.get("slot_id") for row in read_jsonl(paths.accepted) + read_jsonl(paths.rejected) if row.get("slot_id")
-    }
-    pending = [slot for slot in slots if slot["slot_id"] not in processed]
+    accepted_before = read_jsonl(paths.accepted)
+    rejected_before = read_jsonl(paths.rejected)
+    completed = {row.get("slot_id") for row in accepted_before if row.get("slot_id")}
+    refill_rounds = _resume_refill_rounds(rejected_before)
+    pending = [slot for slot in slots if slot["slot_id"] not in completed]
     metadata = {"dataset_version": cfg["version"], "prompt_version": PROMPT_VERSION}
     generators = {
         spec["id"]: make_provider(spec, paths.cache / spec["id"], metadata)
@@ -249,7 +299,11 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     worker_count = int(workers or cfg["generation"].get("workers", 4))
     with ThreadPoolExecutor(max_workers=max(1, worker_count)) as executor:
         future_to_slot = {
-            executor.submit(_process_slot, slot, cfg, generators, judge): slot for slot in pending
+            executor.submit(
+                _process_slot, slot, cfg, generators, judge,
+                refill_rounds.get(slot["slot_id"], 0),
+            ): slot
+            for slot in pending
         }
         for future in as_completed(future_to_slot):
             slot = future_to_slot[future]
@@ -274,13 +328,19 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     accepted = read_jsonl(paths.accepted)
     rejected = read_jsonl(paths.rejected)
     failures = read_jsonl(paths.failures)
+    accepted_slot_ids = {item.get("slot_id") for item in accepted}
+    target_count = len(slots)
     report = {
         "run_id": run_id,
         "elapsed_seconds_this_call": round(time.time() - started, 2),
         "pending_processed_this_call": len(pending),
         "outcomes_this_call": dict(counts),
         "accepted_total": len(accepted),
-        "rejected_total": len(rejected),
+        "target_total": target_count,
+        "unfilled_slots": sum(slot["slot_id"] not in accepted_slot_ids for slot in slots),
+        "complete": all(slot["slot_id"] in accepted_slot_ids for slot in slots),
+        "rejected_attempt_batches_total": len(rejected),
+        "rejected_slots_ever": len({item.get("slot_id") for item in rejected}),
         "retryable_failures_total": len(failures),
         "accepted_by_bucket": dict(Counter(item["generalization_bucket"] for item in accepted)),
         "accepted_by_query_sentence_count": dict(

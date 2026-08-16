@@ -57,6 +57,8 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
     targets = cfg["targets"]
     if targets["development"] != 100 or targets["sealed_test"] != 500:
         raise ConfigError("Dondurulmuş plan 100 development + 500 sealed test olmalı")
+    if "oversample_factor" in targets:
+        raise ConfigError("Statik oversampling kaldırıldı; plan doğrudan 600 slot olmalı")
     _check_distribution("query_sentence_distribution", cfg["query_sentence_distribution"])
     _check_distribution("passage_sentence_distribution", cfg["passage_sentence_distribution"])
     if set(cfg["query_sentence_distribution"]) != {"1", "2"}:
@@ -106,6 +108,11 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
                 "Test generator/judge, legacy train model ailesinden bağımsız olmalı; "
                 f"yasak aile kullanıldı: {sorted(forbidden & used)}"
             )
+    generation = cfg["generation"]
+    if int(generation.get("max_generation_attempts", 0)) < 1:
+        raise ConfigError("max_generation_attempts en az 1 olmalı")
+    if int(generation.get("refill_rounds_per_call", 0)) < 1:
+        raise ConfigError("refill_rounds_per_call en az 1 olmalı")
 
 
 def load_config(path: str | Path | None = None, runtime: bool = False) -> dict[str, Any]:
@@ -119,7 +126,3 @@ def load_config(path: str | Path | None = None, runtime: bool = False) -> dict[s
 
 def final_target(cfg: dict[str, Any]) -> int:
     return int(cfg["targets"]["development"] + cfg["targets"]["sealed_test"])
-
-
-def raw_target(cfg: dict[str, Any]) -> int:
-    return int(round(final_target(cfg) * float(cfg["targets"]["oversample_factor"])))

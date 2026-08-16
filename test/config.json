@@ -1,11 +1,10 @@
 {
   "dataset_name": "turkish_morph_retrieval_test",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "seed": 20260814,
   "targets": {
     "development": 100,
-    "sealed_test": 500,
-    "oversample_factor": 3.0
+    "sealed_test": 500
   },
   "candidate_counts": {
     "positive": 1,
@@ -51,6 +50,7 @@
   },
   "generation": {
     "max_generation_attempts": 2,
+    "refill_rounds_per_call": 3,
     "workers": 4,
     "generators": [
       {

@@ -8,7 +8,7 @@ import random
 from collections import Counter
 from typing import Any
 
-from .config import raw_target
+from .config import final_target
 from .taxonomy import DOMAINS, FEATURES, MACROS, REGISTERS, TEMPLATES, hard_profile
 
 
@@ -31,6 +31,20 @@ def _weighted_value(
     cycle = index // cycle_size
     random.Random(_seed(seed, salt, cycle)).shuffle(values)
     return values[index % cycle_size]
+
+
+def _weighted_occurrence_rank(
+    distribution: dict[str, float], value: str, index: int, cycle_size: int, seed: int, salt: str
+) -> int:
+    """Zero-based rank of `value` among the prefix-stable weighted assignments."""
+    per_cycle = int(round(float(distribution[value]) * cycle_size))
+    cycle = index // cycle_size
+    cycle_start = cycle * cycle_size
+    earlier_in_cycle = sum(
+        _weighted_value(distribution, prior, cycle_size, seed, salt) == value
+        for prior in range(cycle_start, index)
+    )
+    return cycle * per_cycle + earlier_in_cycle
 
 
 def _round_robin(values: tuple | list, index: int, seed: int, salt: str) -> Any:
@@ -69,26 +83,41 @@ def _feature_for(
 
 def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
     seed = int(cfg["seed"])
-    bucket = _weighted_value(cfg["generalization_distribution"], index, 10, seed, "bucket")
+    split_distribution = {"development": 1 / 6, "sealed_test": 5 / 6}
+    target_split = _weighted_value(split_distribution, index, 6, seed, "split")
+    split_index = _weighted_occurrence_rank(
+        split_distribution, target_split, index, 6, seed, "split"
+    )
+    bucket = _weighted_value(
+        cfg["generalization_distribution"], split_index, 10, seed, f"bucket:{target_split}"
+    )
     query_sentence_count = int(
-        _weighted_value(cfg["query_sentence_distribution"], index, 4, seed, "query_sentences")
+        _weighted_value(
+            cfg["query_sentence_distribution"], split_index, 4, seed,
+            f"query_sentences:{target_split}",
+        )
     )
     passage_sentence_count = int(
-        _weighted_value(cfg["passage_sentence_distribution"], index, 10, seed, "passage_sentences")
+        _weighted_value(
+            cfg["passage_sentence_distribution"], split_index, 10, seed,
+            f"passage_sentences:{target_split}",
+        )
     )
-    critical_sentence_position = 1 + (
-        _seed(seed, "critical_position", index) % passage_sentence_count
+    passage_rank = _weighted_occurrence_rank(
+        cfg["passage_sentence_distribution"], str(passage_sentence_count), split_index, 10,
+        seed, f"passage_sentences:{target_split}",
     )
-    target_split = _weighted_value(
-        {"development": 1 / 6, "sealed_test": 5 / 6}, index, 6, seed, "split"
+    critical_sentence_position = _round_robin(
+        list(range(1, passage_sentence_count + 1)), passage_rank, seed,
+        f"critical_position:{target_split}:p{passage_sentence_count}",
     )
     strict_minimal_pair = _weighted_value(
         {"no": 1.0 - float(cfg["strict_minimal_pair_fraction"]),
          "yes": float(cfg["strict_minimal_pair_fraction"])},
-        index, 4, seed, "strict_minimal_pair",
+        split_index, 4, seed, f"strict_minimal_pair:{target_split}",
     ) == "yes"
     generator_ids = [row["id"] for row in cfg["generation"]["generators"]]
-    generator_id = _round_robin(generator_ids, index, seed, "generator")
+    generator_id = _round_robin(generator_ids, split_index, seed, f"generator:{target_split}")
 
     if bucket == "composition_holdout":
         layer = "chain"
@@ -183,7 +212,7 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_plan(cfg: dict[str, Any], size: int | None = None) -> list[dict[str, Any]]:
-    return [make_slot(index, cfg) for index in range(size if size is not None else raw_target(cfg))]
+    return [make_slot(index, cfg) for index in range(size if size is not None else final_target(cfg))]
 
 
 def plan_statistics(slots: list[dict[str, Any]]) -> dict[str, dict[str, int]]:

@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
+from types import SimpleNamespace
 
 from .config import load_config
 from .evaluation import evaluate_run, validate_binary_qrels
 from .planner import build_plan, make_slot, plan_statistics
+from .pipeline import _process_slot, _resume_refill_rounds
 from .selection import select_balanced
 from .taxonomy import FEATURE_BY_KEY, hard_profile
 from .validators import interpret_judge, normalize_family, validate_family
@@ -101,6 +103,8 @@ def run() -> list[str]:
 
     cfg = load_config(runtime=False)
     slots_600 = build_plan(cfg, 600)
+    if build_plan(cfg) != slots_600:
+        failures.append("varsayılan plan doğrudan 600 kota slotu üretmiyor")
     stats = plan_statistics(slots_600)
     expected = {
         "target_split": {"development": 100, "sealed_test": 500},
@@ -118,6 +122,13 @@ def run() -> list[str]:
             failures.append(f"plan {field}: {stats[field]} != {wanted}")
     if build_plan(cfg, 50) != build_plan(cfg, 600)[:50]:
         failures.append("planner prefix-stable değil")
+    resumed = _resume_refill_rounds([
+        {"slot_id": "a", "next_refill_round": 3},
+        {"slot_id": "a", "next_refill_round": 6},
+        {"slot_id": "b", "next_refill_round": 3},
+    ])
+    if resumed != {"a": 6, "b": 3}:
+        failures.append(f"refill resume turu yanlış: {resumed}")
     dev_templates = {slot["template"]["id"] for slot in slots_600 if slot["target_split"] == "development"}
     test_holdout_templates = {
         slot["template"]["id"] for slot in slots_600
@@ -150,6 +161,7 @@ def run() -> list[str]:
     for slot_item in build_plan(cfg):
         fake_items.append({
             "family_id": f"fake_{slot_item['slot_id']}",
+            "slot_id": slot_item["slot_id"],
             "target_split": slot_item["target_split"],
             "generalization_bucket": slot_item["generalization_bucket"],
             "query_sentence_count": slot_item["query_sentence_count"],
@@ -285,6 +297,47 @@ def run() -> list[str]:
     judge_problems, _ = interpret_judge(family, judge, cfg)
     if judge_problems:
         failures.append(f"geçerli judge fixture reddedildi: {judge_problems}")
+
+    def response(data, number):
+        return SimpleNamespace(
+            data=deepcopy(data), provider="fake", model="fake/model",
+            request_hash=f"request-{number}", cache_hit=False, usage={},
+        )
+
+    class RefillGenerator:
+        def __init__(self, invalid_calls=0):
+            self.calls = 0
+            self.invalid_calls = invalid_calls
+
+        def call_json(self, *_args):
+            self.calls += 1
+            return response({} if self.calls <= self.invalid_calls else _fixture_raw(), self.calls)
+
+    class RefillJudge:
+        def __init__(self, rejected_calls=0):
+            self.calls = 0
+            self.rejected_calls = rejected_calls
+
+        def call_json(self, *_args):
+            self.calls += 1
+            verdict = deepcopy(judge)
+            if self.calls <= self.rejected_calls:
+                verdict["answers_query"] = []
+            return response(verdict, self.calls)
+
+    generator = RefillGenerator(invalid_calls=2)
+    status, refilled = _process_slot(
+        slot, cfg, {"generator_a": generator}, RefillJudge(), start_refill_round=0
+    )
+    if status != "accepted" or refilled["provenance"]["refill_round"] != 1:
+        failures.append("deterministic QC reddinden sonra taze refill çalışmadı")
+    generator = RefillGenerator()
+    status, refilled = _process_slot(
+        slot, cfg, {"generator_a": generator}, RefillJudge(rejected_calls=1),
+        start_refill_round=4,
+    )
+    if status != "accepted" or refilled["provenance"]["refill_round"] != 5:
+        failures.append("blind judge reddinden sonra taze refill çalışmadı")
 
     allomorph_slot = deepcopy(slot)
     allomorph_slot["feature"] = FEATURE_BY_KEY["ALLO.LOC"].to_dict()

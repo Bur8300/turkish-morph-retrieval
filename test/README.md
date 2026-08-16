@@ -1,4 +1,4 @@
-# Turkish Morph Retrieval Test — v3.3.0
+# Turkish Morph Retrieval Test — v3.4.0
 
 Bu dizin Türkçe encoder'ların küçük fakat anlam değiştiren morfolojik farkları ayırt edip
 etmediğini ölçen benchmark'ı üretir ve değerlendirir. Train sistemi [`../train/`](../train/)
@@ -46,18 +46,23 @@ sonuçlarına tekrar tekrar bakmamaktır.
 ```text
 config + taxonomy
         ↓
-1.800 deterministic slot
+600 dengeli ve sabit kota slotu
         ↓
-iki farklı LLM generator (900 + 900)
+iki farklı LLM generator (300 + 300)
         ↓
 strict JSON + deterministic QC
         ↓
 generator'lardan farklı model ailesinden blind LLM judge
         ↓
-geçen kayıtlardan dengeli 100 dev + 500 final seçim
+kalırsa aynı slot için taze replacement; geçerse slot tamamlanır
         ↓
 duplicate/leakage/artefakt kontrolü + otomatik qrels + freeze
 ```
+
+Her replacement aynı split, fenomen, generator, cümle uzunluğu ve holdout kotasını korur; yalnız
+metin yeniden üretilir. Bir komutta en fazla üç taze replacement turu denenir. Slot hâlâ geçmezse
+run durumu kaydedilir ve aynı `generate` komutu sonraki refill turundan devam eder. Böylece sonsuz
+API döngüsü olmadan tam 600 kabul edilmiş family hedeflenir.
 
 İki generator ve judge üç farklı model ailesinden olmalıdır. Legacy train Gemini ile üretildiği
 için `google/*` test generator/judge rollerinde varsayılan olarak yasaktır. Model, prompt, config,
@@ -86,7 +91,7 @@ morfoloji, kapsam, zaman veya katılımcı rolünde kalır. Validator:
 - En az dört hard'ın query içerik köklerinin en az `%60`ını korumasını ister.
 
 Gold sürekli en yüksek veya sürekli en düşük overlap'a itilmez; aksi durumda düz ya da ters
-artefakt oluşur. Üretim 3× oversampling havuzundan kalite ve çeşitlilikle seçim yapar. Freeze
+artefakt oluşur. Kaliteyi geçmeyen family aynı dengeli slot için taze örnekle değiştirilir. Freeze
 öncesinde word-overlap `R@1 ≤ 0.20`, character 3-gram ve BM25 `R@1 ≤ 0.30` kapıları uygulanır.
 Ucuz baseline eşitlikleri candidate ID ile bozulmaz; eşit skorlu adayların bütün olası sıraları
 üzerinden beklenen, tie-aware metrik hesaplanır.
@@ -228,17 +233,17 @@ tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyinde
 ```bash
 # API'siz regresyon testi ve plan
 python3 -m test self-test
-python3 -m test plan --run-id test_v33
+python3 -m test plan --run-id test_v34
 
 # İki generator + bağımsız blind judge
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v33
+python3 -m test generate --run-id test_v34
 
-# Geçen kayıtlardan otomatik 100/500 freeze + qrels export
-python3 -m test finalize --run-id test_v33
+# Tamamlanan 100/500 kotasını doğrula, freeze et ve qrels export et
+python3 -m test finalize --run-id test_v34
 
 # Train üretildikten sonra leakage audit
 python3 -m test audit-leakage --test TEST.json --train TRAIN.json
@@ -260,11 +265,11 @@ paper verisine dondurulmaz.
 |---|---|
 | `config.json` | Sayılar, dağılımlar, eşikler ve modeller |
 | `taxonomy.py` | Fenomen ve hard-negative kataloğu |
-| `planner.py` | 1.800 dengeli slot ve iki-generator ataması |
+| `planner.py` | 600 dengeli slot ve iki-generator için 300/300 atama |
 | `schema.py`, `prompts.py` | Strict üretim/judge sözleşmesi |
-| `pipeline.py` | Generate → QC → LLM judge → checkpoint |
+| `pipeline.py` | Generate → QC → LLM judge → reject/refill → checkpoint |
 | `validators.py` | Family/corpus/duplicate/leakage kontrolleri ve qrels |
-| `selection.py` | Otomatik 100/500 dengeli seçim |
+| `selection.py` | Tam 100/500 dağılım ve generator kotalarını doğrulama |
 | `exports.py` | Freeze, blind/internal JSON, BEIR ve qrels |
 | `morphology.py` | Opsiyonel Stanza audit'i |
 | `evaluation.py` | Metrikler, baseline, ablation ve istatistik |
@@ -280,12 +285,12 @@ test/runs/<run_id>/
 ├── rejected.jsonl
 ├── generation_report.json
 ├── release/
-│   ├── morph_dev_v3.3.0.json
-│   ├── morph_test_blind_v3.3.0.json
+│   ├── morph_dev_v3.4.0.json
+│   ├── morph_test_blind_v3.4.0.json
 │   ├── artifact_audit.json
 │   └── freeze_manifest.json
 └── private/
-    ├── morph_test_internal_v3.3.0.json
+    ├── morph_test_internal_v3.4.0.json
     ├── private_qrels.jsonl
     ├── beir_test_qrels.tsv
     └── train_exclusion_holdouts.json
