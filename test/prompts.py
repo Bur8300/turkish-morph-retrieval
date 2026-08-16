@@ -12,7 +12,7 @@ import random
 from .taxonomy import HARD_SUBTYPES
 
 
-PROMPT_VERSION = "test-prompts-3.4.0"
+PROMPT_VERSION = "test-prompts-3.5.0"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -56,6 +56,38 @@ def _hard_rules(profile: list[dict]) -> str:
 
 def build_generation_prompt(slot: dict) -> str:
     feature = slot["feature"]
+    special_rule = {
+        "COP.NEG": (
+            "İsim/sıfat yüklemli bir cümle kur. `değil` ile kurulan copular olumsuzluğu fiildeki "
+            "-mA olumsuzluğuyla karıştırma; bütün adaylar doğal ve dilbilgisel olsun."
+        ),
+        "COP.TAM": (
+            "Aynı isim/sıfat yüklemi koru; `idi`, `imiş` ve `ise` arasındaki geçmiş, aktarma/çıkarım "
+            "ve koşul farkını ölç. Bunları aynı işlevin allomorfları sayma."
+        ),
+        "Q.PART.SCOPE": (
+            "Bu tek istisnada query doğal bir mı/mi/mu/mü sorusu OLMALI. Parçacığın bağlandığı "
+            "öge odağı belirler: özne odağı ile nesne/zarf odağını aynı sayma. Önerme ve sözcükler "
+            "mümkün olduğunca sabit, odak farkı ise açık olsun."
+        ),
+        "NMLZ.MA_VS_DIK": (
+            "-mA burada adlaştırıcıdır, olumsuzluk eki değildir. İstek/planlanan olay okumasını "
+            "-DIK ile gerçekleşmiş olgu bilgisi okumasından ayır."
+        ),
+        "REL.GEN.POSS": (
+            "-DIK'lı ilgi yapısında genitif özne ile iyelik işaretinin kişi/sayı bağını koru. "
+            "Negatifleri bozuk uyumla değil, doğal fakat başka possessor/gönderimle kur."
+        ),
+        "ANAPHOR.AGR": (
+            "`kendi` biçiminin kişi/sayı işaretini ve hangi katılımcıya döndüğünü birlikte izle; "
+            "kendimiz/kendiniz gibi biçimleri yalnız yüzey benzerliğiyle eşdeğer sayma."
+        ),
+    }.get(feature["key"], "Hedef feature'ın verilen anlam karşıtlığını doğal Türkçe içinde açık tut.")
+    query_rule = (
+        "Query doğal bir mı/mi/mu/mü odak sorusu olmalı; başka meta-arama dili kullanma."
+        if feature["key"] == "Q.PART.SCOPE"
+        else "Query doğal bir durumu İDDİA etmeli; evet/hayır sorusu ve ‘kaydı bul/arıyorum’ dili kullanma."
+    )
     allomorph_rule = (
         "Bu bir ALLOMORPH INVARIANCE family’sidir: pozitif, aynı gramatik işlevi farklı geçerli "
         "yüzey biçimiyle korumalıdır. Geçerli allomorf hard/easy negatif OLAMAZ. Negatifler başka "
@@ -103,7 +135,7 @@ HEDEF
 - Ortak bağlam tek başına sorguyu yanıtlamamalı ve adaylar arasındaki doğru/yanlış ayrımını
   değiştirmemeli; ayrım yalnız `critical_sentence` içinde yerel kalmalı.
 - Adayların token uzunlukları ve ayrıntı yoğunluğu birbirine yakın olmalı. Gold sistematik olarak en uzun olamaz.
-- Query doğal bir durumu İDDİA etmeli; evet/hayır sorusu ve “kaydı bul/arıyorum” dili kullanma.
+- {query_rule}
 - Positive sorgudaki aynı olayı/anlamı doğru biçimbilimle doğal bir paraphrase olarak vermeli.
 - `equivalence_positive` tek positive alt-türüdür.
 - İki easy_negative konu ve sözcük bakımından bariz farklıdır ama uzunluk/akıcılık açısından ucuz ipucu vermez.
@@ -129,6 +161,7 @@ BİÇİMBİLİM
 - {allomorph_rule}
 - Yüzey biçimleri yalnız rehberdir: {feature['surface_forms']}.
 - Anlam karşıtlığı: {feature['meaning_contrast']}.
+- Fenomene özel kural: {special_rule}
 - {strict_rule}
 
 GENERALİZASYON

@@ -6,7 +6,9 @@
 - İki generator: 300 + 300; ayrı model ailesinden bir blind LLM judge.
 - Query: `%75` 1 cümle, `%25` 2 cümle.
 - Pasaj: `%30/%30/%30/%10` oranında 1/2/3/4 cümle.
-- 65 fenomen, 6 macro grup; morph-hard ve semantic-hard ayrı raporlanır.
+- 71 fenomen, 6 macro grup; morph-hard ve semantic-hard ayrı raporlanır.
+- Yeni altılı: `COP.NEG`, `COP.TAM`, `Q.PART.SCOPE`, `NMLZ.MA_VS_DIK`,
+  `REL.GEN.POSS`, `ANAPHOR.AGR`.
 
 Tek akış:
 
@@ -41,14 +43,14 @@ Komutlar:
 
 ```bash
 python3 -m test self-test
-python3 -m test plan --run-id test_v34
+python3 -m test plan --run-id test_v35
 
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v34
-python3 -m test finalize --run-id test_v34
+python3 -m test generate --run-id test_v35
+python3 -m test finalize --run-id test_v35
 ```
 
 Detaylar: [`README.md`](README.md). Final Colab:

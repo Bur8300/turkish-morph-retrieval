@@ -1,4 +1,4 @@
-# Turkish Morph Retrieval Test — v3.4.0
+# Turkish Morph Retrieval Test — v3.5.0
 
 Bu dizin Türkçe encoder'ların küçük fakat anlam değiştiren morfolojik farkları ayırt edip
 etmediğini ölçen benchmark'ı üretir ve değerlendirir. Train sistemi [`../train/`](../train/)
@@ -98,7 +98,7 @@ Ucuz baseline eşitlikleri candidate ID ile bozulmaz; eşit skorlu adayların b�
 
 ## Fenomenler ve hard negatifler
 
-Kod 6 macro grup altında 65 hedef taşır: 51 single ve 14 composition/chain.
+Kod 6 macro grup altında 71 hedef taşır: 56 single ve 15 composition/chain.
 
 - Hâl, konum ve yön
 - Çoğul, iyelik ve fiilde kişi-sayı uyumu (`V.AGR`)
@@ -106,6 +106,12 @@ Kod 6 macro grup altında 65 hedef taşır: 51 single ve 14 composition/chain.
 - Olumsuzluk, çatı ve valency
 - Ulaç, sıfat-fiil, türetim ve allomorph
 - Ek-zinciri composition
+
+Yeni kapsam: isim cümlesi olumsuzluğu (`COP.NEG`), ek-fiil TAM (`COP.TAM`), soru parçacığı
+odağı (`Q.PART.SCOPE`), `-mA/-DIK` adlaştırma ayrımı (`NMLZ.MA_VS_DIK`), `-DIK` yapısında
+genitif–iyelik bağı (`REL.GEN.POSS`) ve `kendi` zamirinde kişi/sayı-gönderim (`ANAPHOR.AGR`).
+`Q.PART.SCOPE` doğal bir odak sorusu üretir ve parçacığın yerini değiştirmeyi gerektirdiğinden,
+token sırasını sabit tutan 150-family strict minimal-pair slice'ına atanmaz.
 
 Her family'deki altı çekirdek hard:
 
@@ -225,7 +231,7 @@ Artefakt kontrolleri:
 - `prefix5` suffix-reduction kontrolü; gerçek lemma/kök analizi değildir
 
 İstatistikler query-level bootstrap `%95 CI`, paired bootstrap, approximate randomization,
-McNemar, Holm düzeltmesi ve slice sonuçlarını içerir. Tekil 65 fenomen küçük örnekli tanısal
+McNemar, Holm düzeltmesi ve slice sonuçlarını içerir. Tekil 71 fenomen küçük örnekli tanısal
 tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyindedir.
 
 ## Komutlar
@@ -233,17 +239,17 @@ tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyinde
 ```bash
 # API'siz regresyon testi ve plan
 python3 -m test self-test
-python3 -m test plan --run-id test_v34
+python3 -m test plan --run-id test_v35
 
 # İki generator + bağımsız blind judge
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v34
+python3 -m test generate --run-id test_v35
 
 # Tamamlanan 100/500 kotasını doğrula, freeze et ve qrels export et
-python3 -m test finalize --run-id test_v34
+python3 -m test finalize --run-id test_v35
 
 # Train üretildikten sonra leakage audit
 python3 -m test audit-leakage --test TEST.json --train TRAIN.json
@@ -285,12 +291,12 @@ test/runs/<run_id>/
 ├── rejected.jsonl
 ├── generation_report.json
 ├── release/
-│   ├── morph_dev_v3.4.0.json
-│   ├── morph_test_blind_v3.4.0.json
+│   ├── morph_dev_v3.5.0.json
+│   ├── morph_test_blind_v3.5.0.json
 │   ├── artifact_audit.json
 │   └── freeze_manifest.json
 └── private/
-    ├── morph_test_internal_v3.4.0.json
+    ├── morph_test_internal_v3.5.0.json
     ├── private_qrels.jsonl
     ├── beir_test_qrels.tsv
     └── train_exclusion_holdouts.json

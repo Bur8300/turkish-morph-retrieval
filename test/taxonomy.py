@@ -40,6 +40,7 @@ COMP = "suffix_chain_composition"
 FEATURES = (
     # Negation, ability, voice, valency
     F("NEG", "olumsuzluk", VOICE, "single", "eylemin gerçekleşmesi ↔ gerçekleşmemesi", ("-ma", "-me")),
+    F("COP.NEG", "isim cümlesinde olumsuzluk", VOICE, "single", "yüklemin özne için geçerli olması ↔ değil ile reddedilmesi", ("değil", "değildi", "değilmiş", "değilse")),
     F("ABIL", "yeterlilik", VOICE, "single", "yapabilme ↔ yapamama", ("-abil", "-ebil")),
     F("NEG.ABIL", "yetersizlik", VOICE, "single", "yapamama ↔ yapmama", ("-ama", "-eme")),
     F("CAUS", "ettirgen", VOICE, "single", "kendisi yapma ↔ başkasına yaptırma", ("-dır", "-dir", "-tır", "-tir", "-ir")),
@@ -58,6 +59,8 @@ FEATURES = (
     F("IMP.3", "üçüncü kişi emir", TAM, "single", "yapması isteniyor ↔ yaptığı bildiriliyor", ("-sın", "-sin", "-sun", "-sün")),
     F("COND", "koşul", TAM, "single", "koşullu ihtimal ↔ gerçekleşmiş neden-sonuç", ("-sa", "-se")),
     F("PRSM", "tahmin/kesinlik", TAM, "single", "çıkarım/tahmin ↔ doğrudan bilgi", ("-dır", "-dir", "-dur", "-dür")),
+    F("COP.TAM", "ek-fiilde zaman/kanıtsallık/koşul", TAM, "single", "isim yüklemin geçmişte geçerli olması ↔ aktarılması/koşula bağlanması", ("-ydı", "-ydi", "-ymış", "-ymiş", "-ysa", "-yse", "idi", "imiş", "ise")),
+    F("Q.PART.SCOPE", "soru parçacığında odak kapsamı", TAM, "single", "eyleyenin sorgulanması ↔ nesnenin/başka ögenin sorgulanması", ("mı", "mi", "mu", "mü")),
 
     # Nominal case, possession, number and agreement
     F("ACC", "belirtme hâli", CASE, "single", "belirli nesne ↔ belirsiz/genel nesne", ("-ı", "-i", "-u", "-ü")),
@@ -69,6 +72,7 @@ FEATURES = (
     F("EQU", "eşitlik hâli", CASE, "single", "ona göre/o biçimde ↔ başka ölçüt", ("-ca", "-ce", "-ça", "-çe")),
     F("PL", "çoğul", AGR, "single", "birden çok ↔ tek", ("-lar", "-ler")),
     F("V.AGR", "fiilde kişi-sayı uyumu", AGR, "single", "eylemi yapan kişi/sayı ↔ başka kişi/sayı", ("-m", "-ım", "-im", "-sın", "-sin", "-k", "-ız", "-iz", "-siniz", "-lar", "-ler")),
+    F("ANAPHOR.AGR", "kendi zamirinde kişi-sayı ve gönderim", AGR, "single", "dönüşlü zamirin doğru kişiye/gruba gönderimi ↔ başka kişi/gruba gönderimi", ("kendim", "kendin", "kendi", "kendimiz", "kendiniz", "kendileri")),
     F("POSS.1SG", "1. tekil iyelik", AGR, "single", "benim ↔ başkasının", ("-ım", "-im", "-um", "-üm", "-m")),
     F("POSS.2SG", "2. tekil iyelik", AGR, "single", "senin ↔ başkasının", ("-ın", "-in", "-un", "-ün", "-n")),
     F("POSS.3SG", "3. tekil iyelik", AGR, "single", "onun ↔ benim/bizim", ("-ı", "-i", "-u", "-ü", "-sı", "-si")),
@@ -84,6 +88,7 @@ FEATURES = (
     F("CVB.ASLONG", "-dikçe ulacı", DERIV, "single", "sürdükçe/orantılı ↔ tek sefer", ("-dıkça", "-dikçe", "-dukça", "-dükçe")),
     F("CVB.WHILE", "-ken ulacı", DERIV, "single", "eşzamanlı ↔ önce/sonra", ("-ken",)),
     F("NMLZ.MEK", "-mek adlaştırması", DERIV, "single", "eylemin kendisi ↔ gerçekleşmiş olay", ("-mak", "-mek")),
+    F("NMLZ.MA_VS_DIK", "-mA ve -DIK adlaştırma karşıtlığı", DERIV, "single", "istenen/planlanan olay ↔ gerçekleşmiş olgu bilgisi", ("-ma", "-me", "-dığı", "-diği", "-duğu", "-düğü")),
     F("PTCP.SUBJ", "özne sıfat-fiili", DERIV, "single", "eylemi yapan ↔ maruz kalan", ("-an", "-en")),
     F("PTCP.FUT", "gelecek sıfat-fiili", DERIV, "single", "yapılacak ↔ yapılmış", ("-acak", "-ecek")),
     F("PRIV", "yoksunluk", DERIV, "single", "bir şeyden yoksun ↔ onu içeren", ("-sız", "-siz", "-suz", "-süz")),
@@ -106,6 +111,7 @@ FEATURES = (
     F("FUT.PST", "gelecek + geçmiş", COMP, "chain", "gerçekleşmemiş niyet ↔ gerçekleşmiş olay", ("-acaktı", "-ecekti"), "composition"),
     F("CNTR", "karşı-olgusal koşul", COMP, "chain", "olmadı ama olsaydı ↔ gerçekten oldu", ("-saydı", "-seydi"), "composition"),
     F("NMLZ.DIK", "adlaştırma + iyelik", COMP, "chain", "gerçekleşmiş eylem bilgisi ↔ gelecek eylem", ("-dığı", "-diği", "-duğu", "-düğü"), "composition"),
+    F("REL.GEN.POSS", "-DIK sıfat-fiilinde genitif–iyelik uyumu", COMP, "chain", "yan cümle öznesi ile sıfat-fiil iyeliğinin aynı kişi/sayıya bağlanması ↔ başka possessor/gönderim", ("-ın", "-in", "-un", "-ün", "-dığı", "-diği", "-dığım", "-diğim"), "composition"),
     F("PL.POSS.CASE", "çoğul + iyelik + hâl", COMP, "chain", "kaç tane, kimin ve yön/konum birlikte", (), "composition"),
     F("CAUS.PASS.NEG", "ettirgen + edilgen + olumsuzluk", COMP, "chain", "yaptıran, maruz kalan ve olumsuzluk kapsamı", (), "composition"),
     F("EVID.COND.NEG", "kanıtsallık + koşul + olumsuzluk", COMP, "chain", "bilgi kaynağı, ihtimal ve kutupluluk", (), "composition"),
@@ -198,6 +204,11 @@ def hard_profile(feature: Feature | dict) -> list[dict[str, str]]:
         extras = (
             ("noun_possessor_number_trap", "nesnenin sayısı ile sahibin sayısı karıştırılmış"),
             ("morph_distractor", "hedef biçim yanlış olay veya sözcüğe bağlı"),
+        )
+    elif key in {"COP.NEG", "Q.PART.SCOPE", "NMLZ.MA_VS_DIK"}:
+        extras = (
+            ("scope_attachment_trap", "olumsuzluk, soru odağı veya yan-cümle kapsamı yanlış"),
+            ("morph_distractor", "hedef biçim yanlış yüklem, öge veya olaya bağlı"),
         )
     elif macro in {CASE, AGR, VOICE}:
         extras = (

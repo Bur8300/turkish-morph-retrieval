@@ -63,6 +63,59 @@ SEALED_DOMAIN_REGISTER_PAIRS = (
 )
 
 
+def _slot_id(slot: dict[str, Any], feature, cfg: dict[str, Any]) -> str:
+    fingerprint = hashlib.sha256(
+        f"{cfg['version']}|{slot['index']}|{feature.key}|{slot['generalization_bucket']}|"
+        f"{slot['query_sentence_count']}|{slot['passage_sentence_count']}|"
+        f"{slot['critical_sentence_position']}|{slot['domain']}|{slot['template']['id']}".encode()
+    ).hexdigest()[:10]
+    return f"raw_{slot['index']:05d}_{fingerprint}"
+
+
+def _eligible_features(slot: dict[str, Any]) -> list:
+    pool = [
+        feature for feature in FEATURES
+        if feature.layer == slot["layer"]
+        and feature.macro == slot["macro_phenomenon"]
+        and feature.objective == slot["objective"]
+    ]
+    if slot["strict_minimal_pair"]:
+        pool = [feature for feature in pool if feature.key != "Q.PART.SCOPE"]
+    if slot["layer"] == "chain" and slot["target_split"] == "development":
+        pool = [feature for feature in pool if feature.key in DEV_COMPOSITION_KEYS]
+    elif slot["layer"] == "chain" and slot["generalization_bucket"] == "composition_holdout":
+        pool = [feature for feature in pool if feature.key not in DEV_COMPOSITION_KEYS]
+    return pool
+
+
+def _balance_features(slots: list[dict[str, Any]], cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    """Greedily balance features inside fixed macro/objective slots under holdout constraints."""
+    counts = Counter()
+    seed = int(cfg["seed"])
+    ordered = sorted(
+        slots,
+        key=lambda slot: (
+            len(_eligible_features(slot)),
+            _seed(seed, "feature_slot_order", slot["index"]),
+        ),
+    )
+    for slot in ordered:
+        eligible = _eligible_features(slot)
+        if not eligible:
+            raise ValueError(f"{slot['slot_id']} için uygun fenomen yok")
+        feature = min(
+            eligible,
+            key=lambda item: (
+                counts[item.key], _seed(seed, "feature_tie", slot["index"], item.key)
+            ),
+        )
+        counts[feature.key] += 1
+        slot["feature"] = feature.to_dict()
+        slot["hard_profile"] = hard_profile(feature)
+        slot["slot_id"] = _slot_id(slot, feature, cfg)
+    return sorted(slots, key=lambda slot: slot["index"])
+
+
 def _feature_for(
     index: int,
     layer: str,
@@ -70,8 +123,11 @@ def _feature_for(
     seed: int,
     target_split: str,
     bucket: str,
+    strict_minimal_pair: bool,
 ):
     pool = [feature for feature in FEATURES if feature.layer == layer and feature.macro == macro]
+    if strict_minimal_pair:
+        pool = [feature for feature in pool if feature.key != "Q.PART.SCOPE"]
     if layer == "chain" and target_split == "development":
         pool = [feature for feature in pool if feature.key in DEV_COMPOSITION_KEYS]
     elif layer == "chain" and bucket == "composition_holdout":
@@ -143,7 +199,9 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
         feature = _round_robin(allomorphs, index, seed, "allomorph_feature")
     else:
         macro = _round_robin(available_macros, index, seed, f"macro:{layer}")
-        feature = _feature_for(index, layer, macro, seed, target_split, bucket)
+        feature = _feature_for(
+            index, layer, macro, seed, target_split, bucket, strict_minimal_pair
+        )
         if feature.objective == "allomorph_invariance":
             non_allomorph = [
                 candidate for candidate in FEATURES
@@ -175,18 +233,13 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
     elif target_split == "development" and (domain, register) in SEALED_DOMAIN_REGISTER_PAIRS:
         register = REGISTERS[(REGISTERS.index(register) + 1) % len(REGISTERS)]
 
-    fingerprint = hashlib.sha256(
-        f"{cfg['version']}|{index}|{feature.key}|{bucket}|{query_sentence_count}|"
-        f"{passage_sentence_count}|{critical_sentence_position}|{domain}|{template['id']}".encode()
-    ).hexdigest()[:10]
-    slot_id = f"raw_{index:05d}_{fingerprint}"
     tags = [bucket]
     if domain_shift:
         tags.append("domain_shift")
 
-    return {
+    slot = {
         "index": index,
-        "slot_id": slot_id,
+        "slot_id": "pending",
         "target_split": target_split,
         "generalization_bucket": bucket,
         "generalization_tags": tags,
@@ -209,10 +262,14 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
             "components_seen_chain_unseen" if bucket == "composition_holdout" else "open_composition"
         ),
     }
+    slot["slot_id"] = _slot_id(slot, feature, cfg)
+    return slot
 
 
 def build_plan(cfg: dict[str, Any], size: int | None = None) -> list[dict[str, Any]]:
-    return [make_slot(index, cfg) for index in range(size if size is not None else final_target(cfg))]
+    full_size = max(final_target(cfg), size or 0)
+    slots = _balance_features([make_slot(index, cfg) for index in range(full_size)], cfg)
+    return slots[:size] if size is not None else slots
 
 
 def plan_statistics(slots: list[dict[str, Any]]) -> dict[str, dict[str, int]]:

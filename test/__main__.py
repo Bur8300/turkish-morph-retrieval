@@ -28,7 +28,7 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     plan = sub.add_parser("plan", help="API çağrısı yapmadan kapsam planı üret")
-    plan.add_argument("--run-id", default="planned_test_v34")
+    plan.add_argument("--run-id", default="planned_test_v35")
     plan.add_argument("--size", type=int, default=None)
 
     generation = sub.add_parser("generate", help="üret + deterministic QC + kör judge")

@@ -11,7 +11,7 @@ from .evaluation import evaluate_run, validate_binary_qrels
 from .planner import build_plan, make_slot, plan_statistics
 from .pipeline import _process_slot, _resume_refill_rounds
 from .selection import select_balanced
-from .taxonomy import FEATURE_BY_KEY, hard_profile
+from .taxonomy import FEATURES, FEATURE_BY_KEY, hard_profile
 from .validators import interpret_judge, normalize_family, validate_family
 
 
@@ -106,6 +106,33 @@ def run() -> list[str]:
     if build_plan(cfg) != slots_600:
         failures.append("varsayılan plan doğrudan 600 kota slotu üretmiyor")
     stats = plan_statistics(slots_600)
+    planned_features = Counter(slot["feature"]["key"] for slot in slots_600)
+    if len(FEATURES) != 71 or set(planned_features) != {feature.key for feature in FEATURES}:
+        failures.append(
+            f"71 fenomenin tamamı planda değil: taxonomy={len(FEATURES)}, "
+            f"planned={len(planned_features)}"
+        )
+    new_features = {
+        "COP.NEG", "COP.TAM", "Q.PART.SCOPE", "NMLZ.MA_VS_DIK",
+        "REL.GEN.POSS", "ANAPHOR.AGR",
+    }
+    if not new_features <= set(planned_features):
+        failures.append(f"yeni fenomenler eksik: {sorted(new_features - set(planned_features))}")
+    balance_groups: dict[tuple[str, str], list[int]] = {}
+    for key, count in planned_features.items():
+        feature = FEATURE_BY_KEY[key]
+        balance_groups.setdefault((feature.macro, feature.objective), []).append(count)
+    unbalanced = {
+        group: values for group, values in balance_groups.items()
+        if max(values) - min(values) > 1
+    }
+    if unbalanced:
+        failures.append(f"macro/objective içi fenomen dağılımı dengesiz: {unbalanced}")
+    if any(
+        slot["strict_minimal_pair"] and slot["feature"]["key"] == "Q.PART.SCOPE"
+        for slot in slots_600
+    ):
+        failures.append("Q.PART.SCOPE token-sırası strict minimal-pair slice'ına girdi")
     expected = {
         "target_split": {"development": 100, "sealed_test": 500},
         "query_sentence_count": {"1": 450, "2": 150},

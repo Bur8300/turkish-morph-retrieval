@@ -23,6 +23,7 @@ generator'ı bu metinleri few-shot olarak kullanmaz.
   dengelenir; aynı family'deki diğer tam bağlam cümleleri bütün adaylarda aynıdır.
 - Standard, lemma-holdout, template-holdout ve compositional-holdout dilimleri.
 - Allomorph invariance ile anlam değiştiren morfem karşıtlığı ayrı objective'lerdir.
+- 6 macro grup altında 71 fenomen; copula, soru odağı, adlaştırma, ilgi yapısı ve anafor uyumu dahil.
 - 150 strict minimal-pair family; iki generator finalde 300+300 dengelenir.
 - 600 dengeli slot → deterministic QC → farklı model ailesinden blind judge. Kalan örnek aynı
   slotun kotasını koruyan taze üretimle hemen değiştirilir → hash/manifest ile freeze.
@@ -39,7 +40,7 @@ Yeni test kodu planlama/QC tarafında yalnız Python standart kütüphanesini ku
 
 ```bash
 python3 -m test self-test
-python3 -m test plan --run-id test_v34
+python3 -m test plan --run-id test_v35
 ```
 
 API üretimi için:
@@ -49,7 +50,7 @@ export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v34_pilot --limit 30
+python3 -m test generate --run-id test_v35_pilot --limit 30
 ```
 
 İki generator ve judge üç farklı OpenRouter model ailesinden değilse kod çalışmayı reddeder. Model kimlikleri,

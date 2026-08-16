@@ -1,6 +1,6 @@
 {
   "dataset_name": "turkish_morph_retrieval_test",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "seed": 20260814,
   "targets": {
     "development": 100,
