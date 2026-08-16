@@ -29,6 +29,10 @@ Kontrollü 11-aday metrikleri `Recall@1/3`, MRR@10 ve nDCG@10'dur. Full-corpus r
 sealed query için farklı semantic frame'lerdeki 5.500 belgenin tamamını sıralar ve
 `Recall@1/3/10/50`, MRR@10, nDCG@10 raporlar.
 
+Paper'ın iki ana sonucu birlikte sunulur: kontrollü contrast retrieval morfolojik ayrımı,
+full-corpus retrieval ise aynı gold'u büyük ortak corpus içinde bulma başarısını ölçer. İkincisi
+yalnız tanısal bir tablo değildir.
+
 Komutlar:
 
 ```bash

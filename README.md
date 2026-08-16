@@ -60,6 +60,9 @@ komutları kullanın.
 
 ## Paper değerlendirme katmanları
 
+Paper iki tamamlayıcı ana benchmark sonucu raporlar; full-corpus retrieval yalnız tanısal bir
+ek değildir:
+
 1. Her query'nin kendi 11 adayı üzerinde `Recall@1/3`, MRR@10 ve nDCG@10.
 2. Ortak 5.500 test dokümanında full-corpus `Recall@1/3/10/50`, MRR@10 ve nDCG@10.
 3. Genel retrieval yeteneğinin korunması için harici Turkish-BEIR/TR-MTEB sonuçları.

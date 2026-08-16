@@ -158,6 +158,10 @@ tek gold'u vardır; diğer family'ler farklı semantic frame taşır. Exact/fuzz
 ve frame tekrar kontrollerinden geçen diğer belgeler nonrelevant kabul edilerek sealed testteki
 5.500 belgenin tamamı sıralanır.
 
+Paper iki sonucu birlikte ana değerlendirme olarak raporlar: kontrollü 11-aday contrast retrieval
+küçük morfolojik farkı izole eder; full-corpus retrieval gold'un büyük ortak corpus içinde bulunup
+bulunamadığını ölçer. Full-corpus sonuç yalnız tanısal yardımcı analiz değildir.
+
 ## Otomatik kalite kontrolleri
 
 Family düzeyi:
