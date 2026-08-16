@@ -12,7 +12,7 @@ from .planner import build_plan, make_slot, plan_statistics
 from .pipeline import _process_slot, _resume_refill_rounds
 from .selection import select_balanced
 from .taxonomy import FEATURES, FEATURE_BY_KEY, hard_profile
-from .validators import interpret_judge, normalize_family, validate_family
+from .validators import corpus_problems, interpret_judge, normalize_family, validate_family
 
 
 def _fixture_slot(cfg):
@@ -31,7 +31,10 @@ def _fixture_slot(cfg):
         "query_sentence_count": 1,
         "passage_sentence_count": 1,
         "critical_sentence_position": 1,
-        "hard_profile": hard_profile(FEATURE_BY_KEY["NEG"]),
+        "family_mode": "controlled_diverse",
+        "query_expression": "morph_explicit",
+        "query_gold_lexical_band": "low",
+        "hard_profile": hard_profile(FEATURE_BY_KEY["NEG"], "controlled_diverse"),
         "template": {"id": "event_report", "description": "doğal bir olay bildirimi"},
         "semantic_frame_id": "frame_fixture",
         "strict_minimal_pair": False,
@@ -51,8 +54,8 @@ def _fixture_raw():
         ("hard_06", "hard_negative", "close_paraphrase_wrong_meaning", "Ece raporu toplantıdan önce başlatmadı.", "başlatmadı", "feature_changed"),
         ("hard_07", "hard_negative", "argument_role_reversal", "Rapor Ece'yi toplantıdan önce tamamlamadı.", "tamamlamadı", "target_preserved"),
         ("hard_08", "hard_negative", "morph_distractor", "Ece toplantıyı bitirmedi ama rapor tamamlandı.", "bitirmedi", "feature_changed"),
-        ("easy_01", "easy_negative", "easy_negative", "Mert otobüs biletini sabah erkenden aldı.", "aldı", "unrelated"),
-        ("easy_02", "easy_negative", "easy_negative", "Derya bahçedeki çiçekleri akşam suladı.", "suladı", "unrelated"),
+        ("easy_01", "easy_negative", "easy_negative", "Mert otobüs biletini sabah erkenden aldı.", "aldı", "same_domain_off_intent"),
+        ("easy_02", "easy_negative", "easy_negative", "Derya bahçedeki çiçekleri akşam suladı.", "suladı", "same_domain_off_intent"),
     ]
     return {
         "semantic_frame_id": "frame_fixture",
@@ -65,7 +68,7 @@ def _fixture_raw():
             "applies": False, "positive_form": "", "minimal_negative_form": "",
             "operation": "", "changed_feature": "", "invariants": [],
         },
-        "query": "Ece raporu toplantıdan önce tamamlamadı.",
+        "query": "Toplantı başlamadan Ece raporu hâlâ tamamlamadı.",
         "context_sentences": [],
         "candidates": [
             {"candidate_slot": candidate_slot, "role": role, "subtype": subtype,
@@ -142,6 +145,11 @@ def run() -> list[str]:
             "standard": 240, "template_holdout": 120,
         },
         "strict_minimal_pair": {"False": 450, "True": 150},
+        "family_mode": {
+            "controlled_diverse": 270, "natural_retrieval": 180, "strict_minimal": 150,
+        },
+        "query_expression": {"morph_explicit": 300, "semantic_paraphrase": 300},
+        "query_gold_lexical_band": {"high": 180, "low": 180, "medium": 240},
         "generator_id": {"generator_a": 300, "generator_b": 300},
     }
     for field, wanted in expected.items():
@@ -194,6 +202,9 @@ def run() -> list[str]:
             "query_sentence_count": slot_item["query_sentence_count"],
             "passage_sentence_count": slot_item["passage_sentence_count"],
             "critical_sentence_position": slot_item["critical_sentence_position"],
+            "family_mode": slot_item["family_mode"],
+            "query_expression": slot_item["query_expression"],
+            "query_gold_lexical_band": slot_item["query_gold_lexical_band"],
             "macro_phenomenon": slot_item["macro_phenomenon"],
             "target_feature": slot_item["feature"]["key"],
             "critical_lemma": f"lemma_{slot_item['index']}",
@@ -247,6 +258,13 @@ def run() -> list[str]:
     problems = validate_family(family, slot, cfg)
     if problems:
         failures.append(f"geçerli fixture reddedildi: {problems}")
+    copied_gold_raw = _fixture_raw()
+    copied_gold_raw["query"] = "Ece raporu toplantıdan önce tamamlamadı."
+    copied_gold_raw["critical_word_query"] = "tamamlamadı"
+    copied_gold = normalize_family(copied_gold_raw, slot)
+    copied_problems = validate_family(copied_gold, slot, cfg)
+    if not any("query ile gold tek-kelime/yakın-kopya" in p for p in copied_problems):
+        failures.append("query–gold yakın-kopya koruması çalışmadı")
     hard = {
         candidate["candidate_slot"]: candidate["subtype"]
         for candidate in family["candidates"] if candidate["role"] == "hard_negative"
@@ -258,7 +276,9 @@ def run() -> list[str]:
         failures.append("family oluşturulurken 1 gold + 10 negative qrels üretilmedi")
 
     strict_slot = deepcopy(slot)
+    strict_slot["family_mode"] = "strict_minimal"
     strict_slot["strict_minimal_pair"] = True
+    strict_slot["hard_profile"] = hard_profile(FEATURE_BY_KEY["NEG"], "strict_minimal")
     strict_raw = _fixture_raw()
     strict_raw["critical_word_positive"] = "bitirmedi"
     positive_raw = next(row for row in strict_raw["candidates"] if row["candidate_slot"] == "positive_01")
@@ -289,7 +309,8 @@ def run() -> list[str]:
     })
     long_raw = _fixture_raw()
     long_raw["query"] = (
-        "Ece raporu toplantıdan önce tamamlamadı. Kayıt, teslimin hâlâ eksik olduğunu belirtiyor."
+        "Toplantı başlamadan Ece raporu hâlâ tamamlamadı. "
+        "Kayıt, teslimin hâlâ eksik olduğunu belirtiyor."
     )
     long_raw["context_sentences"] = [
         "Ekip sabah erkenden ofiste toplandı.",
@@ -366,10 +387,36 @@ def run() -> list[str]:
     if status != "accepted" or refilled["provenance"]["refill_round"] != 5:
         failures.append("blind judge reddinden sonra taze refill çalışmadı")
 
+    collision_items = [
+        {
+            "family_id": "collision_a", "semantic_frame_id": "frame_collision_a",
+            "query": "Doktor ilk hastanın kontrolünü tamamladı.",
+            "candidates": [
+                {"id": "a_gold", "role": "positive", "text": "Doktor ilk hastayı muayene etti."},
+                {"id": "a_easy", "role": "easy_negative", "text": "Klinik öğleden sonra kapandı."},
+            ],
+        },
+        {
+            "family_id": "collision_b", "semantic_frame_id": "frame_collision_b",
+            "query": "İkinci hastanın muayenesini yapan kişiyi bildirir.",
+            "candidates": [
+                {"id": "b_gold", "role": "positive", "text": "Başhekim ikinci hastayı muayene etti."},
+                {"id": "b_easy", "role": "easy_negative", "text": "Doktor ilk hastayı muayene etti."},
+            ],
+        },
+    ]
+    if not any(
+        "gold'u easy" in problem
+        for problem in corpus_problems(collision_items, cfg)
+    ):
+        failures.append("cross-family easy→gold çakışma kapısı çalışmadı")
+
     allomorph_slot = deepcopy(slot)
     allomorph_slot["feature"] = FEATURE_BY_KEY["ALLO.LOC"].to_dict()
     allomorph_slot["objective"] = "allomorph_invariance"
-    allomorph_slot["hard_profile"] = hard_profile(FEATURE_BY_KEY["ALLO.LOC"])
+    allomorph_slot["hard_profile"] = hard_profile(
+        FEATURE_BY_KEY["ALLO.LOC"], allomorph_slot["family_mode"]
+    )
     allomorph_family = normalize_family(_fixture_raw(), allomorph_slot)
     positive = next(c for c in allomorph_family["candidates"] if c["role"] == "positive")
     positive["morph_relation"] = "allomorph_equivalent"

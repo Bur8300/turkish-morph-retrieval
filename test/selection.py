@@ -58,7 +58,22 @@ def select_balanced(
             Counter(str(item["passage_sentence_count"]) for item in subset),
             _expected(target, cfg["passage_sentence_distribution"]),
         )
-        strict_target = int(round(target * float(cfg["strict_minimal_pair_fraction"])))
+        _check_counts(
+            f"{split} family_mode",
+            Counter(item["family_mode"] for item in subset),
+            _expected(target, cfg["family_mode_distribution"]),
+        )
+        _check_counts(
+            f"{split} query_expression",
+            Counter(item["query_expression"] for item in subset),
+            _expected(target, cfg["query_expression_distribution"]),
+        )
+        _check_counts(
+            f"{split} query_gold_lexical_band",
+            Counter(item["query_gold_lexical_band"] for item in subset),
+            _expected(target, cfg["query_gold_lexical_distribution"]),
+        )
+        strict_target = int(round(target * float(cfg["family_mode_distribution"]["strict_minimal"])))
         _check_counts(
             f"{split} strict_minimal_pair",
             Counter(bool(item["strict_minimal_pair"]) for item in subset),
@@ -78,6 +93,7 @@ def selection_statistics(items: list[dict[str, Any]]) -> dict[str, Any]:
         "target_split", "generalization_bucket", "query_sentence_count",
         "passage_sentence_count", "critical_sentence_position", "layer", "objective",
         "macro_phenomenon", "target_feature", "domain", "register",
+        "family_mode", "query_expression", "query_gold_lexical_band",
         "strict_minimal_pair", "generator_id",
     )
     statistics = {}

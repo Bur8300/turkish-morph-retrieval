@@ -1,0 +1,93 @@
+{
+  "run_id": "curated_preview_20_v36",
+  "created_at": "2026-08-16T20:42:46.630158+00:00",
+  "source": "test/previews/sol_preview_20_v35/preview_internal.json",
+  "count": 20,
+  "family_modes": {
+    "controlled_diverse": 9,
+    "natural_retrieval": 6,
+    "strict_minimal": 5
+  },
+  "query_expression": {
+    "morph_explicit": 10,
+    "semantic_paraphrase": 10
+  },
+  "lexical_bands": {
+    "high": 6,
+    "low": 6,
+    "medium": 8
+  },
+  "validation_problems": {},
+  "artifact_audit": {
+    "n_families": 20,
+    "chance_recall_at_1": 0.0909,
+    "recall_at_1_tie_aware": {
+      "bm25": 0.0488,
+      "character_3gram": 0.225,
+      "longest_candidate": 0.0,
+      "most_tokens": 0.0063,
+      "word_overlap": 0.0644
+    },
+    "gold_position_counts": {
+      "1": 1,
+      "2": 1,
+      "4": 4,
+      "5": 4,
+      "6": 1,
+      "7": 3,
+      "8": 2,
+      "10": 3,
+      "11": 1
+    },
+    "longest_gold_rate": 0.0,
+    "lexical_balance": {
+      "mean_gold_hard_median_gap": 0.0295,
+      "mean_hards_at_or_above_gold": 6.55
+    },
+    "generator_query_prefix_top10": {
+      "codex_preview": [
+        [
+          "doğrudan seferlere öncelik",
+          1
+        ],
+        [
+          "sabah vizitini aktaran",
+          1
+        ],
+        [
+          "psikiyatrist hastanın dünkü",
+          1
+        ],
+        [
+          "kurul gündeme geçtiğinde",
+          1
+        ],
+        [
+          "geçen akşam siz",
+          1
+        ],
+        [
+          "derya haftalık okuma",
+          1
+        ],
+        [
+          "analiste göre fonda",
+          1
+        ],
+        [
+          "teslimat adresi değiştirilen",
+          1
+        ],
+        [
+          "bilim fuarı çalışması",
+          1
+        ],
+        [
+          "kaynaksız iddiayı habere",
+          1
+        ]
+      ]
+    }
+  },
+  "corpus_problems": []
+}

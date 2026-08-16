@@ -1,0 +1,1008 @@
+{
+  "dataset_name": "turkish_morph_retrieval_test",
+  "version": "3.6.0",
+  "split": "curated_preview_blind",
+  "warning": "Curated preview; not final benchmark data.",
+  "items": [
+    {
+      "family_id": "family_raw_00000_2b9a7145fb",
+      "query": "Doğrudan seferlere öncelik veren Selin, bilet seçerken aktarmalı uçuşları tercih etmeyen bir yolcudur.",
+      "candidates": [
+        {
+          "id": "family_raw_00000_2b9a7145fb_c01",
+          "text": "Bilet seçerken Selin aktarmalı uçuşları tercih etmezdi; doğrudan seferlere öncelik verirdi."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c02",
+          "text": "Bilet seçerken Selin aktarmalı uçuşları tercih eder; doğrudan seferlere öncelik verir."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c03",
+          "text": "Bilet seçerken Selin doğrudan uçuşları tercih etmez; aktarmalı seferlere öncelik verir."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c04",
+          "text": "Bilet seçerken Derya aktarmalı uçuşları tercih etmez; doğrudan seferlere öncelik verir."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c05",
+          "text": "Bilet seçerken Selin aktarmalı uçuşları tercih etmez; doğrudan seferlere öncelik verir."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c06",
+          "text": "Hava yolu şirketi kapı değişikliğini uçuştan önce Selin'e kısa mesajla bildirdi."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c07",
+          "text": "Bilet seçerken Selin aktarmalı uçuşlara öncelik verir; doğrudan seferleri tercih etmez."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c08",
+          "text": "Bilet seçerken Selin aktarmalı uçuşları tercih etmeyecek; doğrudan seferlere öncelik verecek."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c09",
+          "text": "Selin biletini aldıktan sonra pencere kenarındaki koltuğunu çevrim içi olarak seçti."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c10",
+          "text": "Bilet seçerken Selin aktarmalı uçuşları tercih etmiyor; doğrudan seferlere öncelik veriyor."
+        },
+        {
+          "id": "family_raw_00000_2b9a7145fb_c11",
+          "text": "Bilet seçerken Selin aktarmalı uçuşları bazen tercih eder; doğrudan seferlere de öncelik verir."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00002_8099b1ebd7",
+      "query": "Sabah vizitini aktaran hemşireye göre doktor, görüşme boyunca hastanın anlattıklarına dikkat verdi. Söz konusu aktarım yalnız o görüşmeyi kapsıyordu.",
+      "candidates": [
+        {
+          "id": "family_raw_00002_8099b1ebd7_c01",
+          "text": "Hemşire, doktorun sabah vizitinde danışanın ilaç dozunu değiştirdiğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c02",
+          "text": "Hemşire, doktorun sabah vizitinde danışandan kan örneği aldığını söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c03",
+          "text": "Hemşire, doktorun sabah vizitinde hastayı dikkatle dinlemediğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c04",
+          "text": "Hemşire, doktorun sabah vizitinde hastaya dikkatle bilgi verdiğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c05",
+          "text": "Hemşire, doktorun sabah vizitinde danışanı dikkatle dinlediğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c06",
+          "text": "Hemşire, doktorun sabah vizitinden sonra danışana kontrol randevusu verdiğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c07",
+          "text": "Hemşire, doktorun sabah vizitinde hastasını başka bir bölüme yönlendirdiğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c08",
+          "text": "Hemşire, doktorun sabah vizitinde koridordaki anonsu dikkatle dinlediğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c09",
+          "text": "Hemşire, doktorun sabah vizitinde hastasıyla dikkatle konuştuğunu söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c10",
+          "text": "Hemşire, doktorun sabah vizitinde dosyayı dikkatle inceleyip hastaya bilgi verdiğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        },
+        {
+          "id": "family_raw_00002_8099b1ebd7_c11",
+          "text": "Hemşire, hastanın sabah vizitinde doktoru dikkatle dinlediğini söyledi. Konuşmanın ardından kısa bir not tutuldu. Ayrıntılar daha sonra yeniden gözden geçirildi."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00003_16874f0d36",
+      "query": "Psikiyatrist, hastanın dünkü görüşmede annesini ayırt edemediğini bildirdi.",
+      "candidates": [
+        {
+          "id": "family_raw_00003_16874f0d36_c01",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın dünkü görüşmede kardeşini tanıyamadığını bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c02",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın dünkü görüşmede annesini tanıyacağını bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c03",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın dünkü görüşmede annesini kolayca tanıyabildiğini bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c04",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, dünkü görüşmeden sonra hastanın ilaç kullanım planını güncellediğini bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c05",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın dünkü görüşmede annesini tanıyamayacağını bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c06",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın bugünkü görüşmede annesini tanıyamadığını bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c07",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın dünkü görüşmede annesini tanıyamadığını açıkladı. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c08",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın dünkü görüşmede annesini tanıyabildiği hâlde kimliğini söylemeyi reddettiğini bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c09",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın dünkü görüşmede annesini tanıdığını ancak tarihleri hatırlayamadığını bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c10",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, hastanın gelecek haftaki görüşmesi için yeni bir randevu oluşturduğunu bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        },
+        {
+          "id": "family_raw_00003_16874f0d36_c11",
+          "text": "Gün boyunca farklı kurumlardan peş peşe açıklamalar geldi. Yetkililer, ayrıntılı raporların daha sonra yayımlanacağını kaydetti. Psikiyatrist, annenin dünkü görüşmede hastayı tanıyamadığını bildirdi. Yeni gelişmelerin resmi kanallardan duyurulacağı belirtildi."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00004_526d09eeee",
+      "query": "Kurul gündeme geçtiğinde aylık risk raporu zaten hazır durumdaydı. Çalışmanın fon yöneticisi tarafından toplantı öncesinde tamamlandığı anlaşılıyordu.",
+      "candidates": [
+        {
+          "id": "family_raw_00004_526d09eeee_c01",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitiriyordu."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c02",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirmiş görünüyordu."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c03",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Kurul, aylık toplantıda yatırım fonunun yeni kredi sınırlarını ayrıntılı biçimde görüşmüştü."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c04",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısından önce bitirmişti."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c05",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık likidite raporunu kurul toplantısından önce bitirmişti."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c06",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Fon yöneticisi, toplantı başlamadan önce nakit akışı tablosunu kurul üyelerine göndermişti."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c07",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısından önce yarım bırakmıştı."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c08",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında henüz bitirmemişti."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c09",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirdi."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c10",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; risk analisti aylık risk raporunu kurul toplantısından önce bitirmişti."
+        },
+        {
+          "id": "family_raw_00004_526d09eeee_c11",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirecekti."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00005_a8227c5e95",
+      "query": "Geçen akşam siz iki kardeşin oturduğu apartmanın girişinde düşürdüğüm anahtarı daha sonra bulduğumu hatırladım.",
+      "candidates": [
+        {
+          "id": "family_raw_00005_a8227c5e95_c01",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam apartmanın girişinde düşürdüğüm anahtarı bulduğumu, çantanızın arabada kaldığını hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c02",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam sizin apartmanlarınızın girişinde düşürdüğüm anahtarı bulduğumu hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c03",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam bizim apartmanımızın girişinde düşürdüğüm anahtarı bulduğumu hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c04",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam sizin apartmanınızın girişinde düşürdüğüm anahtarı bulamadığımı hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c05",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Apartman görevlisinin geçen akşam sizin girişinizdeki arızalı lambayı onardığını hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c06",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam senin apartmanının girişinde düşürdüğüm anahtarı bulduğumu hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c07",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam sizin apartmanınızın girişinde düşürdüğüm telefonu bulduğumu hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c08",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen sabah sizin apartmanınızın girişinde düşürdüğüm anahtarı bulduğumu hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c09",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam senin apartmanlarının girişinde düşürdüğüm anahtarı bulduğumu hatırladım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c10",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam sizin apartmanınızın girişinde düşürdüğüm anahtarı bulduğumu anımsadım."
+        },
+        {
+          "id": "family_raw_00005_a8227c5e95_c11",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Geçen akşam iki kardeşin sizin apartmanınıza gelen paketleri teslim aldığını hatırladım."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00007_1d05a7e8ff",
+      "query": "Derya haftalık okuma ödevlerini genellikle ihmal etmez; bu yüzden düzenli sayılır.",
+      "candidates": [
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c01",
+          "text": "Derya, kendi haftalık okuma ödevini aksatmayan bir öğrenci değildir."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c02",
+          "text": "Okuma görevini düzenli biçimde aksatan Derya, disiplinli öğrenciler arasında değildir."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c03",
+          "text": "Selin, kendi haftalık okuma ödevini genellikle aksatmayan bir öğrencidir."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c04",
+          "text": "Derya, kendi haftalık okuma ödevini bu aralar aksatmıyor."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c05",
+          "text": "Kendi haftalık okuma ödevini aksatmayan Derya, sınıfta düzenli biri sayılırdı."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c06",
+          "text": "Derya, kendi haftalık matematik ödevini genellikle aksatmayan bir öğrencidir."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c07",
+          "text": "Öğretmeni, Derya'nın okuldan sonra bilim kulübü çalışmalarına düzenli katıldığını söyledi."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c08",
+          "text": "Derya, düzenli biçimde okuma görevini aksatmayan öğrenciler arasındadır."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c09",
+          "text": "Kütüphane görevlisi, Derya'nın ödünç aldığı kitapları cuma günü geri verdiğini söyledi."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c10",
+          "text": "Okuma görevini gelecek hafta aksatmayacak olan Derya, henüz düzenli sayılmaz."
+        },
+        {
+          "id": "family_raw_00007_1d05a7e8ff_c11",
+          "text": "Okuma görevini yalnız bu pazartesi aksatmayan Derya, ödevini o gün tamamladı."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00008_dc4481e0dd",
+      "query": "Analiste göre fonda izlenen genel politika, kısa süreli kur düşüşlerinde döviz pozisyonunu korumaktır.",
+      "candidates": [
+        {
+          "id": "family_raw_00008_dc4481e0dd_c01",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmamış” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c02",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici olmayan kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c03",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, emeklilik fonu hakkında “Geçici kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c04",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmaz” görüşünü paylaştı. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c05",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde hisse satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c06",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmazdı” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c07",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmıyor” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c08",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonunun yönetim ücretini bu çeyrekte değiştirmeyeceğini açıkladı. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c09",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satar” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c10",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, fonun yatırımcı bilgilendirme toplantısının cuma günü yapılacağını duyurdu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        },
+        {
+          "id": "family_raw_00008_dc4481e0dd_c11",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmayacak” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00011_d97c23866d",
+      "query": "Teslimat adresi değiştirilen sipariş, ücret iadesi onaylanırken hâlâ aktif durumdaydı.",
+      "candidates": [
+        {
+          "id": "family_raw_00011_d97c23866d_c01",
+          "text": "Teslimat adresi daha sonra değiştirilen sipariş, ücret iadesinin onaylanacağı sırada hâlâ aktifti. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c02",
+          "text": "Teslimat adresi daha sonra değiştirilen sipariş, ücret iadesinin onaylandığı sırada hâlâ aktifti. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c03",
+          "text": "Teslimat adresi sonradan değiştirilen sipariş, ücret iadesi onaylandığında artık kapalıydı. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c04",
+          "text": "Kargo görevlisi, adresi değiştirilen siparişi aktarma merkezinde yeniden taradı. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c05",
+          "text": "Müşteri hizmetleri, ücret iadesi isteyen alıcıya yeni takip kodunu gönderdi. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c06",
+          "text": "Teslimat adresi sonradan değiştirilen siparişe bağlı müşteri hesabı, ücret iadesi onaylandığında hâlâ aktifti. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c07",
+          "text": "Teslimat adresi daha sonra değiştirilen sipariş, ücret iadesinin onaylandığı sırada hâlâ aktifmiş. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c08",
+          "text": "Teslimat adresi sonradan değiştirilen sipariş, ücret iadesi reddedildiğinde hâlâ aktifti. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c09",
+          "text": "Teslimat adresi sonradan değiştirilen siparişin ücret iadesi onaylandığında müşteri hesabı hâlâ aktifti. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c10",
+          "text": "Teslimat adresi daha sonra değiştirilen sipariş, ücret iadesinin onaylandığı sırada hâlâ aktifse işlem kaydı tamamlanır. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        },
+        {
+          "id": "family_raw_00011_d97c23866d_c11",
+          "text": "Teslimat adresi sonradan değiştirilen sipariş, ücret iadesi onaylandığında hâlâ aktif değildi. İşlem ayrıntıları satıcı panelindeki hareket dökümüne işlendi."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00012_b3b2df097f",
+      "query": "Bilim fuarı çalışması öğrencilerce danışmanların katılımıyla, onlar adına yapılmaksızın tamamlandı.",
+      "candidates": [
+        {
+          "id": "family_raw_00012_b3b2df097f_c01",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı projesini danışmanları için değil, danışmanlarıyla hazırlayacak. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c02",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı projesini tek başına hazırladı, danışmanlarıyla ödül törenine katıldı. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c03",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı projesini danışmanları için değil, danışmanıyla hazırladı. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c04",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Danışmanlar kendi bilim fuarı projelerini öğrencileri için değil, öğrencileriyle hazırladı. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c05",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı projesini danışmanlarıyla değil, danışmanları için hazırladı. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c06",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı projesini okulun çevrim içi başvuru sistemine kaydetti. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c07",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı projesini danışmanlarıyla hazırlamak yerine danışmanlarına sundu. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c08",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Danışmanlar, bilim fuarına hazırlanan öğrenciler için laboratuvarı öğleden sonraya ayırdı. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c09",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı afişini danışmanları için değil, danışmanlarıyla hazırladı. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c10",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı projesini danışmanları için değil, danışmanlarıyla geliştirdi. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        },
+        {
+          "id": "family_raw_00012_b3b2df097f_c11",
+          "text": "İlçe genelindeki bilim fuarı cuma günü ziyaretçilere açıldı. Öğrenciler bilim fuarı projesini danışmanlarıyla hazırlamak yerine danışmanlarından teslim aldı. Değerlendirme kurulunun sonuçları gelecek hafta açıklayacağı bildirildi."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00013_22db7d2235",
+      "query": "Kaynaksız iddiayı habere eklemeyen editör, yayın saati geldiğinde bu ilkesini uygular.",
+      "candidates": [
+        {
+          "id": "family_raw_00013_22db7d2235_c01",
+          "text": "Yayın saati geldiğinde editör, kaynaksız iddiayı habere dahil eder."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c02",
+          "text": "Yayın saati yaklaşırken editör, haber için kullanılacak arşiv fotoğrafını seçti."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c03",
+          "text": "Yayın saati geldiğinde muhabir, kaynaksız iddiayı habere eklemez."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c04",
+          "text": "Yayın saati geldiğinde editör, kaynaksız iddiayı habere eklemiyor."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c05",
+          "text": "Yayın saati geldiğinde editör, kaynaksız iddiayı habere ekler."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c06",
+          "text": "Yayın saati geldiğinde editör, kaynaksız iddiayı habere eklemeyecek."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c07",
+          "text": "Yayın saati geldiğinde editör, kaynaksız iddiayı habere eklemez."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c08",
+          "text": "Yayın saati geldiğinde editörler, kaynaksız iddiayı habere eklemezler."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c09",
+          "text": "Editör, akşam bültenindeki ekonomi haberinin başlığını yayın öncesinde yeniden düzenledi."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c10",
+          "text": "Yayın saati geldiğinde editör, kaynaklı iddiayı habere eklemez."
+        },
+        {
+          "id": "family_raw_00013_22db7d2235_c11",
+          "text": "Yayın saati gelmediğinde editör, kaynaksız iddiayı habere ekler."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00014_400ce17a69",
+      "query": "Pazar yerinin onaylamadığı talep, alıcının fotoğraflarla kusurlu olduğunu belgelediği ürünün iadesine ilişkindi.",
+      "candidates": [
+        {
+          "id": "family_raw_00014_400ce17a69_c01",
+          "text": "Pazar yeri, alıcının kusurlu olduğunu fotoğraflarla belgelediği ürün için açtığı iade talebini dün akşam onaylamadı."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c02",
+          "text": "Pazar yeri, alıcının kusurlu olduğunu fotoğraflarla belgelediği ürün için açtığı değişim talebini bu sabah onaylamadı."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c03",
+          "text": "Alıcının fotoğraflarla kusurlu olduğunu belgelediği ürüne ilişkin iade talebini pazar yeri bu sabah onayladı."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c04",
+          "text": "Satıcı, kusurlu ürün hakkında alıcının gönderdiği mesaja bu sabah yanıt verdi."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c05",
+          "text": "Pazar yeri, iade sürecini başlatan alıcı için yeni bir kargo etiketi oluşturdu."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c06",
+          "text": "Pazar yeri, alıcının kusurlu olduğunu fotoğraflarla belgelediği ürünün iade talebini kabul etti, ancak ek açıklamasını onaylamadı."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c07",
+          "text": "Pazar yeri, alıcının kusurlu olduğunu fotoğraflarla belgelediği ürün için açtığı iade talebini bu sabah reddetmedi."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c08",
+          "text": "Alıcının fotoğraflarla kusurlu olduğunu belgelediği ürüne ilişkin iade talebini pazar yeri bu sabah onaylamadı."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c09",
+          "text": "Alıcı, kusurlu olduğu fotoğraflarla belgelenen ürün için pazar yerinin açtığı iade talebini bu sabah onaylamadı."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c10",
+          "text": "Pazar yeri, alıcının kusurlu olduğunu fotoğraflarla belgelediği ürün için açtığı iade talebini yarın onaylamayacak."
+        },
+        {
+          "id": "family_raw_00014_400ce17a69_c11",
+          "text": "Alıcının fotoğraflarla kusurlu olduğunu belgelediği ürünlere ilişkin iade taleplerini pazar yeri bu sabah onaylamadı."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00015_2cb47914c3",
+      "query": "İki işletmenin depolarında kaçak ürün bulunduğunu belediye ekipleri bugünkü denetimde belirledi.",
+      "candidates": [
+        {
+          "id": "family_raw_00015_2cb47914c3_c01",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin ortak deposunda kaçak ürün bulunduğunu belirledi."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c02",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin depolarından kaçak ürün çıkarıldığını belirledi."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c03",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, iki işletmenin ruhsatlarını girişte görünür biçimde sergilediğini tutanağa yazdı."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c04",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin ortaklarının evlerindeki depolarda kaçak ürün bulunduğunu belirledi."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c05",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletme çevresindeki depolarda kaçak ürün bulunduğunu belirledi."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c06",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin yangın söndürücülerinin tarihlerini kontrol etti."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c07",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin depolarında bandrollü ürün bulunduğunu belirledi."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c08",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin depolarında kaçak ürün bulunmadığını belirledi."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c09",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, geçen ayki denetimde iki işletmenin depolarında kaçak ürün bulunduğunu belirledi."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c10",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin depolarında kaçak ürün bulunduğunu tespit etti."
+        },
+        {
+          "id": "family_raw_00015_2cb47914c3_c11",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde bir işletmenin depolarında kaçak ürün bulunduğunu belirledi."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00016_eebb5feb4e",
+      "query": "İlaç midemde uzun süre kalınca bulantım belirgin biçimde arttı.",
+      "candidates": [
+        {
+          "id": "family_raw_00016_eebb5feb4e_c01",
+          "text": "Doktor, bulantı şikâyetim üzerine kullandığım ilacın reçetesini yeniden düzenledi."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c02",
+          "text": "Bulantı şikâyetimi anlattığım eczacı, kullandığım ilacın günlük dozunu hatırlattı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c03",
+          "text": "İlaç midemizde uzun süre kaldığı için bulantım arttı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c04",
+          "text": "İlaç dolapta uzun süre kaldığı için midemdeki bulantı arttı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c05",
+          "text": "İlaç midemde uzun süre kaldığı için ağrım azaldı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c06",
+          "text": "İlaç karnımda uzun süre kaldığından bulantım arttı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c07",
+          "text": "İlaç kardeşimin midesinde uzun süre kaldığı için bulantısı arttı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c08",
+          "text": "İlaç mideme hızla ulaştığı için bulantım arttı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c09",
+          "text": "İlaç midemden hızla geçtiği için bulantım arttı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c10",
+          "text": "İlaç midemden uzun sürede geçtiği için bulantım arttı."
+        },
+        {
+          "id": "family_raw_00016_eebb5feb4e_c11",
+          "text": "İlaç midemde uzun süre kalmasına rağmen bulantım artmadı."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00017_e2f60d12f2",
+      "query": "Fazla mesai çizelgesini insan kaynakları sorumlusunun onaylamadığı, imza föyü ile sistem kaydının eşleştirilmesiyle ortaya çıktı.",
+      "candidates": [
+        {
+          "id": "family_raw_00017_e2f60d12f2_c01",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü ile sistem kaydı karşılaştırılmış ve insan kaynakları sorumlularının fazla mesai çizelgesini onaylamamış olduğu anlaşılmıştır."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c02",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü ile sistem kaydı karşılaştırılmış ve insan kaynakları sorumlusunun fazla mesai çizelgesini onaylayacağı anlaşılmıştır."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c03",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü ile sistem kaydı karşılaştırılmış ve bordro sorumlusunun fazla mesai çizelgesini onaylamamış olduğu anlaşılmıştır."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c04",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İnsan kaynakları birimi, çalışanların geçen aya ait giriş çıkış kayıtlarını arşivlemiştir."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c05",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü ile sistem kaydı karşılaştırılmış ve insan kaynakları sorumlusunun fazla mesai çizelgesini onaylamış olduğu anlaşılmıştır."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c06",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü ile sistem kaydı karşılaştırılmış ve insan kaynakları sorumlusunun fazla mesai çizelgesine onay verdiği kesinleşmiştir."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c07",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü ile sistem kaydı karşılaştırılmış ve insan kaynakları sorumlusunun yıllık izin çizelgesini onaylamamış olduğu anlaşılmıştır."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c08",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İnsan kaynakları sorumlusu, gelecek aya ait vardiya çizelgesini çalışanlara iletmiştir."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c09",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü ile sistem kaydı karşılaştırılmamış, ancak insan kaynakları sorumlusunun fazla mesai çizelgesini onaylamış olduğu anlaşılmıştır."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c10",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü ile sistem kaydı karşılaştırılmış ve fazla mesai çizelgesinin onaylanmadığı anlaşılmıştır."
+        },
+        {
+          "id": "family_raw_00017_e2f60d12f2_c11",
+          "text": "İnceleme ekibi ilgili döneme ait belgeleri teslim alarak kayıt sırasına göre düzenlemiştir. Değerlendirme sırasında erişim yetkileri kontrol edilmiş ve elde edilen bulgular rapora eklenmiştir. İmza föyü sistem verisiyle eşleştirilmiş ve insan kaynakları sorumlusunun fazla mesai çizelgesini onaylamamış olduğu doğrulanmıştır."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00018_e470b134dd",
+      "query": "Çocuklu yolcular, otobüs gece yolda kalırsa hazırlanan plan uyarınca yedek araca alınacaktı. Bu yalnız gerçekleşmemiş bir ihtimaldi.",
+      "candidates": [
+        {
+          "id": "family_raw_00018_e470b134dd_c01",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Şoför, gece yolculuğunda verilecek dinlenme molasının saatini yolculara duyurmuştu."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c02",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsünün gece yolda kalmasında çocuklu yolcular yedek araçta bekletilecekti."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c03",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Hazırlanan plana göre, otobüs gece yolda kaldığından çocuklu yolcular yedek araca alınacaktı."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c04",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Hazırlanan plana göre, otobüsün gece yolda kalması hâlinde çocuklu yolcular yedek araca alınacaktı."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c05",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüslerinin gece yolda kalmasında çocuklu yolcular yedek araca alınacaktı."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c06",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsünün gece yolda kalmasıyla çocuklu yolcular yedek araca alınacaktı."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c07",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsünün gece yolda kalmasında yaşlı yolcular yedek araca alınacaktı."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c08",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Otobüs görevlisi, çocuklu yolcular için ön sıradaki koltukları yolculuktan önce ayırmıştı."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c09",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsünün sabah yolda kalmasında çocuklu yolcular yedek araca alınacaktı."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c10",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsü gece yolda kaldığında çocuklu yolcular yedek araca alınacaktı."
+        },
+        {
+          "id": "family_raw_00018_e470b134dd_c11",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsünün gece yolda kalmasında çocuklu yolcular yedek araca alınmayacaktı."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00019_b17cdb66c0",
+      "query": "Aidat için ayırdığım para hâlâ ortak hesapta duruyor. Bakiye başka bir yere aktarılmış değil.",
+      "candidates": [
+        {
+          "id": "family_raw_00019_b17cdb66c0_c01",
+          "text": "Banka, ortak hesabın aylık hareket dökümünü iki hesap sahibine e-postayla gönderdi. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c02",
+          "text": "Aidat için ayırdığım para ortak hesaptan çekildi, dekont hâlâ dosyada duruyor. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c03",
+          "text": "Tatil için ayırdığım para hâlâ ortak hesapta duruyor. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c04",
+          "text": "Ortak hesabın yetkili sahiplerinden biri bankadaki telefon numarasını bu sabah güncelledi. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c05",
+          "text": "Aidat için ayırdığım para dün ortak hesapta duruyordu. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c06",
+          "text": "Aidat için ayırdığım para artık ortak hesapta durmuyor. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c07",
+          "text": "Aidat için ayırdığım para şu anda ortak banka hesabında duruyor. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c08",
+          "text": "Aidat için ayırdığımız para hâlâ ortak hesapta duruyor. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c09",
+          "text": "Aidat için ayırdığım para hâlâ ortak hesaptan çekiliyor. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c10",
+          "text": "Aidat için ayırdığım para hâlâ ortak hesaba aktarılıyor. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        },
+        {
+          "id": "family_raw_00019_b17cdb66c0_c11",
+          "text": "Aidat için ayırdığım para ortak hesaptan çıktığında bakiye azaldı. Ay sonu yaklaşırken ev giderleri yeniden gözden geçirildi. Mobil bankacılık uygulaması sabah kısa süreliğine açıldı."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00021_57235a41d8",
+      "query": "Görüntü sürekli takıldığına göre fragmanı oynatan yazılımın donmuş olması muhtemeldir.",
+      "candidates": [
+        {
+          "id": "family_raw_00021_57235a41d8_c01",
+          "text": "Fragman başladıktan sonra görüntü sürekli takılıyorsa müzik uygulaması donuyordur."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c02",
+          "text": "Kullanıcı, aynı fragmanı daha sonra izlemek üzere uygulamadaki listesine ekledi."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c03",
+          "text": "Fragman başladıktan sonra görüntü sürekli takılıyorsa oynatıcı çalışıyordur."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c04",
+          "text": "Fragman başladıktan sonra oynatıcı akıcı çalışıyor, görüntü sürekli takılıyordur."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c05",
+          "text": "Fragman açıldıktan sonra görüntü sürekli takılıyorsa oynatıcı donuyordur."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c06",
+          "text": "Fragman başladıktan sonra görüntü sürekli takılmıyorsa oynatıcı donuyordur."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c07",
+          "text": "Fragman başlamadan önce görüntü sürekli takılıyorsa oynatıcı donuyordur."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c08",
+          "text": "Fragman başladıktan sonra görüntü sürekli takılıyorsa oynatıcı donacaktır."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c09",
+          "text": "Fragman açıldıktan sonra görüntü sürekli takılıyorsa oynatıcı donuyordu."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c10",
+          "text": "Oynatıcı, fragman için hazırlanan yeni altyazı dosyasını arka planda indirdi."
+        },
+        {
+          "id": "family_raw_00021_57235a41d8_c11",
+          "text": "Fragman başladıktan sonra görüntü sürekli takılıyorsa oynatıcı donmuyordur."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00022_4556cd6e1e",
+      "query": "Denetçi, satıcının hatalı ürün sayfasını yayından kaldırmaktan söz ettiğini tutanağa kaydetti.",
+      "candidates": [
+        {
+          "id": "family_raw_00022_4556cd6e1e_c01",
+          "text": "Pazar yeri denetçisi, satıcının hatalı ürün sayfasını yayından kaldırmaktan bahsettiğini inceleme tutanağına kaydetti."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c02",
+          "text": "Pazar yeri denetçisi, satıcının hatalı ürün sayfasını yayından kaldırdığından söz ettiğini inceleme tutanağına yazdı."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c03",
+          "text": "Pazar yeri denetçisi, satıcının hatalı ürün sayfasını yayında tutmaktan söz ettiğini inceleme tutanağına yazdı."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c04",
+          "text": "Pazar yeri denetçisi, satıcıya ürün sayfasının kargo ayarlarını yenilemesini hatırlattı."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c05",
+          "text": "Pazar yeri denetçisi, satıcının hatalı ürün sayfasını yayından kaldıracağından söz ettiğini inceleme tutanağına yazdı."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c06",
+          "text": "Satıcı, ürün sayfasındaki güncel stok miktarını pazar yeri sistemine kaydetti."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c07",
+          "text": "Pazar yeri denetçisi, satıcının hatalı olmayan ürün sayfasını yayından kaldırmaktan söz ettiğini inceleme tutanağına yazdı."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c08",
+          "text": "Pazar yeri denetçisi, satıcının hatalı ürün sayfasını yayından kaldırmamaktan söz ettiğini inceleme tutanağına yazdı."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c09",
+          "text": "Pazar yeri denetçisi, satıcının hatalı kampanya sayfasını yayından kaldırmaktan söz ettiğini inceleme tutanağına yazdı."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c10",
+          "text": "Pazar yeri denetçisi, satıcının hatalı ürün sayfasını güncellemekten, mağaza logosunu yayından kaldırmaktan söz ettiğini tutanağa yazdı."
+        },
+        {
+          "id": "family_raw_00022_4556cd6e1e_c11",
+          "text": "Pazar yeri denetçisi, müşterinin hatalı ürün sayfasını yayından kaldırmaktan söz ettiğini inceleme tutanağına yazdı."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00023_71fa2f4927",
+      "query": "Rapor hesaplarının banka yöneticilerince değil, incelemeyi yürüten uzmanların kendi çalışmasıyla üretildiği açıklandı.",
+      "candidates": [
+        {
+          "id": "family_raw_00023_71fa2f4927_c01",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki büyüme tahminlerini kendilerinin yaptığını açıkladı."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c02",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları kendilerinin yapacaklarını açıkladı."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c03",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Banka yöneticileri, incelemeyi yürüten uzmanlara talep edilen işlem belgelerini gönderdi."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c04",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları yöneticilerin yaptığını, özeti kendilerinin yazdığını açıkladı."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c05",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları kendilerinin gerçekleştirdiğini bildirdi."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c06",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları kendilerinin yapmadığını açıkladı."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c07",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları bizim yaptığımızı açıkladı."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c08",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Uzmanları inceleyen banka yöneticileri, rapordaki hesaplamaları kendilerinin yaptığını açıkladı."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c09",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları sizin yaptığınızı açıkladı."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c10",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen yöneticiler, rapordaki hesaplamaları kendilerinin yaptığını açıkladı."
+        },
+        {
+          "id": "family_raw_00023_71fa2f4927_c11",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, şube yöneticileriyle yapılacak değerlendirme toplantısını salı gününe planladı."
+        }
+      ]
+    },
+    {
+      "family_id": "family_raw_00025_69493a304a",
+      "query": "Ev adresine değil, kargo noktasında müşteriye aynı akşam ulaştırılan sipariş kayda geçti.",
+      "candidates": [
+        {
+          "id": "family_raw_00025_69493a304a_c01",
+          "text": "Müşteri siparişi ev adresine gönderilmek yerine kargo noktasında aynı akşam teslim edilmedi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c02",
+          "text": "Müşteri siparişi ev adresine gönderilmek yerine kargo noktasında ertesi akşam teslim edildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c03",
+          "text": "Müşterinin değişim paketi ev adresine gönderilmek yerine kargo noktasında aynı akşam teslim edildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c04",
+          "text": "Müşteri siparişi ev adresine gönderilmek yerine teslimat şubesinde aynı akşam teslim edildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c05",
+          "text": "Müşteri siparişi tek bir teslimat yeri yerine farklı kargo noktalarında işlem gördü. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c06",
+          "text": "Müşteri siparişi kargo noktasında aynı akşam kaydedildi, ancak ev adresine teslim edildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c07",
+          "text": "Müşteri, aynı siparişin fatura adresini mağazanın hesap sayfasında güncelledi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c08",
+          "text": "Müşteri siparişi ev adresine gönderilmek yerine kargo noktasına doğru aynı akşam yola çıkarıldı. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c09",
+          "text": "Kargo noktası da müşteri siparişini ev adresine göndermek yerine aynı akşam teslim etti. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c10",
+          "text": "Kargo şirketi, teslimat şubesine ulaşan siparişin barkodunu müşteriye kısa mesajla gönderdi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        },
+        {
+          "id": "family_raw_00025_69493a304a_c11",
+          "text": "Müşteri siparişi ev adresine gönderilmek yerine teslimat şubesinden aynı akşam teslim edildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+        }
+      ]
+    }
+  ]
+}

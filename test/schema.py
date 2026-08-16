@@ -1,39 +1,19 @@
-"""Provider-neutral JSON schemas and candidate vocabularies."""
+"""Small provider-facing schemas; trusted metadata is added by Python."""
 
 from __future__ import annotations
 
 from .taxonomy import HARD_SUBTYPES
 
 
-CANDIDATE_SUBTYPES = ["equivalence_positive", *HARD_SUBTYPES, "easy_negative"]
-MORPH_RELATIONS = [
-    "target_preserved",
-    "allomorph_equivalent",
-    "feature_changed",
-    "wrong_inflection",
-    "same_feature_wrong_content",
-    "chain_partial",
-    "scope_changed",
-    "unrelated",
-]
-
-
 CANDIDATE_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
     "properties": {
-        "role": {"type": "string", "enum": ["positive", "hard_negative", "easy_negative"]},
         "candidate_slot": {"type": "string", "pattern": "^(positive_01|hard_0[1-8]|easy_0[1-2])$"},
-        "subtype": {"type": "string", "enum": CANDIDATE_SUBTYPES},
         "critical_sentence": {"type": "string", "minLength": 8},
         "critical_word": {"type": "string", "minLength": 1},
-        "morph_relation": {"type": "string", "enum": MORPH_RELATIONS},
-        "reason": {"type": "string", "minLength": 3},
     },
-    "required": [
-        "role", "candidate_slot", "subtype", "critical_sentence", "critical_word",
-        "morph_relation", "reason"
-    ],
+    "required": ["candidate_slot", "critical_sentence", "critical_word"],
 }
 
 
@@ -45,27 +25,8 @@ GENERATION_SCHEMA = {
         "additionalProperties": False,
         "properties": {
             "semantic_frame_id": {"type": "string"},
-            "template_id": {"type": "string"},
             "critical_lemma": {"type": "string", "minLength": 2},
             "critical_word_query": {"type": "string", "minLength": 2},
-            "critical_word_positive": {"type": "string", "minLength": 2},
-            "feature_delta": {"type": "string", "minLength": 3},
-            "edit_script": {
-                "type": "object",
-                "additionalProperties": False,
-                "properties": {
-                    "applies": {"type": "boolean"},
-                    "positive_form": {"type": "string"},
-                    "minimal_negative_form": {"type": "string"},
-                    "operation": {"type": "string"},
-                    "changed_feature": {"type": "string"},
-                    "invariants": {"type": "array", "items": {"type": "string"}},
-                },
-                "required": [
-                    "applies", "positive_form", "minimal_negative_form", "operation",
-                    "changed_feature", "invariants",
-                ],
-            },
             "query": {"type": "string", "minLength": 8},
             "context_sentences": {
                 "type": "array",
@@ -78,12 +39,10 @@ GENERATION_SCHEMA = {
                 "maxItems": 11,
                 "items": CANDIDATE_SCHEMA,
             },
-            "generation_notes": {"type": "string"},
         },
         "required": [
-            "semantic_frame_id", "template_id", "critical_lemma", "critical_word_query",
-            "critical_word_positive", "feature_delta", "edit_script", "query", "context_sentences",
-            "candidates", "generation_notes",
+            "semantic_frame_id", "critical_lemma", "critical_word_query", "query",
+            "context_sentences", "candidates",
         ],
     },
 }

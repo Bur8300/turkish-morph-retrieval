@@ -7,6 +7,7 @@ import math
 import random
 import re
 from collections import Counter, defaultdict
+from difflib import SequenceMatcher
 from typing import Any
 
 _TOKEN_RE = re.compile(r"[a-zçğıöşü0-9]+", re.I)
@@ -63,6 +64,79 @@ def _critical_skeleton(sentence: str, critical_word: str) -> list[str] | None:
 def _word_overlap(query: str, text: str) -> float:
     query_terms = set(tokens(query))
     return len(query_terms & set(tokens(text))) / max(1, len(query_terms))
+
+
+def _word_jaccard(left: str, right: str) -> float:
+    return jaccard(set(tokens(left)), set(tokens(right)))
+
+
+def _token_edit_distance(left: str, right: str) -> int:
+    """Small dependency-free Levenshtein distance over word tokens."""
+    a, b = tokens(left), tokens(right)
+    previous = list(range(len(b) + 1))
+    for i, left_token in enumerate(a, start=1):
+        current = [i]
+        for j, right_token in enumerate(b, start=1):
+            current.append(min(
+                current[-1] + 1,
+                previous[j] + 1,
+                previous[j - 1] + (left_token != right_token),
+            ))
+        previous = current
+    return previous[-1]
+
+
+def _token_sequence_ratio(left: str, right: str) -> float:
+    return SequenceMatcher(a=tokens(left), b=tokens(right), autojunk=False).ratio()
+
+
+_HARD_RELATIONS = {
+    "minimal_morph_negative": "feature_changed",
+    "controlled_morph_negative": "feature_changed",
+    "same_lemma_wrong_inflection": "wrong_inflection",
+    "related_feature_negative": "feature_changed",
+    "same_morph_wrong_content": "same_feature_wrong_content",
+    "state_participant_time_trap": "target_preserved",
+    "close_paraphrase_wrong_meaning": "target_preserved",
+    "argument_role_reversal": "target_preserved",
+    "scope_attachment_trap": "scope_changed",
+    "morph_distractor": "target_preserved",
+    "partial_chain_negative": "chain_partial",
+    "allomorph_form_function_trap": "feature_changed",
+    "noun_possessor_number_trap": "feature_changed",
+    "lexical_retrieval_trap": "target_preserved",
+    "semantic_retrieval_hard": "target_preserved",
+}
+
+
+def _inject_candidate_metadata(candidates: list[dict], slot: dict) -> None:
+    """Derive labels from the trusted plan instead of asking the LLM to echo them."""
+    hard_types = {row["slot"]: row["subtype"] for row in slot["hard_profile"]}
+    for candidate in candidates:
+        candidate_slot = candidate.get("candidate_slot")
+        if candidate_slot == "positive_01":
+            candidate.update({
+                "role": "positive",
+                "subtype": "equivalence_positive",
+                "morph_relation": (
+                    "allomorph_equivalent"
+                    if slot["objective"] == "allomorph_invariance"
+                    else "target_preserved"
+                ),
+            })
+        elif candidate_slot in {"easy_01", "easy_02"}:
+            candidate.update({
+                "role": "easy_negative",
+                "subtype": "easy_negative",
+                "morph_relation": "same_domain_off_intent",
+            })
+        elif candidate_slot in hard_types:
+            subtype = hard_types[candidate_slot]
+            candidate.update({
+                "role": "hard_negative",
+                "subtype": subtype,
+                "morph_relation": _HARD_RELATIONS[subtype],
+            })
 
 
 def _content_prefixes(text: str) -> set[str]:
@@ -138,6 +212,7 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
     if not isinstance(context_sentences, list):
         raise ValueError("context_sentences liste olmalı")
     candidates = [dict(candidate) for candidate in raw_candidates]
+    _inject_candidate_metadata(candidates, slot)
     insert_at = int(slot["critical_sentence_position"]) - 1
     for candidate in candidates:
         sentences = [str(sentence).strip() for sentence in context_sentences]
@@ -151,6 +226,13 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
         candidate["relevance"] = int(candidate.get("role") == "positive")
 
     positives = [candidate for candidate in candidates if candidate.get("role") == "positive"]
+    minimal = next(
+        (candidate for candidate in candidates if candidate.get("candidate_slot") == "hard_01"),
+        None,
+    )
+    positive_word = positives[0].get("critical_word", "") if len(positives) == 1 else ""
+    minimal_word = minimal.get("critical_word", "") if minimal else ""
+    strict = bool(slot["strict_minimal_pair"])
     gold_id = positives[0]["id"] if len(positives) == 1 else None
     return {
         "family_id": family_id,
@@ -169,23 +251,32 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
         "query_sentence_count": slot["query_sentence_count"],
         "passage_sentence_count": slot["passage_sentence_count"],
         "critical_sentence_position": slot["critical_sentence_position"],
+        "family_mode": slot["family_mode"],
+        "query_expression": slot["query_expression"],
+        "query_gold_lexical_band": slot["query_gold_lexical_band"],
         "hard_profile": list(slot["hard_profile"]),
         "strict_minimal_pair": bool(slot["strict_minimal_pair"]),
         "generator_id": slot["generator_id"],
         "semantic_frame_id": raw.get("semantic_frame_id"),
-        "template_id": raw.get("template_id"),
+        "template_id": slot["template"]["id"],
         "critical_lemma": raw.get("critical_lemma"),
         "critical_word_query": raw.get("critical_word_query"),
-        "critical_word_positive": raw.get("critical_word_positive"),
-        "feature_delta": raw.get("feature_delta"),
-        "edit_script": raw.get("edit_script"),
+        "critical_word_positive": positive_word,
+        "feature_delta": slot["feature"]["meaning_contrast"],
+        "edit_script": {
+            "applies": strict,
+            "positive_form": positive_word if strict else "",
+            "minimal_negative_form": minimal_word if strict else "",
+            "operation": f"yalnız {slot['feature']['key']} biçimini değiştir" if strict else "",
+            "changed_feature": slot["feature"]["key"] if strict else "",
+            "invariants": ["lemma", "token_order", "event"] if strict else [],
+        },
         "query": raw.get("query"),
         "context_sentences": context_sentences,
         "candidates": candidates,
         "gold_id": gold_id,
         "qrels": {candidate["id"]: candidate["relevance"] for candidate in candidates},
         "source_type": "llm_generated_pending_llm_judge",
-        "generation_notes": raw.get("generation_notes", ""),
     }
 
 
@@ -285,6 +376,11 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
         problems.append("semantic_frame_id SLOT ile uyuşmuyor")
     if family.get("template_id") != slot["template"]["id"]:
         problems.append("template_id SLOT ile uyuşmuyor")
+    for field in ("family_mode", "query_expression", "query_gold_lexical_band"):
+        if family.get(field) != slot[field]:
+            problems.append(f"{field} SLOT ile uyuşmuyor")
+    if bool(family.get("strict_minimal_pair")) != (slot["family_mode"] == "strict_minimal"):
+        problems.append("strict_minimal_pair family_mode ile uyuşmuyor")
     for name in ("critical_lemma", "critical_word_query", "critical_word_positive", "feature_delta"):
         if not isinstance(family.get(name), str) or not family[name].strip():
             problems.append(f"{name} eksik")
@@ -293,6 +389,29 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
     if positives and isinstance(family.get("critical_word_positive"), str):
         if not _contains_word(positives[0].get("text", ""), family["critical_word_positive"]):
             problems.append("critical_word_positive positive metninde yok")
+
+    query_gold_edits = None
+    query_gold_sequence_ratio = None
+    query_gold_word_jaccard = None
+    if positives:
+        query_critical = _critical_query_sentence(family)
+        gold_critical = positives[0].get("critical_sentence", "")
+        query_gold_edits = _token_edit_distance(query_critical, gold_critical)
+        query_gold_sequence_ratio = _token_sequence_ratio(query_critical, gold_critical)
+        query_gold_word_jaccard = _word_jaccard(query_critical, gold_critical)
+        minimum_edits = int(cfg["quality"].get("query_gold_token_edits_min", 2))
+        maximum_sequence = float(
+            cfg["quality"].get("query_gold_token_sequence_ratio_max", 0.82)
+        )
+        if query_gold_edits < minimum_edits or query_gold_sequence_ratio > maximum_sequence:
+            problems.append(
+                "query ile gold tek-kelime/yakın-kopya: "
+                f"token-edits={query_gold_edits}, sequence-ratio={query_gold_sequence_ratio:.3f}"
+            )
+        band = cfg["quality"]["query_gold_lexical_bands"][slot["query_gold_lexical_band"]]
+        query_gold_lexical_band_ok = (
+            float(band["min"]) <= query_gold_word_jaccard <= float(band["max"])
+        )
 
     for candidate in candidates:
         critical = candidate.get("critical_word")
@@ -361,16 +480,22 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
                 problems.append(f"gold uzunluk bias'ı: gold/median={gold_len / max(1, median):.2f}")
 
     lexical = lexical_family_audit(family)
+    if query_gold_edits is not None:
+        lexical["query_gold_token_edits"] = query_gold_edits
+        lexical["query_gold_token_sequence_ratio"] = round(query_gold_sequence_ratio, 6)
+        lexical["query_gold_word_jaccard"] = round(query_gold_word_jaccard, 6)
+        lexical["query_gold_lexical_band_ok"] = query_gold_lexical_band_ok
     family["lexical_audit"] = lexical
     if lexical:
         quality = cfg["quality"]
-        minimum_close_hards = int(quality["lexical_hards_at_or_above_gold_min"])
+        mode_gates = quality["family_mode_lexical_gates"][slot["family_mode"]]
+        minimum_close_hards = int(mode_gates["hards_at_or_above_gold_min"])
         if lexical["hards_at_or_above_gold"] < minimum_close_hards:
             problems.append(
                 "lexical overlap gold'u ele veriyor: "
                 f"gold kadar örtüşen hard={lexical['hards_at_or_above_gold']} < {minimum_close_hards}"
             )
-        max_gap = float(quality["gold_hard_overlap_median_gap_max"])
+        max_gap = float(mode_gates["gold_hard_median_gap_max"])
         if lexical["gold_hard_median_gap"] > max_gap:
             problems.append(
                 "gold-hard lexical overlap dengesiz: "
@@ -380,7 +505,9 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
         content_count = sum(
             score >= content_threshold for score in lexical["hard_query_content_recalls"]
         )
-        content_minimum = int(quality["content_preserving_hards_min"])
+        content_minimum = int(mode_gates["content_preserving_hards_min"])
+        if slot["query_expression"] == "semantic_paraphrase" or slot["query_gold_lexical_band"] == "low":
+            content_minimum = 0
         lexical["content_preserving_hards"] = content_count
         if content_count < content_minimum:
             problems.append(
@@ -497,6 +624,25 @@ def corpus_problems(items: list[dict[str, Any]], cfg: dict[str, Any]) -> list[st
         if text and len(families) > 1:
             problems.append(f"cross-family birebir candidate kopyası: {rows[:8]}")
 
+    # Easy distractors başka bir family'nin cevabı olarak tekrar kullanılamaz. Genel duplicate
+    # kapısı da bunu yakalar; rol-duyarlı kapı daha düşük eşikle ve daha açık hata verir.
+    gold_easy_records = []
+    for item in items:
+        for candidate in item["candidates"]:
+            role = candidate.get("role")
+            if role in {"positive", "easy_negative"}:
+                gold_easy_records.append(
+                    (item["family_id"], candidate["id"], role, candidate["text"])
+                )
+    gold_easy_exact: dict[str, list[tuple[str, str, str]]] = defaultdict(list)
+    for family_id, candidate_id, role, text in gold_easy_records:
+        gold_easy_exact[" ".join(tokens(text))].append((family_id, candidate_id, role))
+    for text, rows in gold_easy_exact.items():
+        roles = {row[2] for row in rows}
+        families = {row[0] for row in rows}
+        if text and len(families) > 1 and roles == {"positive", "easy_negative"}:
+            problems.append(f"başka family gold'u easy olarak kullanılmış: {rows[:8]}")
+
     query_grams = [(item["family_id"], char_ngrams(item["query"])) for item in items]
     threshold = float(cfg["quality"]["near_duplicate_jaccard_max"])
     for left in range(len(query_grams)):
@@ -522,6 +668,18 @@ def corpus_problems(items: list[dict[str, Any]], cfg: dict[str, Any]) -> list[st
             continue
         kind = "query-candidate" if left[2] != right[2] else "candidate-candidate"
         problems.append(f"cross-family yakın {kind} kopyası: {left[1]} / {right[1]} ({score:.3f})")
+        if len(problems) >= 100:
+            return problems
+
+    easy_gold_threshold = float(
+        cfg["quality"].get("cross_family_easy_gold_jaccard_max", 0.75)
+    )
+    for left, right, score in _candidate_near_duplicates(gold_easy_records, easy_gold_threshold):
+        if left[0] == right[0] or {left[2], right[2]} != {"positive", "easy_negative"}:
+            continue
+        problems.append(
+            f"başka family gold'una yakın easy: {left[1]} / {right[1]} ({score:.3f})"
+        )
         if len(problems) >= 100:
             return problems
 

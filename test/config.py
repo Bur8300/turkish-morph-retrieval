@@ -61,26 +61,33 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
         raise ConfigError("Statik oversampling kaldırıldı; plan doğrudan 600 slot olmalı")
     _check_distribution("query_sentence_distribution", cfg["query_sentence_distribution"])
     _check_distribution("passage_sentence_distribution", cfg["passage_sentence_distribution"])
+    _check_distribution("family_mode_distribution", cfg["family_mode_distribution"])
+    _check_distribution("query_expression_distribution", cfg["query_expression_distribution"])
+    _check_distribution("query_gold_lexical_distribution", cfg["query_gold_lexical_distribution"])
+    if cfg["family_mode_distribution"] != {
+        "strict_minimal": 0.25,
+        "controlled_diverse": 0.45,
+        "natural_retrieval": 0.30,
+    }:
+        raise ConfigError("Family modları tam %25 strict + %45 controlled + %30 natural olmalı")
     if set(cfg["query_sentence_distribution"]) != {"1", "2"}:
         raise ConfigError("Query uzunluk katmanları yalnız 1 ve 2 cümle olmalı")
     if set(cfg["passage_sentence_distribution"]) != {"1", "2", "3", "4"}:
         raise ConfigError("Pasaj uzunluk katmanları 1, 2, 3 ve 4 cümle olmalı")
     _check_distribution("generalization_distribution", cfg["generalization_distribution"])
-    if float(cfg.get("strict_minimal_pair_fraction", 0)) != 0.25:
-        raise ConfigError("Final plan tam olarak %25 strict minimal-pair (150/600) olmalı")
     quality = cfg["quality"]
-    if not 1 <= int(quality["lexical_hards_at_or_above_gold_min"]) <= 8:
-        raise ConfigError("lexical_hards_at_or_above_gold_min 1–8 arasında olmalı")
-    if not 1 <= int(quality["content_preserving_hards_min"]) <= 8:
-        raise ConfigError("content_preserving_hards_min 1–8 arasında olmalı")
     for name in (
-        "gold_hard_overlap_median_gap_max", "hard_query_content_recall_min",
+        "hard_query_content_recall_min",
         "freeze_tie_aware_word_overlap_recall_at_1_max",
         "freeze_tie_aware_character_3gram_recall_at_1_max",
         "freeze_tie_aware_bm25_recall_at_1_max",
     ):
         if not 0 <= float(quality[name]) <= 1:
             raise ConfigError(f"{name} 0–1 arasında olmalı")
+    if set(quality["query_gold_lexical_bands"]) != {"high", "medium", "low"}:
+        raise ConfigError("Query–gold lexical bandları high/medium/low olmalı")
+    if set(quality["family_mode_lexical_gates"]) != set(cfg["family_mode_distribution"]):
+        raise ConfigError("Her family modu için lexical gate tanımlanmalı")
     if runtime:
         generators = cfg["generation"].get("generators", [])
         if len(generators) != 2 or {row.get("id") for row in generators} != {"generator_a", "generator_b"}:

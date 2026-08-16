@@ -1,4 +1,4 @@
-# Turkish Morph Retrieval Test — v3.5.0
+# Turkish Morph Retrieval Test — v3.6.0
 
 Bu dizin Türkçe encoder'ların küçük fakat anlam değiştiren morfolojik farkları ayırt edip
 etmediğini ölçen benchmark'ı üretir ve değerlendirir. Train sistemi [`../train/`](../train/)
@@ -12,6 +12,8 @@ altında ayrıdır; test üretiminde eski JSON cümleleri few-shot örneği olar
 | Aday/family | 11 | 11 | 11 |
 | Aday pasaj | 1.100 | 5.500 | 6.600 |
 | Strict minimal pair | 25 | 125 | 150 |
+| Controlled diverse | 45 | 225 | 270 |
+| Natural retrieval | 30 | 150 | 180 |
 | Generator A/B | 50/50 | 250/250 | 300/300 |
 
 Her family tam olarak şunları içerir:
@@ -21,6 +23,19 @@ Her family tam olarak şunları içerir:
 - 8 hard negative
 - 2 easy negative
 - Otomatik binary qrels: gold `1`, diğer 10 aday `0`
+
+Benchmark üç tamamlayıcı family modu kullanır:
+
+- `%25 strict_minimal`: gold ile `hard_01` yalnız hedef morfolojik biçimde ayrışır.
+- `%45 controlled_diverse`: aynı olay ve morfolojik karşıtlık korunur; gold ile hard'lar farklı
+  doğal sözdizimleri kullanabilir.
+- `%30 natural_retrieval`: query, gold ve negatifler doğal olarak farklı kurulabilir; gold bilgi
+  ihtiyacını karşılayan tek passage, hard'lar çekici fakat gerçekten irrelevant kayıtlardır.
+
+Query ifadesi `%50 morph_explicit` ve `%50 semantic_paraphrase` olarak dengelenir. İlk grupta
+hedef anlam query'de çekimli biçimle görünür; ikinci grupta farklı sözcük/sözdizimiyle anlatılır.
+Query–gold lexical ilişki ayrıca `%30 high`, `%40 medium`, `%30 low` bandına planlanır. Bunlar
+“şu kadar benzemek zorunda” kuralı değil, yüzey ve semantik çeşitlilik kotalarıdır.
 
 Uzunluk dağılımı:
 
@@ -68,27 +83,89 @@ API döngüsü olmadan tam 600 kabul edilmiş family hedeflenir.
 için `google/*` test generator/judge rollerinde varsayılan olarak yasaktır. Model, prompt, config,
 request hash, kullanım ve git commit bilgileri manifestte saklanır.
 
-## Strict minimal pairs
+Provider-facing üretim JSON'u bilerek küçüktür. LLM yalnız query, ortak context, kritik
+lemma/query sözcüğü ve her aday için `candidate_slot + critical_sentence + critical_word`
+yazar. Rol, subtype, `morph_relation`, qrels, edit script, feature açıklaması ve kimlikler
+güvenilir plandan Python tarafından eklenir. Böylece model onlarca sabit metadata alanını her
+family'de tekrar üretmez; repair çağrısı da önceki uzun JSON'u prompt'a geri gömmez.
 
-600 family'sinin 150'sinde positive ile `hard_01`:
+Easy negatifler rastgele konu dışı cümleler değildir. Query ile aynı domain/register içinde
+kalır; mümkünse kişi, kurum, yer veya konu ipuçlarından birini paylaşır, fakat farklı bir olay
+ve bilgi ihtiyacı anlattığı için cevabı vermez. Örneğin hastanın annesini tanıyamaması sorgusunda
+meteoroloji haberi yerine aynı psikiyatristin başka bir hastaya randevu vermesi uygun easy'dir.
+Python bunları `same_domain_off_intent` olarak etiketler. Corpus kapısı bir easy'nin başka bir
+family'nin gold'uyla birebir veya yüksek fuzzy benzerlikle çakışmasını reddeder; benzersiz
+`semantic_frame_id` kuralı da aynı cevabın farklı family'lerde tasarlanmasını engeller.
 
-- aynı kritik lemmayı,
-- aynı sözdizimsel şablonu,
-- aynı token sırasını ve olayı korur,
-- yalnız hedef eki veya ek zincirini taşıyan kritik sözcükte ayrışır.
+## Hibrit family tasarımı ve örnekler
 
-`edit_script`, positive biçimi, minimal-negative biçimi, değişen feature ve korunan alanları
-kaydeder. Validator iki kritik cümlenin sözcük iskeletini otomatik karşılaştırır.
+### 1. Strict minimal
+
+Bu dilim nedensel morfoloji testidir. Query ile gold aynı cümle olmak zorunda değildir; minimal
+çift gold ile ana morph hard arasındadır.
+
+```text
+Query:
+Selin seyahatlerinde aktarmalı seçeneklerden uzak durur.
+
+GOLD:
+Bilet alırken Selin aktarmalı uçuşları seçmez.
+
+hard_01 — minimal_morph_negative:
+Bilet alırken Selin aktarmalı uçuşları seçer.
+```
+
+600 family'sinin 150'sinde positive ile `hard_01` aynı kritik lemmayı, sözdizimsel şablonu,
+token sırasını ve olayı korur; yalnız hedef eki veya ek zincirini taşıyan kritik sözcükte ayrışır.
+`edit_script` bu değişimi Python tarafında kaydeder ve validator iki kritik cümlenin sözcük
+iskeletini karşılaştırır.
+
+### 2. Controlled diverse
+
+Bu dilimde gold ve negatifler aynı cümle kalıbına zorlanmaz; aynı bilgi ihtiyacı ve planlanan
+morfolojik karşıtlık açık kalır.
+
+```text
+Query:
+Selin seyahatlerinde aktarma yapmak istemediği için doğrudan uçmayı tercih ediyor.
+
+GOLD:
+Uçuş ararken Selin'in önceliği doğrudan seferlerdir; aktarmalı seçenekleri genellikle değerlendirmez.
+
+Morphological hard:
+Son yolculuğunda Selin doğrudan sefer bulamadığı için aktarmalı bir uçuşu değerlendirdi.
+
+Semantic hard:
+Selin aktarmalı uçuşları daha ekonomik bulur ve doğrudan seferleri nadiren tercih eder.
+```
+
+### 3. Natural retrieval
+
+Query, gold ve negatifler bağımsız doğal anlatımlar kullanabilir. Relevance sözcük benzerliğiyle
+değil, passage'ın query'deki bilgi ihtiyacını gerçekten karşılamasıyla belirlenir. Bu dilimde
+`lexical_retrieval_trap` ve `semantic_retrieval_hard` da kullanılır. Hard'lar gold'un cümle
+kalıbını kopyalamak zorunda değildir ve false-negative kontrolü özellikle önemlidir.
+
+Her üç modda da query'nin yalnız bir eşanlamlı sözcüğü değiştirilerek gold yapılması yasaktır.
+Validator token edit/sequence kontrolüyle yakın kopyayı yakalar. Gold'un hard'lara karşı
+sistematik lexical avantajı ayrıca karşılaştırmalı olarak ölçülür.
+
+Tasarım dayanakları: [Contrast Sets](https://aclanthology.org/2020.findings-emnlp.117/)
+küçük fakat anlamlı kontrollü müdahaleleri; [NevIR](https://aclanthology.org/2024.eacl-long.139/)
+minimal belge karşıtlıklarını retrieval içinde; [MIRACL](https://aclanthology.org/2023.tacl-1.63/)
+doğal query/passage ve bağımsız relevance yargılarını; [DuReader-Retrieval](https://aclanthology.org/2022.emnlp-main.357/)
+ise lexical/syntactic mismatch ile pooled false-negative kontrolünü örnekler. Bu benchmark bu
+nedenle yalnız minimal veya yalnız doğal veri yerine iki yaklaşımı hibrit kullanır.
 
 ## Lexical artefakt kontrolü
 
-Generator positive ile hard kritik cümlelerini ortak bir lexical zorlukta yazar. Sekiz hard'ın
-en az dördü aynı kişi, nesne, olay, kritik lemma ve temel içerik sözcüklerini korur; yanlışlık
-morfoloji, kapsam, zaman veya katılımcı rolünde kalır. Validator:
+Generator positive ile hard kritik cümlelerini family moduna uygun lexical zorlukta yazar.
+Strict/controlled/natural modlarında sırasıyla en az 4/3/2 hard aynı olay ve içerik ipuçlarını
+korur. Validator:
 
-- En az dört hard'ın query-word overlap'ının gold kadar yüksek olmasını,
-- Gold ile hard median overlap farkının en fazla `0.15` olmasını,
-- En az dört hard'ın query içerik köklerinin en az `%60`ını korumasını ister.
+- Sırasıyla en az 4/3/2 hard'ın query-word overlap'ının gold kadar yüksek olmasını,
+- Gold–hard median overlap farkının modlara göre en fazla `0.15/0.25/0.35` olmasını,
+- Sırasıyla en az 4/3/2 hard'ın query içerik köklerinin en az `%60`ını korumasını ister.
 
 Gold sürekli en yüksek veya sürekli en düşük overlap'a itilmez; aksi durumda düz ya da ters
 artefakt oluşur. Kaliteyi geçmeyen family aynı dengeli slot için taze örnekle değiştirilir. Freeze
@@ -113,22 +190,25 @@ genitif–iyelik bağı (`REL.GEN.POSS`) ve `kendi` zamirinde kişi/sayı-gönde
 `Q.PART.SCOPE` doğal bir odak sorusu üretir ve parçacığın yerini değiştirmeyi gerektirdiğinden,
 token sırasını sabit tutan 150-family strict minimal-pair slice'ına atanmaz.
 
-Her family'deki altı çekirdek hard:
+Sekiz hard'ın işlevsel bileşimi:
 
-1. `minimal_morph_negative`
-2. `same_lemma_wrong_inflection`
-3. `related_feature_negative`
-4. `same_morph_wrong_content`
-5. `state_participant_time_trap`
-6. `close_paraphrase_wrong_meaning`
+1. Bir ana morphology hard (`minimal_morph_negative` yalnız strict modda;
+   diğerlerinde `controlled_morph_negative`)
+2. İki morphology-adjacent hard
+3. İki semantic/participant/time hard
+4. Bir lexical veya yakın-paraphrase trap
+5. İki feature'a/moda uyarlanmış hard
 
-Son iki hard fenomene göre seçilir:
+Strict ve controlled modlarında son iki hard fenomene göre seçilir:
 
 - Hâl/fiil uyumu/çatı: `argument_role_reversal`, `morph_distractor`
 - Ad çoğulluğu/iyelik: `noun_possessor_number_trap`, `morph_distractor`
 - TAM/türetim: `scope_attachment_trap`, `morph_distractor`
 - Composition: `partial_chain_negative`, `scope_attachment_trap`
 - Allomorph: `allomorph_form_function_trap`, `morph_distractor`
+
+Natural modda son iki slot `semantic_retrieval_hard` ve `morph_distractor` olur. Bu kayıtlar
+gold'un cümle kalıbını kopyalamak zorunda değildir.
 
 Geçerli allomorph negative değildir. Örneğin `-da/-de/-ta/-te` aynı bulunma işlevinin yüzey
 biçimleri olabilir; `şubesinde` ile `şubesinden` ise LOC/ABL anlam karşıtlığıdır.
@@ -165,8 +245,9 @@ Qrels, retrieval cevap anahtarıdır: `query_id + candidate_id + relevance`.
 - `0`: aynı family için üretilmiş ve LLM judge tarafından yanlış olduğu doğrulanmış negatif.
 
 Kontrollü deney kendi 11 adayını kullanır. Full-corpus retrieval'da her query'nin tasarım gereği
-tek gold'u vardır; diğer family'ler farklı semantic frame taşır. Exact/fuzzy cross-family kopya
-ve frame tekrar kontrollerinden geçen diğer belgeler nonrelevant kabul edilerek sealed testteki
+tek gold'u vardır; diğer family'ler farklı semantic frame taşır. Exact/fuzzy cross-family kopya,
+easy→başka-family-gold çakışması ve frame tekrar kontrollerinden geçen diğer belgeler
+nonrelevant kabul edilerek sealed testteki
 5.500 belgenin tamamı sıralanır.
 
 Paper iki sonucu birlikte ana değerlendirme olarak raporlar: kontrollü 11-aday contrast retrieval
@@ -296,12 +377,12 @@ test/runs/<run_id>/
 ├── rejected.jsonl
 ├── generation_report.json
 ├── release/
-│   ├── morph_dev_v3.5.0.json
-│   ├── morph_test_blind_v3.5.0.json
+│   ├── morph_dev_v3.6.0.json
+│   ├── morph_test_blind_v3.6.0.json
 │   ├── artifact_audit.json
 │   └── freeze_manifest.json
 └── private/
-    ├── morph_test_internal_v3.5.0.json
+    ├── morph_test_internal_v3.6.0.json
     ├── private_qrels.jsonl
     ├── beir_test_qrels.tsv
     └── train_exclusion_holdouts.json

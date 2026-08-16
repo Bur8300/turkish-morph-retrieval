@@ -149,6 +149,7 @@ TEMPLATES = (
 
 HARD_SUBTYPES = (
     "minimal_morph_negative",
+    "controlled_morph_negative",
     "same_lemma_wrong_inflection",
     "related_feature_negative",
     "same_morph_wrong_content",
@@ -160,10 +161,12 @@ HARD_SUBTYPES = (
     "partial_chain_negative",
     "allomorph_form_function_trap",
     "noun_possessor_number_trap",
+    "lexical_retrieval_trap",
+    "semantic_retrieval_hard",
 )
 
 MORPH_HARD_SUBTYPES = frozenset({
-    "minimal_morph_negative", "same_lemma_wrong_inflection", "related_feature_negative",
+    "minimal_morph_negative", "controlled_morph_negative", "same_lemma_wrong_inflection", "related_feature_negative",
     "scope_attachment_trap", "morph_distractor", "partial_chain_negative",
     "allomorph_form_function_trap", "noun_possessor_number_trap",
 })
@@ -180,7 +183,7 @@ _CORE_HARD_PROFILE = (
 )
 
 
-def hard_profile(feature: Feature | dict) -> list[dict[str, str]]:
+def hard_profile(feature: Feature | dict, family_mode: str = "strict_minimal") -> list[dict[str, str]]:
     """Select eight compatible slots instead of forcing eight universal error classes."""
     if isinstance(feature, dict):
         key = str(feature["key"])
@@ -221,7 +224,30 @@ def hard_profile(feature: Feature | dict) -> list[dict[str, str]]:
             ("morph_distractor", "hedef biçim yanlış olay veya sözcüğe bağlı"),
         )
 
+    if family_mode == "strict_minimal":
+        core = _CORE_HARD_PROFILE
+    elif family_mode == "controlled_diverse":
+        core = (
+            ("controlled_morph_negative", "aynı olay ve hedef karşıtlık, farklı doğal sözdizimi"),
+            *_CORE_HARD_PROFILE[1:],
+        )
+    elif family_mode == "natural_retrieval":
+        core = (
+            ("controlled_morph_negative", "hedef morfolojik anlam yanlış, doğal farklı anlatım"),
+            ("related_feature_negative", "komşu morfolojik özellik yanlış"),
+            ("same_morph_wrong_content", "morfoloji benzer, önerme içeriği yanlış"),
+            ("state_participant_time_trap", "durum, katılımcı veya zaman yanlış"),
+            ("close_paraphrase_wrong_meaning", "yakın anlam alanı, temel önerme yanlış"),
+            ("lexical_retrieval_trap", "query sözcükleri çekici, fakat belge irrelevant"),
+        )
+        extras = (
+            ("semantic_retrieval_hard", "doğal ve konuya yakın, fakat bilgi ihtiyacını karşılamıyor"),
+            ("morph_distractor", "hedef biçim yanlış olay veya sözcüğe bağlı"),
+        )
+    else:
+        raise ValueError(f"Bilinmeyen family_mode: {family_mode}")
+
     return [
         {"slot": f"hard_{index:02d}", "subtype": subtype, "focus": focus}
-        for index, (subtype, focus) in enumerate((*_CORE_HARD_PROFILE, *extras), start=1)
+        for index, (subtype, focus) in enumerate((*core, *extras), start=1)
     ]

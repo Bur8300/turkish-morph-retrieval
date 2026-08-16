@@ -66,6 +66,7 @@ SEALED_DOMAIN_REGISTER_PAIRS = (
 def _slot_id(slot: dict[str, Any], feature, cfg: dict[str, Any]) -> str:
     fingerprint = hashlib.sha256(
         f"{cfg['version']}|{slot['index']}|{feature.key}|{slot['generalization_bucket']}|"
+        f"{slot['family_mode']}|{slot['query_expression']}|{slot['query_gold_lexical_band']}|"
         f"{slot['query_sentence_count']}|{slot['passage_sentence_count']}|"
         f"{slot['critical_sentence_position']}|{slot['domain']}|{slot['template']['id']}".encode()
     ).hexdigest()[:10]
@@ -111,7 +112,7 @@ def _balance_features(slots: list[dict[str, Any]], cfg: dict[str, Any]) -> list[
         )
         counts[feature.key] += 1
         slot["feature"] = feature.to_dict()
-        slot["hard_profile"] = hard_profile(feature)
+        slot["hard_profile"] = hard_profile(feature, slot["family_mode"])
         slot["slot_id"] = _slot_id(slot, feature, cfg)
     return sorted(slots, key=lambda slot: slot["index"])
 
@@ -153,6 +154,18 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
             f"query_sentences:{target_split}",
         )
     )
+    family_mode = _weighted_value(
+        cfg["family_mode_distribution"], split_index, 100, seed,
+        f"family_mode:{target_split}",
+    )
+    query_expression = _weighted_value(
+        cfg["query_expression_distribution"], split_index, 2, seed,
+        f"query_expression:{target_split}",
+    )
+    query_gold_lexical_band = _weighted_value(
+        cfg["query_gold_lexical_distribution"], split_index, 10, seed,
+        f"query_gold_lexical:{target_split}",
+    )
     passage_sentence_count = int(
         _weighted_value(
             cfg["passage_sentence_distribution"], split_index, 10, seed,
@@ -167,11 +180,7 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
         list(range(1, passage_sentence_count + 1)), passage_rank, seed,
         f"critical_position:{target_split}:p{passage_sentence_count}",
     )
-    strict_minimal_pair = _weighted_value(
-        {"no": 1.0 - float(cfg["strict_minimal_pair_fraction"]),
-         "yes": float(cfg["strict_minimal_pair_fraction"])},
-        split_index, 4, seed, f"strict_minimal_pair:{target_split}",
-    ) == "yes"
+    strict_minimal_pair = family_mode == "strict_minimal"
     generator_ids = [row["id"] for row in cfg["generation"]["generators"]]
     generator_id = _round_robin(generator_ids, split_index, seed, f"generator:{target_split}")
 
@@ -252,7 +261,10 @@ def make_slot(index: int, cfg: dict[str, Any]) -> dict[str, Any]:
         "query_sentence_count": query_sentence_count,
         "passage_sentence_count": passage_sentence_count,
         "critical_sentence_position": critical_sentence_position,
-        "hard_profile": hard_profile(feature),
+        "family_mode": family_mode,
+        "query_expression": query_expression,
+        "query_gold_lexical_band": query_gold_lexical_band,
+        "hard_profile": hard_profile(feature, family_mode),
         "strict_minimal_pair": strict_minimal_pair,
         "generator_id": generator_id,
         "template": dict(template),
@@ -277,6 +289,7 @@ def plan_statistics(slots: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
         "target_split", "generalization_bucket", "objective", "layer", "macro_phenomenon",
         "domain", "register", "query_sentence_count", "passage_sentence_count",
         "critical_sentence_position",
+        "family_mode", "query_expression", "query_gold_lexical_band",
         "strict_minimal_pair", "generator_id",
     )
     return {

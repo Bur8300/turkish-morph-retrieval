@@ -12,7 +12,7 @@ import random
 from .taxonomy import HARD_SUBTYPES
 
 
-PROMPT_VERSION = "test-prompts-3.5.0"
+PROMPT_VERSION = "test-prompts-3.6.0-compact"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -32,6 +32,7 @@ yalnız yüzeyi değiştiği için yanlış sayılamaz. JSON dışında metin ya
 
 _HARD_DESCRIPTIONS = {
     "minimal_morph_negative": "Sorguya çok yakın; yalnız hedef morfolojik özellik değiştiği için anlam yanlış.",
+    "controlled_morph_negative": "Aynı bilgi ihtiyacı çevresinde doğal farklı anlatım; hedef morfolojik anlam yanlış.",
     "same_lemma_wrong_inflection": "Pozitifle aynı kritik lemma; farklı ve ilgili bir çekim anlamı yanlış yapıyor.",
     "related_feature_negative": "Hedefe komşu ikinci bir morfolojik özellik yanlış; hedef karşıtlığın kopyası değil.",
     "same_morph_wrong_content": "Hedef morfoloji doğru; nesne/olay/referans yanlış.",
@@ -43,6 +44,8 @@ _HARD_DESCRIPTIONS = {
     "partial_chain_negative": "Ek zincirinin yalnız bir bölümü doğru; zincirin tamamı sorgunun anlamını vermiyor.",
     "allomorph_form_function_trap": "Yüzeyce benzer ek/biçim var; fakat gramatik işlev geçerli allomorf eşdeğeri değil.",
     "noun_possessor_number_trap": "Adın/nesnenin çoğulluğu ile sahibin çoğulluğu karıştırılmış; örneğin çok nesne ile çok sahip aynı şey değildir.",
+    "lexical_retrieval_trap": "Query sözcüklerini güçlü biçimde taşır fakat bilgi ihtiyacını karşılamaz.",
+    "semantic_retrieval_hard": "Konu ve anlam alanı yakındır fakat gerekli önerme veya kanıt yoktur.",
 }
 
 
@@ -111,17 +114,59 @@ def build_generation_prompt(slot: dict) -> str:
     strict_rule = (
         "Bu STRICT MINIMAL-PAIR family’sidir. Positive ile hard_01 aynı kritik lemmayı, aynı "
         "sözdizimsel şablonu ve aynı sözcük dizisini korumalı; yalnız kritik çekimli sözcüğün "
-        "hedef eki/ek zinciri değişmelidir. Noktalama dahil diğer tokenlar aynı kalmalıdır. "
-        "edit_script.applies=true olmalı; iki yüzey biçimini, tek işlemi, değişen feature'ı ve "
-        "korunan invariants alanlarını açıkça kaydet."
+        "hedef eki/ek zinciri değişmelidir. Noktalama dahil diğer tokenlar aynı kalmalıdır."
         if slot["strict_minimal_pair"] else
-        "Bu family strict minimal-pair slice'ında değildir. hard_01 yine yerel ve kontrollü olsun; "
-        "edit_script.applies=false, diğer edit_script string/dizi alanları boş olabilir."
+        "Bu family strict minimal-pair slice'ında değildir. hard_01 yine yerel ve kontrollü olsun."
     )
+    mode_rule = {
+        "strict_minimal": (
+            "STRICT mod: positive–hard_01 tek hedef biçim dışında aynıdır. Diğer hard'lar yakın "
+            "olabilir. En az 4 hard query ile gold kadar lexical örtüşsün; median fark en çok 0.15."
+        ),
+        "controlled_diverse": (
+            "CONTROLLED DIVERSE mod: aynı olay/katılımcılar ve hedef karşıtlık korunur; gold ve "
+            "hard'lar farklı doğal sözdizimleri kullanabilir. hard_01 minimal olmak zorunda değildir. "
+            "En az 3 hard gold kadar lexical örtüşsün; median fark en çok 0.25."
+        ),
+        "natural_retrieval": (
+            "NATURAL RETRIEVAL mod: query, gold ve negatifler doğal olarak farklı kurulabilir. "
+            "Gold query'nin bilgi ihtiyacını karşılayan TEK passage; hard'lar konu/kelime bakımından "
+            "çekici fakat gerçekten irrelevant olmalı. En az 2 hard gold kadar lexical örtüşsün; "
+            "median fark en çok 0.35."
+        ),
+    }[slot["family_mode"]]
+    query_expression_rule = {
+        "morph_explicit": (
+            "Query hedef morfolojik anlamı açık bir çekimli biçimle ifade etsin; surface kopyası "
+            "zorunlu değildir."
+        ),
+        "semantic_paraphrase": (
+            "Query hedef morfolojik anlamı farklı sözcük/sözdizimiyle ifade etsin; gold'daki kritik "
+            "çekimli biçimi kopyalamasın. critical_word_query bu anlamı taşıyan query ifadesidir."
+        ),
+    }[slot["query_expression"]]
+    lexical_rule = {
+        "high": "Query–gold sözcük Jaccard'ı 0.55–1.00 aralığında, fakat tek-kelime kopyası değil.",
+        "medium": "Query–gold sözcük Jaccard'ı 0.30–0.70 aralığında olsun.",
+        "low": "Query–gold sözcük Jaccard'ı 0.00–0.45 aralığında; semantik bağ yine açık olsun.",
+    }[slot["query_gold_lexical_band"]]
+
+    compact_slot = {
+        "semantic_frame_id": slot["semantic_frame_id"],
+        "feature": feature["key"],
+        "objective": slot["objective"],
+        "strict_minimal_pair": slot["strict_minimal_pair"],
+        "family_mode": slot["family_mode"],
+        "query_expression": slot["query_expression"],
+        "query_gold_lexical_band": slot["query_gold_lexical_band"],
+        "domain": slot["domain"],
+        "register": slot["register"],
+        "template_id": slot["template"]["id"],
+    }
 
     return f"""\
 SLOT
-{json.dumps(slot, ensure_ascii=False, indent=2)}
+{json.dumps(compact_slot, ensure_ascii=False, indent=2)}
 
 HEDEF
 - Bir query ve tam 11 aday: 1 positive + 8 hard_negative + 2 easy_negative.
@@ -136,17 +181,29 @@ HEDEF
   değiştirmemeli; ayrım yalnız `critical_sentence` içinde yerel kalmalı.
 - Adayların token uzunlukları ve ayrıntı yoğunluğu birbirine yakın olmalı. Gold sistematik olarak en uzun olamaz.
 - {query_rule}
-- Positive sorgudaki aynı olayı/anlamı doğru biçimbilimle doğal bir paraphrase olarak vermeli.
+- Positive sorgudaki aynı bilgi ihtiyacını/önermeyi karşılamalı; fakat query'nin tek sözcüğü
+  değiştirilmiş kopyası OLMAMALI. Yalnız `yolculuklarda → seyahatlerinde` gibi bir eşanlamlı
+  değişimi yeterli değildir. En az iki anlam-koruyan ifade değişikliğiyle birlikte doğal bir
+  sözdizimsel yeniden kurulum (öge sırası, yan cümle, çatı veya anlatım yapısı) kullan.
+- Strict moddaki kontrollü minimal çift query–gold değil, positive–hard_01 arasındadır. Diğer
+  modlarda hard_01 hedef morfolojik karşıtlığı korur fakat farklı sözdizimi kullanabilir.
+- {mode_rule}
+- {query_expression_rule}
+- {lexical_rule}
 - `equivalence_positive` tek positive alt-türüdür.
-- İki easy_negative konu ve sözcük bakımından bariz farklıdır ama uzunluk/akıcılık açısından ucuz ipucu vermez.
+- İki easy_negative rastgele ve bütünüyle alakasız cümle OLAMAZ. Aynı domain/register ve mümkünse
+  aynı kişi, kurum, yer veya konu ipuçlarından en az birini korusun; ancak farklı bir olay, ilişki
+  ya da bilgi ihtiyacı anlatsın ve query'yi kesinlikle yanıtlamasın. Örneğin hastane sorgusunda
+  meteoroloji haberi değil, aynı doktorun farklı bir hastaya randevu vermesi uygun easy'dir.
+- Easy aday, başka bir query için yeniden kullanılabilecek bağımsız bir gold cümlesi gibi yazılmamalı;
+  bu family'nin bağlamına özgü bir off-intent distractor olmalı. Başka candidate/gold cümlesini kopyalama.
 
 LEXICAL ARTEFAKT KONTROLÜ
 - Gold, yalnız query sözcüklerini daha çok kopyaladığı için bulunamamalı. Positive ve hard'ların
   kritik cümlelerindeki query-word overlap düzeyleri yakın olmalı; gold sistematik olarak en yüksek olamaz.
-- Sekiz hard'ın EN AZ DÖRDÜ query ile aynı kişi, nesne, olay, kritik lemma ve temel içerik
-  sözcüklerini korumalı; yanlışlık yalnız biçimbilim, kapsam, zaman veya katılımcı rolünden gelmeli.
-- En az dört hard'ın query-word overlap'ı positive kadar yüksek olmalı. Positive ile hard'ların
-  median overlap farkı 0.15'i aşmamalı.
+- Modun istediği sayıda hard query ile aynı kişi, nesne, olay ve temel içerik ipuçlarını korumalı;
+  strict/controlled/natural için bu alt sınır sırasıyla 4/3/2'dir.
+- Positive ile hard'ların lexical dengesi mod kuralındaki karşılaştırmalı kapıya uymalı.
 - Bu dengeyi gold'u sürekli daha düşük overlap'a iterek ters artefakta çevirme; hedef yakın/eşit
   lexical ipuçları altında anlam ve morfolojiyle ayrım yapmaktır.
 
@@ -172,26 +229,22 @@ GENERALİZASYON
 - Testteki gerçek örneklerden veya eski JSON cümlelerinden alıntı/kopya yapma.
 
 ALANLAR
-- `semantic_frame_id` ve `template_id` SLOT değerleriyle aynı olsun.
-- `critical_lemma`, query/positive kritik sözcükleri ve gerçek `feature_delta` açıkça yazılsın.
-- Positive `candidate_slot=positive_01`; hard slotları SLOT'taki `hard_01`…`hard_08` ile birebir
-  eşleştir; easy slotları `easy_01` ve `easy_02` yap.
-- Her candidate için tek cümlelik `critical_sentence`, `critical_word`, `morph_relation` ve kısa gerekçe ver.
-- Positive morph_relation: allomorph family’de `allomorph_equivalent`, diğerlerinde `target_preserved`.
-- Easy morph_relation `unrelated`; hard relation kendi hatasına uygun olsun.
+- Yalnız şemanın istediği küçük üretim alanlarını yaz. Rol, subtype, morph_relation, qrels,
+  edit_script, feature açıklaması ve bütün kimlikler Python tarafından güvenilir plandan eklenir.
+- `semantic_frame_id` SLOT değeriyle aynı olsun; `critical_lemma` ve query kritik sözcüğünü yaz.
+- Positive `candidate_slot=positive_01`; hard slotları `hard_01`…`hard_08`, easy slotları
+  `easy_01` ve `easy_02` olsun.
+- Her candidate için yalnız tek cümlelik `critical_sentence` ve o cümlede geçen `critical_word` ver.
 """
 
 
 def build_repair_prompt(slot: dict, previous: dict, problems: list[str]) -> str:
     return f"""\
-Önceki üretim otomatik kalite kapısından geçmedi. Bütün family’yi yeniden ve bağımsız yaz.
-Kimlikleri veya hatalı metni korumaya çalışma. Temel SLOT ve bütün üretim kuralları geçerlidir.
+Önceki üretim otomatik kalite kapısından geçmedi. Bütün family’yi taze ve bağımsız yaz.
+Önceki metni kopyalama. Temel SLOT ve bütün üretim kuralları geçerlidir.
 
 SORUNLAR
 {json.dumps(problems, ensure_ascii=False, indent=2)}
-
-ÖNCEKİ ÇIKTI — yalnız hatayı anlamak için, kopyalama:
-{json.dumps(previous, ensure_ascii=False, indent=2)}
 
 ORİJİNAL GÖREV
 {build_generation_prompt(slot)}

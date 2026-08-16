@@ -2,7 +2,11 @@
 
 - 600 family: 100 development + 500 final test.
 - Her family: 1 query + 1 gold + 8 hard negative + 2 easy negative.
-- 150 strict minimal pair.
+- Easy'ler aynı domain/ortamda farklı olayı anlatan `same_domain_off_intent` adaylardır; rastgele
+  konu dışı değildir ve başka bir family'nin gold'uyla exact/fuzzy çakışamaz.
+- Family modları: 150 strict minimal + 270 controlled diverse + 180 natural retrieval.
+- Query anlatımı: 300 morph-explicit + 300 semantic-paraphrase.
+- Query–gold lexical bandı: 180 high + 240 medium + 180 low.
 - İki generator: 300 + 300; ayrı model ailesinden bir blind LLM judge.
 - Query: `%75` 1 cümle, `%25` 2 cümle.
 - Pasaj: `%30/%30/%30/%10` oranında 1/2/3/4 cümle.
@@ -21,8 +25,14 @@ Bir family kontrolden kalırsa fenomeni, split'i, generator'ı ve uzunluk kotas�
 örnek yeniden üretilir. Üç refill turu yetmezse aynı komut yeniden çalıştırıldığında kaldığı yerden
 devam eder. Amaç fazladan 1.800 örnek yazmak değil, tam 600 kabul edilmiş family elde etmektir.
 
-Lexical artefakt kapısı gold ile hard overlap'ını dengeler, en az dört içerik-koruyan hard ister
-ve word-overlap/char-3gram/BM25 sonuçlarını tie-aware hesaplar.
+Strict modda gold–`hard_01` yalnız hedef biçimde ayrışır. Controlled modda gold ve hard farklı
+doğal sözdizimi kullanabilir. Natural modda query, gold ve negatifler bağımsız yazılabilir; gold
+bilgi ihtiyacını karşılayan tek passage'dır. Lexical kapılar moda göre 4/3/2 içerik-koruyan hard
+ister ve word-overlap/char-3gram/BM25 sonuçlarını tie-aware hesaplar.
+
+LLM küçük bir JSON üretir: query, ortak context, kritik lemma/sözcük ve aday başına yalnız
+`candidate_slot + critical_sentence + critical_word`. Rol, subtype, morph relation, qrels,
+edit script ve kimlikler Python tarafından eklenir.
 
 Qrels family oluşturulurken hazırdır:
 

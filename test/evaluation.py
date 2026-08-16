@@ -508,6 +508,7 @@ def slice_summary(per_query: list[dict], items: list[dict], metric: str = "recal
     for field in (
         "query_sentence_count", "passage_sentence_count", "critical_sentence_position",
         "layer", "objective", "generalization_bucket", "macro_phenomenon", "target_feature",
+        "family_mode", "query_expression", "query_gold_lexical_band",
         "strict_minimal_pair", "generator_id",
     ):
         groups = defaultdict(list)
