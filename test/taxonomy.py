@@ -1,4 +1,4 @@
-"""Curated, explicit taxonomy for the manually verified test benchmark.
+"""Curated, explicit taxonomy for the automatically verified test benchmark.
 
 Unlike the legacy training generator, surface suffix forms are structured data.  No regex tries
 to recover allomorphs from Turkish prose, so gloss words can never silently become suffixes.
