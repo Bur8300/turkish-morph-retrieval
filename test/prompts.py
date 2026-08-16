@@ -12,7 +12,7 @@ import random
 from .taxonomy import HARD_SUBTYPES
 
 
-PROMPT_VERSION = "test-prompts-3.2.1"
+PROMPT_VERSION = "test-prompts-3.3.0"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -107,6 +107,16 @@ HEDEF
 - Positive sorgudaki aynı olayı/anlamı doğru biçimbilimle doğal bir paraphrase olarak vermeli.
 - `equivalence_positive` tek positive alt-türüdür.
 - İki easy_negative konu ve sözcük bakımından bariz farklıdır ama uzunluk/akıcılık açısından ucuz ipucu vermez.
+
+LEXICAL ARTEFAKT KONTROLÜ
+- Gold, yalnız query sözcüklerini daha çok kopyaladığı için bulunamamalı. Positive ve hard'ların
+  kritik cümlelerindeki query-word overlap düzeyleri yakın olmalı; gold sistematik olarak en yüksek olamaz.
+- Sekiz hard'ın EN AZ DÖRDÜ query ile aynı kişi, nesne, olay, kritik lemma ve temel içerik
+  sözcüklerini korumalı; yanlışlık yalnız biçimbilim, kapsam, zaman veya katılımcı rolünden gelmeli.
+- En az dört hard'ın query-word overlap'ı positive kadar yüksek olmalı. Positive ile hard'ların
+  median overlap farkı 0.15'i aşmamalı.
+- Bu dengeyi gold'u sürekli daha düşük overlap'a iterek ters artefakta çevirme; hedef yakın/eşit
+  lexical ipuçları altında anlam ve morfolojiyle ayrım yapmaktır.
 
 SEKİZ HARD NEGATIVE — SLOT'a atanmış sekiz uyumlu senaryonun her birinden TAM BİR tane:
 {_hard_rules(slot['hard_profile'])}

@@ -159,6 +159,18 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
     artifacts = artifact_report(selected)
     if artifacts["longest_gold_rate"] >= 0.15:
         problems.append(f"longest-gold oranı freeze sınırını aşıyor: {artifacts['longest_gold_rate']:.3f}")
+    cheap_recall = artifacts["recall_at_1_tie_aware"]
+    for baseline, config_key in (
+        ("word_overlap", "freeze_tie_aware_word_overlap_recall_at_1_max"),
+        ("character_3gram", "freeze_tie_aware_character_3gram_recall_at_1_max"),
+        ("bm25", "freeze_tie_aware_bm25_recall_at_1_max"),
+    ):
+        limit = float(cfg["quality"][config_key])
+        if float(cheap_recall[baseline]) > limit:
+            problems.append(
+                f"tie-aware {baseline} R@1 freeze sınırını aşıyor: "
+                f"{cheap_recall[baseline]:.3f} > {limit:.3f}"
+            )
     max_position_rate = max(artifacts["gold_position_counts"].values(), default=0) / max(1, len(selected))
     if max_position_rate >= 0.15:
         problems.append(f"candidate-position dağılımı dengesiz: {max_position_rate:.3f}")
@@ -223,8 +235,9 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
         "artifact_audit": artifacts,
         "files": {str(path.relative_to(run.root)): _sha256(path) for path in hashed_files},
         "qrels_definition": (
-            "Her query için kendi family'sindeki gold=1 ve 10 generated negative=0. "
-            "Başka family belgeleri etiketlenmez; full-corpus sonuç yalnız tanısaldır."
+            "Her query için tek gold=1'dir. Kendi family'sindeki 10 generated negative ve "
+            "duplicate/frame denetiminden geçen diğer-family belgeleri nonrelevant kabul edilir; "
+            "full-corpus retrieval bütün test corpusunu sıralar."
         ),
     }
     freeze_path = release / "freeze_manifest.json"

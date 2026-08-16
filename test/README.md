@@ -1,4 +1,4 @@
-# Turkish Morph Retrieval Test — v3.2.1
+# Turkish Morph Retrieval Test — v3.3.0
 
 Bu dizin Türkçe encoder'ların küçük fakat anlam değiştiren morfolojik farkları ayırt edip
 etmediğini ölçen benchmark'ı üretir ve değerlendirir. Train sistemi [`../train/`](../train/)
@@ -75,6 +75,22 @@ request hash, kullanım ve git commit bilgileri manifestte saklanır.
 `edit_script`, positive biçimi, minimal-negative biçimi, değişen feature ve korunan alanları
 kaydeder. Validator iki kritik cümlenin sözcük iskeletini otomatik karşılaştırır.
 
+## Lexical artefakt kontrolü
+
+Generator positive ile hard kritik cümlelerini ortak bir lexical zorlukta yazar. Sekiz hard'ın
+en az dördü aynı kişi, nesne, olay, kritik lemma ve temel içerik sözcüklerini korur; yanlışlık
+morfoloji, kapsam, zaman veya katılımcı rolünde kalır. Validator:
+
+- En az dört hard'ın query-word overlap'ının gold kadar yüksek olmasını,
+- Gold ile hard median overlap farkının en fazla `0.15` olmasını,
+- En az dört hard'ın query içerik köklerinin en az `%60`ını korumasını ister.
+
+Gold sürekli en yüksek veya sürekli en düşük overlap'a itilmez; aksi durumda düz ya da ters
+artefakt oluşur. Üretim 3× oversampling havuzundan kalite ve çeşitlilikle seçim yapar. Freeze
+öncesinde word-overlap `R@1 ≤ 0.20`, character 3-gram ve BM25 `R@1 ≤ 0.30` kapıları uygulanır.
+Ucuz baseline eşitlikleri candidate ID ile bozulmaz; eşit skorlu adayların bütün olası sıraları
+üzerinden beklenen, tie-aware metrik hesaplanır.
+
 ## Fenomenler ve hard negatifler
 
 Kod 6 macro grup altında 65 hedef taşır: 51 single ve 14 composition/chain.
@@ -137,10 +153,10 @@ Qrels, retrieval cevap anahtarıdır: `query_id + candidate_id + relevance`.
 - `1`: query'yi karşılayan tek gold.
 - `0`: aynı family için üretilmiş ve LLM judge tarafından yanlış olduğu doğrulanmış negatif.
 
-Bu qrels yalnız query'nin kendi 11 adayını etiketler. Başka family'lerin belgeleri otomatik `0`
-sayılmaz; tesadüfen ilgili olabilirler. Bu nedenle ortak 5.500-belge gold sırası notebook'ta
-korunur fakat yalnız tanısal stres testi olarak raporlanır. Ana paper sonucu kontrollü 11-aday
-contrast deneyidir.
+Kontrollü deney kendi 11 adayını kullanır. Full-corpus retrieval'da her query'nin tasarım gereği
+tek gold'u vardır; diğer family'ler farklı semantic frame taşır. Exact/fuzzy cross-family kopya
+ve frame tekrar kontrollerinden geçen diğer belgeler nonrelevant kabul edilerek sealed testteki
+5.500 belgenin tamamı sıralanır.
 
 ## Otomatik kalite kontrolleri
 
@@ -153,6 +169,8 @@ Family düzeyi:
 - Strict minimal-pair iskeleti ve `edit_script` uyumu
 - Allomorph/function ayrımı
 - Candidate uzunluk dengesi ve gold-length bias
+- Positive ile hard kritik cümlelerinde dengeli query-word overlap
+- En az dört hard'ın gold kadar lexical overlap ve query içeriği taşıması
 - Tek ve doğru gold qrels
 - Blind LLM judge ile benzersiz positive, doğallık, morfoloji ve subtype kontrolü
 
@@ -165,6 +183,7 @@ Corpus/freeze düzeyi:
 - Generator'a göre tekrarlanan başlangıç kalıpları
 - Lemma/template/composition/domain leakage
 - Candidate ve kritik-cümle konum bias'ı
+- Tie-aware word-overlap, character 3-gram ve BM25 freeze eşikleri
 - Train üretildikten sonra exact/fuzzy train–test leakage
 
 Opsiyonel [Stanza](https://stanfordnlp.github.io/stanza/pipeline.html) audit'i kritik lemma ve UD
@@ -173,20 +192,25 @@ gold değiştirmez.
 
 ## Evaluation
 
-Ana metrikler:
+Kontrollü 11-aday metrikleri:
 
-- `Recall@1/5/10`, `MRR@10`, `nDCG@10`, `MAP@10`
-- `hard_only_recall@1/5`, `hard_only_mrr@10`, `hard_only_ndcg@10`
+- `Recall@1/3`, `MRR@10`, `nDCG@10`
+- `hard_only_recall@1/3`, `hard_only_mrr@10`, `hard_only_ndcg@10`
 - `pairwise_hard_accuracy`
 - `pairwise_morph_hard_accuracy`
 - `pairwise_semantic_hard_accuracy`
 - `all_hard_family_consistency`
 - `minimal_margin`, `hardest_hard_margin`, `hardest_negative_margin`
 
+Full-corpus retrieval metrikleri:
+
+- `Recall@1/3/10/50`, `MRR@10`, `nDCG@10`
+- Her sealed query bütün 5.500 test belgesini sıralar.
+
 Artefakt kontrolleri:
 
 - Longest candidate / most tokens / candidate position
-- Character 3-gram / word overlap / BM25
+- Tie-aware character 3-gram / word overlap / BM25
 - Query'siz candidate-only char-TFIDF
 - Kritik sözcük silme
 - `prefix5` suffix-reduction kontrolü; gerçek lemma/kök analizi değildir
@@ -200,17 +224,17 @@ tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyinde
 ```bash
 # API'siz regresyon testi ve plan
 python3 -m test self-test
-python3 -m test plan --run-id test_v32
+python3 -m test plan --run-id test_v33
 
 # İki generator + bağımsız blind judge
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v32
+python3 -m test generate --run-id test_v33
 
 # Geçen kayıtlardan otomatik 100/500 freeze + qrels export
-python3 -m test finalize --run-id test_v32
+python3 -m test finalize --run-id test_v33
 
 # Train üretildikten sonra leakage audit
 python3 -m test audit-leakage --test TEST.json --train TRAIN.json
@@ -219,7 +243,7 @@ python3 -m test audit-leakage --test TEST.json --train TRAIN.json
 python3 -m test morph-audit --input TEST.json --output morph_audit.json --download-model
 
 # API key'siz yalnız preview
-python3 -m test preview-codex --run-id sol_preview_20_v32 --count 20 \
+python3 -m test preview-codex --run-id sol_preview_20_v33 --count 20 \
   --batch-size 10 --model gpt-5.6-sol --reasoning-effort medium
 ```
 
@@ -252,12 +276,12 @@ test/runs/<run_id>/
 ├── rejected.jsonl
 ├── generation_report.json
 ├── release/
-│   ├── morph_dev_v3.2.1.json
-│   ├── morph_test_blind_v3.2.1.json
+│   ├── morph_dev_v3.3.0.json
+│   ├── morph_test_blind_v3.3.0.json
 │   ├── artifact_audit.json
 │   └── freeze_manifest.json
 └── private/
-    ├── morph_test_internal_v3.2.1.json
+    ├── morph_test_internal_v3.3.0.json
     ├── private_qrels.jsonl
     ├── beir_test_qrels.tsv
     └── train_exclusion_holdouts.json

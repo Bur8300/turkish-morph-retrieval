@@ -83,8 +83,8 @@ def run() -> list[str]:
     )
     if metric_summary.get("recall@1") != 0.5 or metric_summary.get("mrr@10") != 0.75:
         failures.append(f"closed retrieval metrikleri yanlış: {metric_summary}")
-    if metric_summary.get("map@10") != metric_summary.get("mrr@10"):
-        failures.append("tek-gold düzende MAP@10 ile MRR@10 eşleşmiyor")
+    if "map@10" in metric_summary or "bpref" in metric_summary:
+        failures.append("tek-gold düzende gereksiz MAP@10/bpref hâlâ raporlanıyor")
     if metric_summary.get("mean_rank") != 1.5 or len(metric_rows) != 2:
         failures.append(f"rank özeti yanlış: {metric_summary}")
     condensed, condensed_rows = evaluate_run(
@@ -221,20 +221,20 @@ def run() -> list[str]:
     strict_slot = deepcopy(slot)
     strict_slot["strict_minimal_pair"] = True
     strict_raw = _fixture_raw()
-    strict_raw["critical_word_positive"] = "tamamlamadı"
+    strict_raw["critical_word_positive"] = "bitirmedi"
     positive_raw = next(row for row in strict_raw["candidates"] if row["candidate_slot"] == "positive_01")
     minimal_raw = next(row for row in strict_raw["candidates"] if row["candidate_slot"] == "hard_01")
     positive_raw.update({
-        "critical_sentence": "Ece raporu toplantıdan önce tamamlamadı.",
-        "critical_word": "tamamlamadı",
+        "critical_sentence": "Ece raporu toplantıdan önce bitirmedi.",
+        "critical_word": "bitirmedi",
     })
     minimal_raw.update({
-        "critical_sentence": "Ece raporu toplantıdan önce tamamladı.",
-        "critical_word": "tamamladı",
+        "critical_sentence": "Ece raporu toplantıdan önce bitirdi.",
+        "critical_word": "bitirdi",
     })
     strict_raw["edit_script"] = {
-        "applies": True, "positive_form": "tamamlamadı",
-        "minimal_negative_form": "tamamladı", "operation": "NEG ekini kaldır",
+        "applies": True, "positive_form": "bitirmedi",
+        "minimal_negative_form": "bitirdi", "operation": "NEG ekini kaldır",
         "changed_feature": "NEG", "invariants": ["lemma", "token_order", "event"],
     }
     strict_family = normalize_family(strict_raw, strict_slot)

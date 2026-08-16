@@ -12,6 +12,12 @@ from typing import Any
 _TOKEN_RE = re.compile(r"[a-zçğıöşü0-9]+", re.I)
 _META_PATTERNS = ("kaydı bul", "kaydi bul", "arıyorum", "ariyorum", "hangi kayıt", "hangi kayit")
 _ABBREVIATIONS = ("Dr.", "Prof.", "Doç.", "Sn.", "vb.", "vs.", "örn.", "T.C.")
+_CONTENT_STOPWORDS = {
+    "acaba", "ama", "ancak", "artık", "bile", "bir", "biz", "bu", "bunu", "bunun",
+    "da", "daha", "de", "diye", "en", "fakat", "gibi", "hem", "her", "için", "ile",
+    "ise", "ki", "mi", "mı", "mu", "mü", "ne", "o", "olarak", "sonra", "şu", "ve",
+    "veya", "ya", "yalnız",
+}
 
 
 def tr_lower(text: str) -> str:
@@ -52,6 +58,73 @@ def _critical_skeleton(sentence: str, critical_word: str) -> list[str] | None:
         if sentence_tokens[start : start + len(word_tokens)] == word_tokens:
             return sentence_tokens[:start] + ["<morph>"] + sentence_tokens[start + len(word_tokens) :]
     return None
+
+
+def _word_overlap(query: str, text: str) -> float:
+    query_terms = set(tokens(query))
+    return len(query_terms & set(tokens(text))) / max(1, len(query_terms))
+
+
+def _content_prefixes(text: str) -> set[str]:
+    values = {
+        token[:5] for token in tokens(text)
+        if len(token) >= 4 and token not in _CONTENT_STOPWORDS
+    }
+    return values or {token[:5] for token in tokens(text) if len(token) >= 3}
+
+
+def _critical_query_sentence(family: dict[str, Any]) -> str:
+    query = str(family.get("query", ""))
+    critical = str(family.get("critical_word_query", ""))
+    for sentence in re.split(r"(?<=[.!?])\s+", query):
+        if critical and _contains_word(sentence, critical):
+            return sentence
+    return query
+
+
+def lexical_family_audit(family: dict[str, Any]) -> dict[str, Any]:
+    """Measure lexical balance on critical sentences, where candidate meaning differs."""
+    candidates = family.get("candidates", [])
+    positive = next((row for row in candidates if row.get("role") == "positive"), None)
+    hards = [row for row in candidates if row.get("role") == "hard_negative"]
+    if positive is None or not hards:
+        return {}
+    query = _critical_query_sentence(family)
+    gold_overlap = _word_overlap(query, str(positive.get("critical_sentence", "")))
+    hard_overlaps = [
+        _word_overlap(query, str(candidate.get("critical_sentence", "")))
+        for candidate in hards
+    ]
+    ordered = sorted(hard_overlaps)
+    midpoint = len(ordered) // 2
+    hard_median = (
+        ordered[midpoint] if len(ordered) % 2
+        else (ordered[midpoint - 1] + ordered[midpoint]) / 2
+    )
+    query_content = _content_prefixes(query)
+    content_recalls = [
+        len(query_content & _content_prefixes(str(candidate.get("critical_sentence", ""))))
+        / max(1, len(query_content))
+        for candidate in hards
+    ]
+    texts = [str(candidate.get("text", "")) for candidate in candidates]
+    gold_index = candidates.index(positive)
+    full_word_scores = [_word_overlap(str(family.get("query", "")), text) for text in texts]
+    query_grams = char_ngrams(str(family.get("query", "")))
+    char_scores = [jaccard(query_grams, char_ngrams(text)) for text in texts]
+    bm25_scores = _bm25_scores(str(family.get("query", "")), texts)
+    return {
+        "gold_word_overlap": round(gold_overlap, 6),
+        "hard_word_overlap_median": round(hard_median, 6),
+        "gold_hard_median_gap": round(abs(gold_overlap - hard_median), 6),
+        "hards_at_or_above_gold": sum(score >= gold_overlap for score in hard_overlaps),
+        "hard_query_content_recalls": [round(score, 6) for score in content_recalls],
+        "tie_aware_gold_top_probability": {
+            "word_overlap": round(_tie_aware_top_probability(full_word_scores, gold_index), 6),
+            "character_3gram": round(_tie_aware_top_probability(char_scores, gold_index), 6),
+            "bm25": round(_tie_aware_top_probability(bm25_scores, gold_index), 6),
+        },
+    }
 
 
 def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any]:
@@ -287,6 +360,34 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
             if gold_len / max(1, median) > float(cfg["quality"]["gold_to_median_token_ratio_max"]):
                 problems.append(f"gold uzunluk bias'ı: gold/median={gold_len / max(1, median):.2f}")
 
+    lexical = lexical_family_audit(family)
+    family["lexical_audit"] = lexical
+    if lexical:
+        quality = cfg["quality"]
+        minimum_close_hards = int(quality["lexical_hards_at_or_above_gold_min"])
+        if lexical["hards_at_or_above_gold"] < minimum_close_hards:
+            problems.append(
+                "lexical overlap gold'u ele veriyor: "
+                f"gold kadar örtüşen hard={lexical['hards_at_or_above_gold']} < {minimum_close_hards}"
+            )
+        max_gap = float(quality["gold_hard_overlap_median_gap_max"])
+        if lexical["gold_hard_median_gap"] > max_gap:
+            problems.append(
+                "gold-hard lexical overlap dengesiz: "
+                f"median fark={lexical['gold_hard_median_gap']:.3f} > {max_gap:.3f}"
+            )
+        content_threshold = float(quality["hard_query_content_recall_min"])
+        content_count = sum(
+            score >= content_threshold for score in lexical["hard_query_content_recalls"]
+        )
+        content_minimum = int(quality["content_preserving_hards_min"])
+        lexical["content_preserving_hards"] = content_count
+        if content_count < content_minimum:
+            problems.append(
+                "aynı içerik sözcüklerini koruyan hard sayısı düşük: "
+                f"{content_count} < {content_minimum}"
+            )
+
     return sorted(set(problems))
 
 
@@ -349,12 +450,23 @@ def interpret_judge(
 
 def quality_score(family: dict[str, Any]) -> float:
     judge = family.get("qc", {}).get("judge", {})
+    lexical = family.get("lexical_audit", {})
     lengths = [len(tokens(candidate["text"])) for candidate in family["candidates"]]
     balance = min(lengths) / max(lengths) if lengths and max(lengths) else 0.0
+    lexical_balance = 1.0 - min(1.0, float(lexical.get("gold_hard_median_gap", 1.0)))
+    close_hard_share = min(1.0, float(lexical.get("hards_at_or_above_gold", 0)) / 8.0)
+    cheap_top = lexical.get("tie_aware_gold_top_probability", {})
+    artefact_resistance = (
+        1.0 - sum(float(value) for value in cheap_top.values()) / len(cheap_top)
+        if cheap_top else 0.0
+    )
     return (
         float(judge.get("family_naturalness", 0))
         + 2.0 * float(judge.get("subtype_agreement", 0))
         + balance
+        + lexical_balance
+        + 0.5 * close_hard_share
+        + artefact_resistance
     )
 
 
@@ -363,6 +475,12 @@ def corpus_problems(items: list[dict[str, Any]], cfg: dict[str, Any]) -> list[st
     ids = [item["family_id"] for item in items]
     if len(ids) != len(set(ids)):
         problems.append("family_id tekrarı var")
+    frames = [str(item.get("semantic_frame_id", "")).strip() for item in items]
+    repeated_frames = sorted(
+        frame for frame, count in Counter(frames).items() if frame and count > 1
+    )
+    if repeated_frames:
+        problems.append(f"semantic_frame_id tekrarı var: {repeated_frames[:20]}")
     normalized_queries: dict[str, list[str]] = defaultdict(list)
     normalized_candidates: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for item in items:
@@ -512,9 +630,18 @@ def _bm25_scores(query: str, docs: list[str]) -> list[float]:
     return scores
 
 
+def _tie_aware_top_probability(scores: list[float], gold_index: int) -> float:
+    gold_score = scores[gold_index]
+    if any(score > gold_score for score in scores):
+        return 0.0
+    return 1.0 / sum(score == gold_score for score in scores)
+
+
 def artifact_report(items: list[dict[str, Any]]) -> dict[str, Any]:
     wins = Counter()
     gold_positions = Counter()
+    lexical_gaps = []
+    close_hard_counts = []
     for item in items:
         candidates = item["candidates"]
         gold_index = next(index for index, candidate in enumerate(candidates) if candidate["id"] == item["gold_id"])
@@ -526,11 +653,18 @@ def artifact_report(items: list[dict[str, Any]]) -> dict[str, Any]:
         query_grams = char_ngrams(item["query"])
         trigram = [jaccard(query_grams, char_ngrams(candidate["text"])) for candidate in candidates]
         bm25 = _bm25_scores(item["query"], [candidate["text"] for candidate in candidates])
-        wins["longest_candidate"] += int(gold_index == max(range(11), key=lengths.__getitem__))
-        wins["most_tokens"] += int(gold_index == max(range(11), key=token_lengths.__getitem__))
-        wins["word_overlap"] += int(gold_index == max(range(11), key=overlap.__getitem__))
-        wins["character_3gram"] += int(gold_index == max(range(11), key=trigram.__getitem__))
-        wins["bm25"] += int(gold_index == max(range(11), key=bm25.__getitem__))
+        for name, scores in {
+            "longest_candidate": lengths,
+            "most_tokens": token_lengths,
+            "word_overlap": overlap,
+            "character_3gram": trigram,
+            "bm25": bm25,
+        }.items():
+            wins[name] += _tie_aware_top_probability(scores, gold_index)
+        lexical = item.get("lexical_audit") or lexical_family_audit(item)
+        if lexical:
+            lexical_gaps.append(float(lexical["gold_hard_median_gap"]))
+            close_hard_counts.append(int(lexical["hards_at_or_above_gold"]))
     n = max(1, len(items))
     generator_prefixes: dict[str, Counter] = defaultdict(Counter)
     for item in items:
@@ -539,9 +673,17 @@ def artifact_report(items: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "n_families": len(items),
         "chance_recall_at_1": round(1 / 11, 4),
-        "recall_at_1": {name: round(value / n, 4) for name, value in sorted(wins.items())},
+        "recall_at_1_tie_aware": {
+            name: round(value / n, 4) for name, value in sorted(wins.items())
+        },
         "gold_position_counts": dict(sorted(gold_positions.items())),
         "longest_gold_rate": round(wins["longest_candidate"] / n, 4),
+        "lexical_balance": {
+            "mean_gold_hard_median_gap": round(sum(lexical_gaps) / max(1, len(lexical_gaps)), 4),
+            "mean_hards_at_or_above_gold": round(
+                sum(close_hard_counts) / max(1, len(close_hard_counts)), 4
+            ),
+        },
         "generator_query_prefix_top10": {
             generator: counts.most_common(10) for generator, counts in sorted(generator_prefixes.items())
         },

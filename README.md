@@ -26,7 +26,8 @@ generator'ı bu metinleri few-shot olarak kullanmaz.
 - 150 strict minimal-pair family; iki generator finalde 300+300 dengelenir.
 - 3× ham üretim → deterministic QC → farklı model ailesinden blind judge → otomatik 100/500
   dengeli seçim → hash/manifest ile freeze.
-- Qrels family oluşturulurken hazırdır: gold `1`, aynı family'deki 10 negatif `0`.
+- Qrels family oluşturulurken hazırdır: gold `1`, aynı family'deki 10 negatif `0`; full-corpus
+  retrieval farklı semantic frame'lerdeki bütün test belgelerini ortak corpus olarak sıralar.
 
 Ayrıntılı şema, uyarlanabilir hard-negative taksonomisi ve komutlar:
 [`test/README.md`](test/README.md). Daha kısa başlangıç özeti:
@@ -38,7 +39,7 @@ Yeni test kodu planlama/QC tarafında yalnız Python standart kütüphanesini ku
 
 ```bash
 python3 -m test self-test
-python3 -m test plan --run-id test_v32
+python3 -m test plan --run-id test_v33
 ```
 
 API üretimi için:
@@ -48,7 +49,7 @@ export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v32_pilot --limit 30
+python3 -m test generate --run-id test_v33_pilot --limit 30
 ```
 
 İki generator ve judge üç farklı OpenRouter model ailesinden değilse kod çalışmayı reddeder. Model kimlikleri,
@@ -59,8 +60,8 @@ komutları kullanın.
 
 ## Paper değerlendirme katmanları
 
-1. Her query'nin kendi 11 adayı üzerindeki kontrollü morfolojik contrast sonucu.
-2. Ortak 5.500 test dokümanında tanısal gold-rank stres testi.
+1. Her query'nin kendi 11 adayı üzerinde `Recall@1/3`, MRR@10 ve nDCG@10.
+2. Ortak 5.500 test dokümanında full-corpus `Recall@1/3/10/50`, MRR@10 ve nDCG@10.
 3. Genel retrieval yeteneğinin korunması için harici Turkish-BEIR/TR-MTEB sonuçları.
 
 ## Lisans

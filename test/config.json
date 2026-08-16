@@ -1,6 +1,6 @@
 {
   "dataset_name": "turkish_morph_retrieval_test",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "seed": 20260814,
   "targets": {
     "development": 100,
@@ -39,6 +39,13 @@
     "cross_family_candidate_jaccard_max": 0.90,
     "train_test_jaccard_max": 0.85,
     "max_abstract_template_reuse": 4,
+    "lexical_hards_at_or_above_gold_min": 4,
+    "gold_hard_overlap_median_gap_max": 0.15,
+    "content_preserving_hards_min": 4,
+    "hard_query_content_recall_min": 0.60,
+    "freeze_tie_aware_word_overlap_recall_at_1_max": 0.20,
+    "freeze_tie_aware_character_3gram_recall_at_1_max": 0.30,
+    "freeze_tie_aware_bm25_recall_at_1_max": 0.30,
     "judge_subtype_agreement_min": 0.90,
     "judge_naturalness_min": 4
   },

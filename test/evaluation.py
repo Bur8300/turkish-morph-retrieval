@@ -13,7 +13,9 @@ from typing import Any
 from .taxonomy import MORPH_HARD_SUBTYPES, SEMANTIC_HARD_SUBTYPES
 from .validators import _bm25_scores, char_ngrams, jaccard, tokens
 
-EVALUATION_API_VERSION = "3.1"
+EVALUATION_API_VERSION = "3.2"
+CONTROLLED_RECALL_KS = (1, 3)
+FULL_CORPUS_RECALL_KS = (1, 3, 10, 50)
 
 
 def load_items(path: str | Path) -> list[dict[str, Any]]:
@@ -64,7 +66,7 @@ def validate_binary_qrels(qrels: dict[str, dict[str, float]], require_nonrelevan
 def evaluate_run(
     qrels: dict[str, dict[str, float]],
     run: dict[str, list[str]],
-    recall_ks: tuple[int, ...] = (1, 5, 10, 100),
+    recall_ks: tuple[int, ...] = CONTROLLED_RECALL_KS,
     unjudged_policy: str = "nonrelevant",
 ) -> tuple[dict[str, float], list[dict[str, Any]]]:
     if unjudged_policy not in {"nonrelevant", "condensed"}:
@@ -90,29 +92,6 @@ def evaluate_run(
             "mrr@10": 1.0 / first_rank if first_rank and first_rank <= 10 else 0.0,
             "ndcg@10": dcg / ideal if ideal else 0.0,
         }
-        judged_nonrelevant = {doc_id for doc_id, score in relevant.items() if score <= 0}
-        bpref_denominator = max(1, min(len(positives), len(judged_nonrelevant)))
-        rank_index = {doc_id: index for index, doc_id in enumerate(original_ranked)}
-        bpref_values = []
-        for doc_id in positives:
-            if doc_id not in rank_index:
-                bpref_values.append(0.0)
-                continue
-            nonrel_above = sum(
-                rank_index[negative] < rank_index[doc_id]
-                for negative in judged_nonrelevant if negative in rank_index
-            )
-            bpref_values.append(
-                1.0 - min(nonrel_above, len(positives)) / bpref_denominator
-            )
-        row["bpref"] = sum(bpref_values) / len(bpref_values)
-        hits = 0
-        precision_sum = 0.0
-        for index, doc_id in enumerate(ranked[:10], start=1):
-            if doc_id in positives:
-                hits += 1
-                precision_sum += hits / index
-        row["map@10"] = precision_sum / min(len(positives), 10)
         for k in recall_ks:
             row[f"recall@{k}"] = len(positives & set(ranked[:k])) / len(positives)
             if unjudged_policy == "condensed":
@@ -192,7 +171,10 @@ def score_encoder(
             for candidate in item["candidates"]
         }
     resolved_qrels = qrels if qrels is not None else closed_qrels(items)
-    summary, per_query = evaluate_run(resolved_qrels, run, unjudged_policy=unjudged_policy)
+    recall_ks = FULL_CORPUS_RECALL_KS if full_corpus else CONTROLLED_RECALL_KS
+    summary, per_query = evaluate_run(
+        resolved_qrels, run, recall_ks=recall_ks, unjudged_policy=unjudged_policy
+    )
     row_by_query = {row["query_id"]: row for row in per_query}
     for item in items:
         row = row_by_query.get(item["family_id"])
@@ -227,7 +209,7 @@ def score_encoder(
         row.update({
             "hard_rank": hard_rank,
             "hard_only_recall@1": float(hard_rank <= 1),
-            "hard_only_recall@5": float(hard_rank <= 5),
+            "hard_only_recall@3": float(hard_rank <= 3),
             "hard_only_mrr@10": 1.0 / hard_rank if hard_rank <= 10 else 0.0,
             "hard_only_ndcg@10": 1.0 / math.log2(hard_rank + 1) if hard_rank <= 10 else 0.0,
             "pairwise_hard_accuracy": (
@@ -281,7 +263,7 @@ def score_encoder(
             ),
         })
     for metric in (
-        "hard_only_recall@1", "hard_only_recall@5", "hard_only_mrr@10", "hard_only_ndcg@10",
+        "hard_only_recall@1", "hard_only_recall@3", "hard_only_mrr@10", "hard_only_ndcg@10",
         "pairwise_hard_accuracy", "pairwise_easy_accuracy", "pairwise_all_accuracy",
         "pairwise_morph_hard_accuracy", "pairwise_semantic_hard_accuracy",
         "morph_hard_family_consistency", "semantic_hard_family_consistency",
@@ -313,29 +295,75 @@ def _prefix5_overlap(query: str, document: str) -> float:
     return len(query_prefixes & document_prefixes) / max(1, len(query_prefixes))
 
 
+def _artifact_scores(item: dict[str, Any], learned_position: int | None = None) -> dict[str, list[float]]:
+    candidates = item["candidates"]
+    texts = [candidate["text"] for candidate in candidates]
+    scorers: dict[str, list[float]] = {
+        "longest_candidate": [float(len(text)) for text in texts],
+        "most_tokens": [float(len(tokens(text))) for text in texts],
+        "character_3gram": [jaccard(char_ngrams(item["query"]), char_ngrams(text)) for text in texts],
+        "word_overlap": [_word_overlap(item["query"], text) for text in texts],
+        "prefix5_overlap": [_prefix5_overlap(item["query"], text) for text in texts],
+        "bm25": _bm25_scores(item["query"], texts),
+    }
+    if learned_position is not None:
+        scorers["position_only"] = [
+            float(index == learned_position) for index in range(len(candidates))
+        ]
+    return scorers
+
+
 def artifact_baseline_runs(
     items: list[dict[str, Any]], learned_position: int | None = None
 ) -> dict[str, dict[str, list[str]]]:
-    """Role/labels are never inputs. Position is learned on dev, not read from `role`."""
+    """Deterministic rankings for inspection; paper summaries use tie-aware expectations."""
     runs = defaultdict(dict)
     for item in items:
         candidates = item["candidates"]
         ids = [candidate["id"] for candidate in candidates]
-        texts = [candidate["text"] for candidate in candidates]
-        scorers: dict[str, list[float]] = {
-            "longest_candidate": [len(text) for text in texts],
-            "most_tokens": [len(tokens(text)) for text in texts],
-            "character_3gram": [jaccard(char_ngrams(item["query"]), char_ngrams(text)) for text in texts],
-            "word_overlap": [_word_overlap(item["query"], text) for text in texts],
-            "prefix5_overlap": [_prefix5_overlap(item["query"], text) for text in texts],
-            "bm25": _bm25_scores(item["query"], texts),
-        }
-        if learned_position is not None:
-            scorers["position_only"] = [float(index == learned_position) for index in range(len(ids))]
-        for name, scores in scorers.items():
+        for name, scores in _artifact_scores(item, learned_position).items():
             order = sorted(range(len(ids)), key=lambda index: (-scores[index], ids[index]))
             runs[name][item["family_id"]] = [ids[index] for index in order]
     return dict(runs)
+
+
+def _tie_aware_metrics(scores: list[float], gold_index: int) -> dict[str, float]:
+    """Expected single-gold metrics under uniform ordering inside an exact score tie."""
+    gold_score = scores[gold_index]
+    higher = sum(score > gold_score for score in scores)
+    tied = sum(score == gold_score for score in scores)
+    possible_ranks = range(higher + 1, higher + tied + 1)
+    row = {
+        "mrr@10": sum(1.0 / rank if rank <= 10 else 0.0 for rank in possible_ranks) / tied,
+        "ndcg@10": sum(
+            1.0 / math.log2(rank + 1) if rank <= 10 else 0.0 for rank in possible_ranks
+        ) / tied,
+        "mean_rank": higher + (tied + 1) / 2,
+    }
+    for k in CONTROLLED_RECALL_KS:
+        row[f"recall@{k}"] = max(0, min(tied, k - higher)) / tied
+    return row
+
+
+def artifact_baseline_summaries(
+    items: list[dict[str, Any]], learned_position: int | None = None
+) -> dict[str, dict[str, float]]:
+    """Tie-aware cheap-baseline summaries without candidate-ID tie artefacts."""
+    rows: dict[str, list[dict[str, float]]] = defaultdict(list)
+    for item in items:
+        gold_index = next(
+            index for index, candidate in enumerate(item["candidates"])
+            if candidate["id"] == item["gold_id"]
+        )
+        for name, scores in _artifact_scores(item, learned_position).items():
+            rows[name].append(_tie_aware_metrics(scores, gold_index))
+    return {
+        name: {
+            metric: sum(row[metric] for row in metric_rows) / len(metric_rows)
+            for metric in metric_rows[0]
+        }
+        for name, metric_rows in rows.items()
+    }
 
 
 def learn_gold_position(dev_items: list[dict[str, Any]]) -> int:
@@ -348,11 +376,7 @@ def learn_gold_position(dev_items: list[dict[str, Any]]) -> int:
 
 def evaluate_artifacts(dev_items: list[dict], test_items: list[dict]) -> dict[str, dict[str, float]]:
     position = learn_gold_position(dev_items)
-    qrels = closed_qrels(test_items)
-    return {
-        name: evaluate_run(qrels, run)[0]
-        for name, run in artifact_baseline_runs(test_items, position).items()
-    }
+    return artifact_baseline_summaries(test_items, position)
 
 
 def candidate_only_classifier(dev_items: list[dict], test_items: list[dict]) -> dict[str, Any]:
@@ -371,7 +395,9 @@ def candidate_only_classifier(dev_items: list[dict], test_items: list[dict]) -> 
         scores = classifier.predict_proba(vectorizer.transform(texts))[:, 1]
         order = sorted(range(len(texts)), key=lambda index: (-scores[index], item["candidates"][index]["id"]))
         run[item["family_id"]] = [item["candidates"][index]["id"] for index in order]
-    summary, per_query = evaluate_run(closed_qrels(test_items), run)
+    summary, per_query = evaluate_run(
+        closed_qrels(test_items), run, recall_ks=CONTROLLED_RECALL_KS
+    )
     return {"summary": summary, "per_query": per_query, "run": run}
 
 

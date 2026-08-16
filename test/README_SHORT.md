@@ -15,6 +15,9 @@ Tek akış:
 → otomatik 100/500 seçim → duplicate/leakage kontrolü → freeze
 ```
 
+Lexical artefakt kapısı gold ile hard overlap'ını dengeler, en az dört içerik-koruyan hard ister
+ve word-overlap/char-3gram/BM25 sonuçlarını tie-aware hesaplar.
+
 Qrels family oluşturulurken hazırdır:
 
 ```text
@@ -22,22 +25,22 @@ gold candidate = 1
 diğer 10 generated negative = 0
 ```
 
-Yabancı family belgeleri otomatik negatif sayılmaz. Bu nedenle ana paper sonucu query'nin kendi
-11 adayındaki kontrollü contrast retrieval sonucudur; 5.500-belge ortak-corpus gold sırası yalnız
-tanısaldır.
+Kontrollü 11-aday metrikleri `Recall@1/3`, MRR@10 ve nDCG@10'dur. Full-corpus retrieval, her
+sealed query için farklı semantic frame'lerdeki 5.500 belgenin tamamını sıralar ve
+`Recall@1/3/10/50`, MRR@10, nDCG@10 raporlar.
 
 Komutlar:
 
 ```bash
 python3 -m test self-test
-python3 -m test plan --run-id test_v32
+python3 -m test plan --run-id test_v33
 
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
 export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v32
-python3 -m test finalize --run-id test_v32
+python3 -m test generate --run-id test_v33
+python3 -m test finalize --run-id test_v33
 ```
 
 Detaylar: [`README.md`](README.md). Final Colab:

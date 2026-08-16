@@ -66,6 +66,19 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
     _check_distribution("generalization_distribution", cfg["generalization_distribution"])
     if float(cfg.get("strict_minimal_pair_fraction", 0)) != 0.25:
         raise ConfigError("Final plan tam olarak %25 strict minimal-pair (150/600) olmalı")
+    quality = cfg["quality"]
+    if not 1 <= int(quality["lexical_hards_at_or_above_gold_min"]) <= 8:
+        raise ConfigError("lexical_hards_at_or_above_gold_min 1–8 arasında olmalı")
+    if not 1 <= int(quality["content_preserving_hards_min"]) <= 8:
+        raise ConfigError("content_preserving_hards_min 1–8 arasında olmalı")
+    for name in (
+        "gold_hard_overlap_median_gap_max", "hard_query_content_recall_min",
+        "freeze_tie_aware_word_overlap_recall_at_1_max",
+        "freeze_tie_aware_character_3gram_recall_at_1_max",
+        "freeze_tie_aware_bm25_recall_at_1_max",
+    ):
+        if not 0 <= float(quality[name]) <= 1:
+            raise ConfigError(f"{name} 0–1 arasında olmalı")
     if runtime:
         generators = cfg["generation"].get("generators", [])
         if len(generators) != 2 or {row.get("id") for row in generators} != {"generator_a", "generator_b"}:
