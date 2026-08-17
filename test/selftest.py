@@ -8,6 +8,7 @@ from types import SimpleNamespace
 
 from .config import load_config
 from .evaluation import evaluate_run, validate_binary_qrels
+from .morphology import _expected_feature_check
 from .planner import build_plan, make_slot, plan_statistics
 from .pipeline import _process_slot, _resume_refill_rounds
 from .selection import select_balanced
@@ -82,6 +83,12 @@ def _fixture_raw():
 
 def run() -> list[str]:
     failures = []
+    if not _expected_feature_check("ALLO.ACC", {"ufeats": "Case=Acc|Number=Sing"}):
+        failures.append("allomorph query UFeats eşlemesi çalışmadı")
+    if not _expected_feature_check(
+        "POSS.2PL", {"ufeats": "Person[psor]=2|Number[psor]=Plur|Case=Gen"}
+    ):
+        failures.append("POSS.2PL query UFeats eşlemesi çalışmadı")
     metric_summary, metric_rows = evaluate_run(
         {"q1": {"d1": 1.0}, "q2": {"d2": 1.0}},
         {"q1": ["x", "d1"], "q2": ["d2", "x"]},
@@ -335,7 +342,9 @@ def run() -> list[str]:
         )
         assessments.append({
             "id": candidate["id"], "relevance": "relevant" if candidate["role"] == "positive" else "not_relevant",
-            "naturalness": 5, "inferred_type": intended, "morphology_ok": True, "reason": "fixture",
+            "naturalness": 5, "inferred_type": intended, "morphology_ok": True,
+            "supports_query": candidate["role"] == "positive", "internally_consistent": True,
+            "reason": "fixture",
         })
     judge = {
         "answers_query": [family["gold_id"]], "candidate_assessments": assessments,
@@ -345,6 +354,17 @@ def run() -> list[str]:
     judge_problems, _ = interpret_judge(family, judge, cfg)
     if judge_problems:
         failures.append(f"geçerli judge fixture reddedildi: {judge_problems}")
+    bad_support = deepcopy(judge)
+    negative = next(row for row in bad_support["candidate_assessments"] if row["relevance"] == "not_relevant")
+    negative["supports_query"] = True
+    support_problems, _ = interpret_judge(family, bad_support, cfg)
+    if not any("query desteği" in problem for problem in support_problems):
+        failures.append("judge false-negative/query desteği kontrolü çalışmadı")
+    bad_consistency = deepcopy(judge)
+    bad_consistency["candidate_assessments"][0]["internally_consistent"] = False
+    consistency_problems, _ = interpret_judge(family, bad_consistency, cfg)
+    if not any("iç tutarsız" in problem for problem in consistency_problems):
+        failures.append("judge iç tutarlılık kontrolü çalışmadı")
 
     def response(data, number):
         return SimpleNamespace(

@@ -12,7 +12,7 @@ import random
 from .taxonomy import HARD_SUBTYPES
 
 
-PROMPT_VERSION = "test-prompts-3.6.0-compact"
+PROMPT_VERSION = "test-prompts-3.6.1-compact"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -277,10 +277,18 @@ Aşağıdaki family’yi etiketleri görmeden değerlendir.
 KURALLAR
 1. `answers_query`: sorguyu bütünüyle doğru yanıtlayan bütün aday kimlikleri. Kısmi aday ekleme.
 2. Her aday için binary relevance (`relevant`/`not_relevant`), 1–5 naturalness,
-   morphology_ok ve inferred_type ver. Kısmi relevance kullanma.
+   morphology_ok, supports_query, internally_consistent ve inferred_type ver.
+   Kısmi relevance kullanma.
 3. Olası inferred_type değerleri: positive, {', '.join(allowed)}, easy_negative, unclear.
 4. Bir hard aday dilbilgisel olarak bozuksa morphology_ok=false; bozukluk zorluk sayılamaz.
 5. Allomorph invariance hedefinde geçerli yüzey değişkesini yanlış sayma.
 6. Uzunluk, üslup veya ayrıntı yalnız gold’u ele veriyorsa length_or_style_artifact=true.
 7. Family doğal değilse veya birden fazla doğru aday varsa bunu açıkça kaydet.
+8. `supports_query=true` yalnız aday sorgudaki temel önermeyi doğruluyor, yeniden ifade ediyor
+   veya bu önerme için yeterli kanıt sağlıyorsa ver. Yalnız aynı konuda olmak yeterli değildir.
+   Gold dışındaki bir aday supports_query=true ise family başarısızdır.
+9. Aday kendi içinde çelişiyorsa (ör. rapor hem hazır hem henüz bitmemişse)
+   internally_consistent=false ver. Dilbilgisel ama mantıksal çelişkili aday kabul edilmez.
+10. Değerlendirmeyi iki sırayla yap: önce metinlerin relevance/doğallık/iç tutarlılığını,
+    sonra target_feature yardımıyla biçimbilim ve subtype kontrolünü değerlendir.
 """

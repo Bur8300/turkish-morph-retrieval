@@ -268,7 +268,8 @@ Family düzeyi:
 - Positive ile hard kritik cümlelerinde dengeli query-word overlap
 - En az dört hard'ın gold kadar lexical overlap ve query içeriği taşıması
 - Tek ve doğru gold qrels
-- Blind LLM judge ile benzersiz positive, doğallık, morfoloji ve subtype kontrolü
+- Etiket/konum-kör, feature-aware LLM judge ile benzersiz positive, doğallık, morfoloji ve subtype
+- Her negatif için query'yi doğrulama/paraphrase etme riski ve her aday için iç tutarlılık
 
 Corpus/freeze düzeyi:
 
@@ -283,7 +284,8 @@ Corpus/freeze düzeyi:
 - Train üretildikten sonra exact/fuzzy train–test leakage
 
 Opsiyonel [Stanza](https://stanfordnlp.github.io/stanza/pipeline.html) audit'i kritik lemma ve UD
-`UFeats` bilgisini kontrol eder. Bu gerçek morfem segmentasyonu değildir; audit uyarıları otomatik
+`UFeats` bilgisini kontrol eder. `morph_explicit` query'lerde hedef özelliğin kritik query
+sözcüğünde bulunmasını da denetler. Bu gerçek morfem segmentasyonu değildir; audit uyarıları otomatik
 gold değiştirmez.
 
 ## Evaluation

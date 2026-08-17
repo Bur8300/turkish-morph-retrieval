@@ -2,11 +2,11 @@
   "n_families": 20,
   "chance_recall_at_1": 0.0909,
   "recall_at_1_tie_aware": {
-    "bm25": 0.0488,
-    "character_3gram": 0.225,
+    "bm25": 0.0417,
+    "character_3gram": 0.175,
     "longest_candidate": 0.0,
-    "most_tokens": 0.0063,
-    "word_overlap": 0.0644
+    "most_tokens": 0.0118,
+    "word_overlap": 0.0686
   },
   "gold_position_counts": {
     "1": 1,
@@ -21,8 +21,8 @@
   },
   "longest_gold_rate": 0.0,
   "lexical_balance": {
-    "mean_gold_hard_median_gap": 0.0295,
-    "mean_hards_at_or_above_gold": 6.55
+    "mean_gold_hard_median_gap": 0.0302,
+    "mean_hards_at_or_above_gold": 6.25
   },
   "generator_query_prefix_top10": {
     "codex_preview": [
@@ -43,7 +43,7 @@
         1
       ],
       [
-        "geçen akşam siz",
+        "geçen akşam düşürdüğüm",
         1
       ],
       [
@@ -51,7 +51,7 @@
         1
       ],
       [
-        "analiste göre fonda",
+        "analistin değerlendirmesine göre",
         1
       ],
       [

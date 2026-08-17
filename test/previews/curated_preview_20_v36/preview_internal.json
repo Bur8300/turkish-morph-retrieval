@@ -386,7 +386,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "high"
@@ -676,7 +676,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "low"
@@ -962,7 +962,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "high"
@@ -1056,11 +1056,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_01",
           "subtype": "controlled_morph_negative",
-          "critical_sentence": "Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitiriyordu.",
+          "critical_sentence": "Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu hâlâ bitiriyordu.",
           "critical_word": "bitiriyordu",
           "morph_relation": "feature_changed",
           "reason": "Hedef tamamlanmışlık yerine toplantı başladığında sürmekte olan rapor hazırlığı bildirilmiştir.",
-          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitiriyordu.",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu hâlâ bitiriyordu.",
           "id": "family_raw_00004_526d09eeee_c01",
           "relevance": 0
         },
@@ -1068,11 +1068,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_08",
           "subtype": "scope_attachment_trap",
-          "critical_sentence": "Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirmiş görünüyordu.",
-          "critical_word": "bitirmiş",
+          "critical_sentence": "Fon yöneticisi, aylık risk raporunu kurul toplantısından önce bitireceğini söylemişti.",
+          "critical_word": "bitireceğini",
           "morph_relation": "scope_changed",
-          "reason": "Bitirme, geçmişte gerçekleşmiş bir olgu olarak değil, görünmek yükleminin kapsamındaki belirsiz bir izlenim olarak sunulmuştur.",
-          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirmiş görünüyordu.",
+          "reason": "Toplantı öncesi bitirme yalnız geçmişte verilmiş bir niyet olarak aktarılmış; raporun gerçekten tamamlandığı doğrulanmamıştır.",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Fon yöneticisi, aylık risk raporunu kurul toplantısından önce bitireceğini söylemişti.",
           "id": "family_raw_00004_526d09eeee_c02",
           "relevance": 0
         },
@@ -1140,11 +1140,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_03",
           "subtype": "related_feature_negative",
-          "critical_sentence": "Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında henüz bitirmemişti.",
+          "critical_sentence": "Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu henüz bitirmemişti.",
           "critical_word": "bitirmemişti",
           "morph_relation": "feature_changed",
           "reason": "-mişti zinciri korunurken eklenen olumsuzluk raporun önceden tamamlandığı önermesini tersine çevirir.",
-          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında henüz bitirmemişti.",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu henüz bitirmemişti.",
           "id": "family_raw_00004_526d09eeee_c08",
           "relevance": 0
         },
@@ -1176,11 +1176,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_02",
           "subtype": "same_lemma_wrong_inflection",
-          "critical_sentence": "Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirecekti.",
+          "critical_sentence": "Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu toplantıdan sonra bitirecekti.",
           "critical_word": "bitirecekti",
           "morph_relation": "wrong_inflection",
           "reason": "Aynı lemma geçmişteki gelecek çekimindedir ve raporun o anda henüz tamamlanmadığını belirtir.",
-          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirecekti.",
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu toplantıdan sonra bitirecekti.",
           "id": "family_raw_00004_526d09eeee_c11",
           "relevance": 0
         }
@@ -1207,19 +1207,19 @@
         "gold_hard_median_gap": 0.0,
         "hards_at_or_above_gold": 7,
         "hard_query_content_recalls": [
+          0.142857,
           0.285714,
           0.285714,
           0.285714,
-          0.285714,
-          0.285714,
+          0.142857,
           0.285714,
           0.142857,
           0.285714
         ],
         "tie_aware_gold_top_probability": {
-          "word_overlap": 0.142857,
-          "character_3gram": 1.0,
-          "bm25": 0.25
+          "word_overlap": 0.0,
+          "character_3gram": 0.0,
+          "bm25": 0.0
         },
         "query_gold_token_edits": 11,
         "query_gold_token_sequence_ratio": 0.190476,
@@ -1246,7 +1246,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "low"
@@ -1322,7 +1322,7 @@
       "semantic_frame_id": "frame_00005",
       "template_id": "personal_recollection",
       "critical_lemma": "apartman",
-      "critical_word_query": "kardeşin",
+      "critical_word_query": "binanızın",
       "critical_word_positive": "apartmanınızın",
       "feature_delta": "sizin ↔ senin",
       "edit_script": {
@@ -1333,7 +1333,7 @@
         "changed_feature": "",
         "invariants": []
       },
-      "query": "Geçen akşam siz iki kardeşin oturduğu apartmanın girişinde düşürdüğüm anahtarı daha sonra bulduğumu hatırladım.",
+      "query": "Geçen akşam düşürdüğüm anahtar sizin binanızın girişinde bulundu.",
       "context_sentences": [
         "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim."
       ],
@@ -1390,11 +1390,11 @@
           "role": "easy_negative",
           "candidate_slot": "easy_01",
           "subtype": "easy_negative",
-          "critical_sentence": "Apartman görevlisinin geçen akşam sizin girişinizdeki arızalı lambayı onardığını hatırladım.",
-          "critical_word": "girişinizdeki",
+          "critical_sentence": "Apartman görevlisinin geçen akşam apartmanınızın girişindeki arızalı lambayı onardığını hatırladım.",
+          "critical_word": "apartmanınızın",
           "morph_relation": "same_domain_off_intent",
           "reason": "Aynı domain ve olay çevresindeki ipuçlarını korur; ancak query'nin bilgi ihtiyacından farklı bir off-intent olayı anlatır.",
-          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Apartman görevlisinin geçen akşam sizin girişinizdeki arızalı lambayı onardığını hatırladım.",
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Apartman görevlisinin geçen akşam apartmanınızın girişindeki arızalı lambayı onardığını hatırladım.",
           "id": "family_raw_00005_a8227c5e95_c05",
           "relevance": 0
         },
@@ -1488,28 +1488,28 @@
       "source_type": "human_curated_from_codex_preview",
       "generation_notes": "POSS.2PL hedefi gündelik bir hatırlama içinde kişi iyeliği, ad sayısı, zaman ve içerik karşıtlıklarıyla sınandı; positive ile yüksek örtüşmeli hard adaylar dengelendi.",
       "lexical_audit": {
-        "gold_word_overlap": 0.428571,
+        "gold_word_overlap": 0.625,
         "hard_word_overlap_median": 0.5,
-        "gold_hard_median_gap": 0.071429,
-        "hards_at_or_above_gold": 8,
+        "gold_hard_median_gap": 0.125,
+        "hards_at_or_above_gold": 3,
         "hard_query_content_recalls": [
-          0.8,
-          0.8,
-          0.8,
-          0.7,
-          0.8,
-          0.7,
-          0.7,
-          0.8
+          0.625,
+          0.75,
+          0.625,
+          0.75,
+          0.625,
+          0.625,
+          0.625,
+          0.625
         ],
         "tie_aware_gold_top_probability": {
-          "word_overlap": 0.0,
-          "character_3gram": 0.0,
-          "bm25": 0.0
+          "word_overlap": 0.25,
+          "character_3gram": 1.0,
+          "bm25": 0.25
         },
-        "query_gold_token_edits": 8,
-        "query_gold_token_sequence_ratio": 0.521739,
-        "query_gold_word_jaccard": 0.352941,
+        "query_gold_token_edits": 7,
+        "query_gold_token_sequence_ratio": 0.352941,
+        "query_gold_word_jaccard": 0.416667,
         "query_gold_lexical_band_ok": true,
         "content_preserving_hards": 8
       },
@@ -1532,7 +1532,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "medium"
@@ -1814,7 +1814,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "medium"
@@ -1889,7 +1889,7 @@
       "semantic_frame_id": "frame_00008",
       "template_id": "reported_speech",
       "critical_lemma": "sat",
-      "critical_word_query": "korumaktır",
+      "critical_word_query": "çıkarmaz",
       "critical_word_positive": "satmaz",
       "feature_delta": "genel olumsuz alışkanlık ↔ anlık olumsuzluk",
       "edit_script": {
@@ -1900,7 +1900,7 @@
         "changed_feature": "",
         "invariants": []
       },
-      "query": "Analiste göre fonda izlenen genel politika, kısa süreli kur düşüşlerinde döviz pozisyonunu korumaktır.",
+      "query": "Analistin değerlendirmesine göre bu fon, kısa süreli kur gerilemelerinde dövizlerini elden çıkarmaz.",
       "context_sentences": [
         "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi.",
         "Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
@@ -1922,11 +1922,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_08",
           "subtype": "morph_distractor",
-          "critical_sentence": "Piyasa analisti, yatırım fonu hakkında “Geçici olmayan kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu.",
+          "critical_sentence": "Piyasa analisti, yatırım fonu hakkında “Kalıcı kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu.",
           "critical_word": "satmaz",
           "morph_relation": "target_preserved",
           "reason": "Olumsuzluk “geçici” sıfatına bağlanarak stratejinin geçerli olduğu düşüş türü tersine çevrilir.",
-          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici olmayan kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı.",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Kalıcı kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı.",
           "id": "family_raw_00008_dc4481e0dd_c02",
           "relevance": 0
         },
@@ -1946,11 +1946,11 @@
           "role": "positive",
           "candidate_slot": "positive_01",
           "subtype": "equivalence_positive",
-          "critical_sentence": "Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmaz” görüşünü paylaştı.",
+          "critical_sentence": "Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu.",
           "critical_word": "satmaz",
           "morph_relation": "target_preserved",
           "reason": "NEG.AOR biçimi, geçici kur düşüşlerinde döviz satmamanın fonun genel stratejisi olduğunu korur.",
-          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmaz” görüşünü paylaştı. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı.",
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı.",
           "id": "family_raw_00008_dc4481e0dd_c04",
           "relevance": 1
         },
@@ -2056,28 +2056,28 @@
       "source_type": "human_curated_from_codex_preview",
       "generation_notes": "Finans haber dili ve aktarılan değerlendirme çerçevesi korundu; positive ile hard adayların sözcüksel örtüşmesi yakın tutulurken ayrımlar biçimbilim, kapsam, içerik veya katılımcı üzerinden yerelleştirildi.",
       "lexical_audit": {
-        "gold_word_overlap": 0.230769,
-        "hard_word_overlap_median": 0.230769,
+        "gold_word_overlap": 0.083333,
+        "hard_word_overlap_median": 0.083333,
         "gold_hard_median_gap": 0.0,
-        "hards_at_or_above_gold": 7,
+        "hards_at_or_above_gold": 8,
         "hard_query_content_recalls": [
-          0.25,
-          0.25,
-          0.25,
-          0.166667,
-          0.25,
-          0.25,
-          0.25,
-          0.25
+          0.333333,
+          0.333333,
+          0.333333,
+          0.222222,
+          0.333333,
+          0.333333,
+          0.333333,
+          0.333333
         ],
         "tie_aware_gold_top_probability": {
-          "word_overlap": 0.125,
-          "character_3gram": 1.0,
-          "bm25": 0.142857
+          "word_overlap": 0.1,
+          "character_3gram": 0.0,
+          "bm25": 0.0
         },
-        "query_gold_token_edits": 11,
-        "query_gold_token_sequence_ratio": 0.24,
-        "query_gold_word_jaccard": 0.136364,
+        "query_gold_token_edits": 12,
+        "query_gold_token_sequence_ratio": 0.083333,
+        "query_gold_word_jaccard": 0.043478,
         "query_gold_lexical_band_ok": true,
         "content_preserving_hards": 0
       },
@@ -2100,7 +2100,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "low"
@@ -2396,7 +2396,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "medium"
@@ -2683,7 +2683,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "low"
@@ -2969,7 +2969,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "high"
@@ -3255,7 +3255,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "medium"
@@ -3327,7 +3327,7 @@
       "semantic_frame_id": "frame_00015",
       "template_id": "event_report",
       "critical_lemma": "depo",
-      "critical_word_query": "belirledi",
+      "critical_word_query": "depolarında",
       "critical_word_positive": "depolarında",
       "feature_delta": "kaç tane, kimin ve yön/konum birlikte",
       "edit_script": {
@@ -3361,11 +3361,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_02",
           "subtype": "related_feature_negative",
-          "critical_sentence": "Belediye ekipleri, bugünkü denetimde iki işletmenin depolarından kaçak ürün çıkarıldığını belirledi.",
-          "critical_word": "depolarından",
+          "critical_sentence": "Belediye ekipleri, bugünkü denetimde iki işletmenin depolarına kaçak ürün sevkiyatının engellendiğini belirledi.",
+          "critical_word": "depolarına",
           "morph_relation": "feature_changed",
-          "reason": "Aynı lemma ayrılma hâliyle çekilerek ürünün bulunduğu konum yerine çıkarıldığı kaynak bildiriliyor.",
-          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin depolarından kaçak ürün çıkarıldığını belirledi.",
+          "reason": "Aynı lemma yönelme hâliyle çekilmiş; sevkiyatın engellenmesi ürünün depolarda bulunduğunu doğrulamıyor.",
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin depolarına kaçak ürün sevkiyatının engellendiğini belirledi.",
           "id": "family_raw_00015_2cb47914c3_c02",
           "relevance": 0
         },
@@ -3539,7 +3539,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "high"
@@ -3717,11 +3717,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_02",
           "subtype": "related_feature_negative",
-          "critical_sentence": "İlaç mideme hızla ulaştığı için bulantım arttı.",
+          "critical_sentence": "İlaç mideme ulaştıktan hemen sonra bağırsaklara geçtiği hâlde bulantım arttı.",
           "critical_word": "mideme",
           "morph_relation": "feature_changed",
           "reason": "Mide lemması yönelme hâliyle çekildiğinden uzun süre bulunma anlamı kayboluyor.",
-          "text": "İlaç mideme hızla ulaştığı için bulantım arttı.",
+          "text": "İlaç mideme ulaştıktan hemen sonra bağırsaklara geçtiği hâlde bulantım arttı.",
           "id": "family_raw_00016_eebb5feb4e_c08",
           "relevance": 0
         },
@@ -3741,11 +3741,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_07",
           "subtype": "semantic_retrieval_hard",
-          "critical_sentence": "İlaç midemden uzun sürede geçtiği için bulantım arttı.",
-          "critical_word": "sürede",
+          "critical_sentence": "İlaç midemden kısa sürede geçtiği hâlde bulantım arttı.",
+          "critical_word": "midemden",
           "morph_relation": "target_preserved",
           "reason": "-de yüzeyi sürenin içinde görünse de mide üzerinde bulunma hâli kurmuyor.",
-          "text": "İlaç midemden uzun sürede geçtiği için bulantım arttı.",
+          "text": "İlaç midemden kısa sürede geçtiği hâlde bulantım arttı.",
           "id": "family_raw_00016_eebb5feb4e_c10",
           "relevance": 0
         },
@@ -3790,7 +3790,7 @@
           0.555556,
           0.444444,
           0.444444,
-          0.555556,
+          0.444444,
           0.555556
         ],
         "tie_aware_gold_top_probability": {
@@ -3822,7 +3822,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "high"
@@ -4104,7 +4104,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "medium"
@@ -4243,11 +4243,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_03",
           "subtype": "related_feature_negative",
-          "critical_sentence": "Önceden hazırlanan plana göre, tur otobüslerinin gece yolda kalmasında çocuklu yolcular yedek araca alınacaktı.",
-          "critical_word": "otobüslerinin",
+          "critical_sentence": "Önceden hazırlanan plana göre, tur otobüsleri gece yolda kalırsa çocuklu yolcular yedek araca alınacaktı.",
+          "critical_word": "kalırsa",
           "morph_relation": "feature_changed",
-          "reason": "LOC zinciri korunurken adlaştırılmış olayın öznesi tek otobüsten birden çok otobüse dönüşüyor.",
-          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüslerinin gece yolda kalmasında çocuklu yolcular yedek araca alınacaktı.",
+          "reason": "Koşul anlamı korunurken olayın öznesi tek otobüsten birden çok otobüse dönüşüyor.",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsleri gece yolda kalırsa çocuklu yolcular yedek araca alınacaktı.",
           "id": "family_raw_00018_e470b134dd_c05",
           "relevance": 0
         },
@@ -4303,11 +4303,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_07",
           "subtype": "partial_chain_negative",
-          "critical_sentence": "Önceden hazırlanan plana göre, tur otobüsü gece yolda kaldığında çocuklu yolcular yedek araca alınacaktı.",
-          "critical_word": "kaldığında",
+          "critical_sentence": "Önceden hazırlanan plana göre, tur otobüsü gece yolda kalmadan çocuklu yolcular yedek araca alınacaktı.",
+          "critical_word": "kalmadan",
           "morph_relation": "chain_partial",
-          "reason": "Zamansal yan cümle koşula yakın bir anlam taşısa da adlaştırma, iyelik ve LOC bileşenlerinden oluşan hedef zinciri içermiyor.",
-          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsü gece yolda kaldığında çocuklu yolcular yedek araca alınacaktı.",
+          "reason": "Aktarım, otobüsün yolda kalması hâline bağlanmak yerine arıza gerçekleşmeden önce yapılacak biçimde sunuluyor.",
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsü gece yolda kalmadan çocuklu yolcular yedek araca alınacaktı.",
           "id": "family_raw_00018_e470b134dd_c10",
           "relevance": 0
         },
@@ -4348,7 +4348,7 @@
         "hard_query_content_recalls": [
           0.583333,
           0.75,
-          0.75,
+          0.833333,
           0.75,
           0.666667,
           0.666667,
@@ -4385,7 +4385,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "medium"
@@ -4672,7 +4672,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "high"
@@ -4806,11 +4806,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_08",
           "subtype": "morph_distractor",
-          "critical_sentence": "Fragman başladıktan sonra oynatıcı akıcı çalışıyor, görüntü sürekli takılıyordur.",
-          "critical_word": "takılıyordur",
+          "critical_sentence": "Fragman başladıktan sonra oynatıcı akıcı çalışıyorsa görüntü sürekli takılmıyordur.",
+          "critical_word": "takılmıyordur",
           "morph_relation": "target_preserved",
           "reason": "Çıkarımsal -dur görüntünün takılmasına bağlanmış, oynatıcının donduğu ise bildirilmemiştir.",
-          "text": "Fragman başladıktan sonra oynatıcı akıcı çalışıyor, görüntü sürekli takılıyordur.",
+          "text": "Fragman başladıktan sonra oynatıcı akıcı çalışıyorsa görüntü sürekli takılmıyordur.",
           "id": "family_raw_00021_57235a41d8_c04",
           "relevance": 0
         },
@@ -4960,7 +4960,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "low"
@@ -5243,7 +5243,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "medium"
@@ -5321,7 +5321,7 @@
       "semantic_frame_id": "frame_00023",
       "template_id": "relative_clause",
       "critical_lemma": "kendi",
-      "critical_word_query": "uzmanların",
+      "critical_word_query": "kendi",
       "critical_word_positive": "kendilerinin",
       "feature_delta": "dönüşlü zamirin doğru kişiye/gruba gönderimi ↔ başka kişi/gruba gönderimi",
       "edit_script": {
@@ -5413,11 +5413,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_01",
           "subtype": "controlled_morph_negative",
-          "critical_sentence": "Bankayı inceleyen uzmanlar, rapordaki hesaplamaları bizim yaptığımızı açıkladı.",
-          "critical_word": "bizim",
+          "critical_sentence": "Bankayı inceleyen uzmanlar, rapordaki hesaplamaları başka uzmanların yaptığını açıkladı.",
+          "critical_word": "uzmanların",
           "morph_relation": "feature_changed",
-          "reason": "Birinci çoğul biçim hesaplamaları uzmanlara değil, konuşuru içeren gruba bağlar.",
-          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları bizim yaptığımızı açıkladı.",
+          "reason": "Hesaplamalar dönüşlü biçimle incelemeyi yürüten uzmanlara değil, açıkça başka bir uzman grubuna bağlanmıştır.",
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları başka uzmanların yaptığını açıkladı.",
           "id": "family_raw_00023_71fa2f4927_c07",
           "relevance": 0
         },
@@ -5531,7 +5531,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "low"
@@ -5618,7 +5618,7 @@
         "changed_feature": "",
         "invariants": []
       },
-      "query": "Ev adresine değil, kargo noktasında müşteriye aynı akşam ulaştırılan sipariş kayda geçti.",
+      "query": "Sipariş ev adresine gönderilmedi; müşteriye aynı akşam kargo noktasında teslim edildi.",
       "context_sentences": [
         "İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
       ],
@@ -5723,11 +5723,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_07",
           "subtype": "semantic_retrieval_hard",
-          "critical_sentence": "Kargo noktası da müşteri siparişini ev adresine göndermek yerine aynı akşam teslim etti.",
-          "critical_word": "da",
+          "critical_sentence": "Kargo görevlisi müşteri siparişini ev adresine götürmek yerine aynı akşam aracında teslim etti.",
+          "critical_word": "aracında",
           "morph_relation": "target_preserved",
-          "reason": "Ayrı yazılan da bulunma eki değil bağlaçtır ve kargo noktasını teslim yeri yerine eyleyen yapmıştır.",
-          "text": "Kargo noktası da müşteri siparişini ev adresine göndermek yerine aynı akşam teslim etti. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi.",
+          "reason": "Teslim kargo noktasında değil, görevlinin aracında gerçekleştiği için hedef konum değişmiştir.",
+          "text": "Kargo görevlisi müşteri siparişini ev adresine götürmek yerine aynı akşam aracında teslim etti. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi.",
           "id": "family_raw_00025_69493a304a_c09",
           "relevance": 0
         },
@@ -5747,11 +5747,11 @@
           "role": "hard_negative",
           "candidate_slot": "hard_02",
           "subtype": "related_feature_negative",
-          "critical_sentence": "Müşteri siparişi ev adresine gönderilmek yerine teslimat şubesinden aynı akşam teslim edildi.",
+          "critical_sentence": "Müşteri siparişi teslimat şubesinden ev adresine aynı akşam gönderildi.",
           "critical_word": "şubesinden",
           "morph_relation": "feature_changed",
           "reason": "Pozitifteki şube lemması ayrılma hâliyle çekimlenerek teslim yerini çıkış noktasına dönüştürmüştür.",
-          "text": "Müşteri siparişi ev adresine gönderilmek yerine teslimat şubesinden aynı akşam teslim edildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi.",
+          "text": "Müşteri siparişi teslimat şubesinden ev adresine aynı akşam gönderildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi.",
           "id": "family_raw_00025_69493a304a_c11",
           "relevance": 0
         }
@@ -5773,30 +5773,30 @@
       "source_type": "human_curated_from_codex_preview",
       "generation_notes": "Pozitif ve hard adaylarda sorgunun kişi, nesne, seçenek karşıtlığı, zaman ve teslim olayı büyük ölçüde ortak tutularak sözcüksel örtüşme dengelenmiştir; doğru eşleşme -da ile -de arasındaki bulunma allomorfisi üzerinden kurulmuştur.",
       "lexical_audit": {
-        "gold_word_overlap": 0.333333,
-        "hard_word_overlap_median": 0.416667,
-        "gold_hard_median_gap": 0.083333,
-        "hards_at_or_above_gold": 7,
+        "gold_word_overlap": 0.545455,
+        "hard_word_overlap_median": 0.590909,
+        "gold_hard_median_gap": 0.045455,
+        "hards_at_or_above_gold": 5,
         "hard_query_content_recalls": [
-          0.636364,
-          0.545455,
-          0.545455,
-          0.363636,
-          0.636364,
-          0.636364,
-          0.636364,
-          0.454545
+          0.9,
+          0.9,
+          0.9,
+          0.5,
+          0.9,
+          0.8,
+          0.7,
+          0.7
         ],
         "tie_aware_gold_top_probability": {
           "word_overlap": 0.0,
           "character_3gram": 0.0,
           "bm25": 0.0
         },
-        "query_gold_token_edits": 10,
-        "query_gold_token_sequence_ratio": 0.333333,
-        "query_gold_word_jaccard": 0.2,
-        "query_gold_lexical_band_ok": false,
-        "content_preserving_hards": 4
+        "query_gold_token_edits": 8,
+        "query_gold_token_sequence_ratio": 0.521739,
+        "query_gold_word_jaccard": 0.352941,
+        "query_gold_lexical_band_ok": true,
+        "content_preserving_hards": 7
       },
       "preview_only": true,
       "provenance": {
@@ -5817,7 +5817,7 @@
       "version": "3.6.0",
       "curation": {
         "source": "legacy_sol_preview_20_v35@be034c4",
-        "semantic_review": "manual",
+        "semantic_review": "manual_v2",
         "version": "v3.6"
       },
       "query_gold_lexical_band": "medium"

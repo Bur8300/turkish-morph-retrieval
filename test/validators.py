@@ -535,6 +535,8 @@ def interpret_judge(
     naturalness_values: list[int] = []
     morphology_failures = []
     relevance_mismatches = []
+    support_mismatches = []
+    inconsistent_candidates = []
     for row in assessments:
         candidate = candidates[row["id"]]
         intended = "positive" if candidate["role"] == "positive" else (
@@ -548,6 +550,10 @@ def interpret_judge(
         expected_relevance = "relevant" if candidate["role"] == "positive" else "not_relevant"
         if row.get("relevance") != expected_relevance:
             relevance_mismatches.append(row["id"])
+        if bool(row.get("supports_query")) != (candidate["role"] == "positive"):
+            support_mismatches.append(row["id"])
+        if not row.get("internally_consistent", False):
+            inconsistent_candidates.append(row["id"])
     agreement_rate = agreement / max(1, len(candidates))
     if agreement_rate < float(cfg["quality"]["judge_subtype_agreement_min"]):
         problems.append(f"judge subtype uyumu düşük: {agreement_rate:.3f}")
@@ -555,6 +561,10 @@ def interpret_judge(
         problems.append(f"judge bozuk biçimbilim işaretledi: {morphology_failures}")
     if relevance_mismatches:
         problems.append(f"judge binary qrels ile anlaşmadı: {relevance_mismatches}")
+    if support_mismatches:
+        problems.append(f"judge gold dışında query desteği/eksik gold desteği buldu: {support_mismatches}")
+    if inconsistent_candidates:
+        problems.append(f"judge iç tutarsız aday buldu: {inconsistent_candidates}")
     if verdict.get("length_or_style_artifact"):
         problems.append("judge uzunluk/üslup artefaktı buldu")
     if verdict.get("allomorph_treated_as_wrong"):
@@ -570,6 +580,8 @@ def interpret_judge(
         "candidate_naturalness_min": min(naturalness_values, default=0),
         "length_or_style_artifact": bool(verdict.get("length_or_style_artifact")),
         "allomorph_treated_as_wrong": bool(verdict.get("allomorph_treated_as_wrong")),
+        "support_mismatches": support_mismatches,
+        "internally_inconsistent_candidates": inconsistent_candidates,
         "notes": verdict.get("notes", ""),
     }
     return sorted(set(problems)), metadata

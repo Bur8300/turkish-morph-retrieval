@@ -160,11 +160,11 @@
       "candidates": [
         {
           "id": "family_raw_00004_526d09eeee_c01",
-          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitiriyordu."
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu hâlâ bitiriyordu."
         },
         {
           "id": "family_raw_00004_526d09eeee_c02",
-          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirmiş görünüyordu."
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Fon yöneticisi, aylık risk raporunu kurul toplantısından önce bitireceğini söylemişti."
         },
         {
           "id": "family_raw_00004_526d09eeee_c03",
@@ -188,7 +188,7 @@
         },
         {
           "id": "family_raw_00004_526d09eeee_c08",
-          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında henüz bitirmemişti."
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu henüz bitirmemişti."
         },
         {
           "id": "family_raw_00004_526d09eeee_c09",
@@ -200,13 +200,13 @@
         },
         {
           "id": "family_raw_00004_526d09eeee_c11",
-          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Rapor gündem görüşülürken hazırdı; fon yöneticisi aylık risk raporunu kurul toplantısı başladığında bitirecekti."
+          "text": "Toplantı tutanağında raporun hazırlık durumuna ilişkin kısa bir açıklamaya yer verildi. Kurul gündeme geçtiğinde fon yöneticisi aylık risk raporunu toplantıdan sonra bitirecekti."
         }
       ]
     },
     {
       "family_id": "family_raw_00005_a8227c5e95",
-      "query": "Geçen akşam siz iki kardeşin oturduğu apartmanın girişinde düşürdüğüm anahtarı daha sonra bulduğumu hatırladım.",
+      "query": "Geçen akşam düşürdüğüm anahtar sizin binanızın girişinde bulundu.",
       "candidates": [
         {
           "id": "family_raw_00005_a8227c5e95_c01",
@@ -226,7 +226,7 @@
         },
         {
           "id": "family_raw_00005_a8227c5e95_c05",
-          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Apartman görevlisinin geçen akşam sizin girişinizdeki arızalı lambayı onardığını hatırladım."
+          "text": "O gün eve döndükten sonra üzerimi değiştirip biraz dinlendim. Apartman görevlisinin geçen akşam apartmanınızın girişindeki arızalı lambayı onardığını hatırladım."
         },
         {
           "id": "family_raw_00005_a8227c5e95_c06",
@@ -306,7 +306,7 @@
     },
     {
       "family_id": "family_raw_00008_dc4481e0dd",
-      "query": "Analiste göre fonda izlenen genel politika, kısa süreli kur düşüşlerinde döviz pozisyonunu korumaktır.",
+      "query": "Analistin değerlendirmesine göre bu fon, kısa süreli kur gerilemelerinde dövizlerini elden çıkarmaz.",
       "candidates": [
         {
           "id": "family_raw_00008_dc4481e0dd_c01",
@@ -314,7 +314,7 @@
         },
         {
           "id": "family_raw_00008_dc4481e0dd_c02",
-          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici olmayan kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Kalıcı kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
         },
         {
           "id": "family_raw_00008_dc4481e0dd_c03",
@@ -322,7 +322,7 @@
         },
         {
           "id": "family_raw_00008_dc4481e0dd_c04",
-          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmaz” görüşünü paylaştı. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
+          "text": "Akşam bülteninde farklı sektörlere ilişkin değerlendirmelere yer verildi. Piyasa analisti, yatırım fonu hakkında “Geçici kur düşüşlerinde döviz satmaz” değerlendirmesinde bulundu. Açıklamaların tamamı kurumların internet sitelerinde yayımlandı."
         },
         {
           "id": "family_raw_00008_dc4481e0dd_c05",
@@ -564,7 +564,7 @@
         },
         {
           "id": "family_raw_00015_2cb47914c3_c02",
-          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin depolarından kaçak ürün çıkarıldığını belirledi."
+          "text": "Denetim sabah saatlerinde sanayi sitesinde başladı. Ekipler tutanak için iş yeri yetkililerinin kimlik bilgilerini aldı. İşlem tamamlanınca ilgililere yasal süreler hakkında bilgi verildi. Belediye ekipleri, bugünkü denetimde iki işletmenin depolarına kaçak ürün sevkiyatının engellendiğini belirledi."
         },
         {
           "id": "family_raw_00015_2cb47914c3_c03",
@@ -638,7 +638,7 @@
         },
         {
           "id": "family_raw_00016_eebb5feb4e_c08",
-          "text": "İlaç mideme hızla ulaştığı için bulantım arttı."
+          "text": "İlaç mideme ulaştıktan hemen sonra bağırsaklara geçtiği hâlde bulantım arttı."
         },
         {
           "id": "family_raw_00016_eebb5feb4e_c09",
@@ -646,7 +646,7 @@
         },
         {
           "id": "family_raw_00016_eebb5feb4e_c10",
-          "text": "İlaç midemden uzun sürede geçtiği için bulantım arttı."
+          "text": "İlaç midemden kısa sürede geçtiği hâlde bulantım arttı."
         },
         {
           "id": "family_raw_00016_eebb5feb4e_c11",
@@ -726,7 +726,7 @@
         },
         {
           "id": "family_raw_00018_e470b134dd_c05",
-          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüslerinin gece yolda kalmasında çocuklu yolcular yedek araca alınacaktı."
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsleri gece yolda kalırsa çocuklu yolcular yedek araca alınacaktı."
         },
         {
           "id": "family_raw_00018_e470b134dd_c06",
@@ -746,7 +746,7 @@
         },
         {
           "id": "family_raw_00018_e470b134dd_c10",
-          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsü gece yolda kaldığında çocuklu yolcular yedek araca alınacaktı."
+          "text": "Şirket yönetimi, yolculuk öncesinde acil durum düzenlemesinin ayrıntılarını basınla paylaştı. Önceden hazırlanan plana göre, tur otobüsü gece yolda kalmadan çocuklu yolcular yedek araca alınacaktı."
         },
         {
           "id": "family_raw_00018_e470b134dd_c11",
@@ -822,7 +822,7 @@
         },
         {
           "id": "family_raw_00021_57235a41d8_c04",
-          "text": "Fragman başladıktan sonra oynatıcı akıcı çalışıyor, görüntü sürekli takılıyordur."
+          "text": "Fragman başladıktan sonra oynatıcı akıcı çalışıyorsa görüntü sürekli takılmıyordur."
         },
         {
           "id": "family_raw_00021_57235a41d8_c05",
@@ -934,7 +934,7 @@
         },
         {
           "id": "family_raw_00023_71fa2f4927_c07",
-          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları bizim yaptığımızı açıkladı."
+          "text": "Gelişmeyle ilgili ayrıntılar dün öğleden sonra kamuoyuyla paylaşıldı. Bankayı inceleyen uzmanlar, rapordaki hesaplamaları başka uzmanların yaptığını açıkladı."
         },
         {
           "id": "family_raw_00023_71fa2f4927_c08",
@@ -956,7 +956,7 @@
     },
     {
       "family_id": "family_raw_00025_69493a304a",
-      "query": "Ev adresine değil, kargo noktasında müşteriye aynı akşam ulaştırılan sipariş kayda geçti.",
+      "query": "Sipariş ev adresine gönderilmedi; müşteriye aynı akşam kargo noktasında teslim edildi.",
       "candidates": [
         {
           "id": "family_raw_00025_69493a304a_c01",
@@ -992,7 +992,7 @@
         },
         {
           "id": "family_raw_00025_69493a304a_c09",
-          "text": "Kargo noktası da müşteri siparişini ev adresine göndermek yerine aynı akşam teslim etti. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+          "text": "Kargo görevlisi müşteri siparişini ev adresine götürmek yerine aynı akşam aracında teslim etti. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
         },
         {
           "id": "family_raw_00025_69493a304a_c10",
@@ -1000,7 +1000,7 @@
         },
         {
           "id": "family_raw_00025_69493a304a_c11",
-          "text": "Müşteri siparişi ev adresine gönderilmek yerine teslimat şubesinden aynı akşam teslim edildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
+          "text": "Müşteri siparişi teslimat şubesinden ev adresine aynı akşam gönderildi. İşlem kodu ile görevli personelin bilgileri teslim tutanağına ayrıca işlendi."
         }
       ]
     }

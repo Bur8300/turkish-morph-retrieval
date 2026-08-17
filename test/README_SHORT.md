@@ -7,7 +7,7 @@
 - Family modları: 150 strict minimal + 270 controlled diverse + 180 natural retrieval.
 - Query anlatımı: 300 morph-explicit + 300 semantic-paraphrase.
 - Query–gold lexical bandı: 180 high + 240 medium + 180 low.
-- İki generator: 300 + 300; ayrı model ailesinden bir blind LLM judge.
+- İki generator: 300 + 300; ayrı model ailesinden etiket/konum-kör, feature-aware bir LLM judge.
 - Query: `%75` 1 cümle, `%25` 2 cümle.
 - Pasaj: `%30/%30/%30/%10` oranında 1/2/3/4 cümle.
 - 71 fenomen, 6 macro grup; morph-hard ve semantic-hard ayrı raporlanır.
@@ -33,6 +33,9 @@ ister ve word-overlap/char-3gram/BM25 sonuçlarını tie-aware hesaplar.
 LLM küçük bir JSON üretir: query, ortak context, kritik lemma/sözcük ve aday başına yalnız
 `candidate_slot + critical_sentence + critical_word`. Rol, subtype, morph relation, qrels,
 edit script ve kimlikler Python tarafından eklenir.
+
+Judge tek gold'u, query'yi yanlışlıkla destekleyen negatifleri, adayların iç tutarlılığını,
+doğallığı ve hedef biçimbilimi kontrol eder; başarısız family aynı kotada yeniden üretilir.
 
 Qrels family oluşturulurken hazırdır:
 

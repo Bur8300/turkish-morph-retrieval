@@ -18,7 +18,17 @@ EXPECTED_UD_FEATURES = {
     "PST": ("Tense=Past",), "FUT": ("Tense=Fut",),
     "PRS.PROG": ("Aspect=Prog",), "PRF.EVID": ("Evident=Nfh",),
     "PASS": ("Voice=Pass",), "CAUS": ("Voice=Cau",),
-    "V.AGR": ("Person=", "Number="),
+    "V.AGR": ("Person=", "Number="), "NEG": ("Polarity=Neg",),
+    "NEG.AOR": ("Polarity=Neg",),
+}
+
+EXPECTED_POSSESSIVE_FEATURES = {
+    "POSS.1SG": ("Person[psor]=1", "Number[psor]=Sing"),
+    "POSS.2SG": ("Person[psor]=2", "Number[psor]=Sing"),
+    "POSS.3SG": ("Person[psor]=3", "Number[psor]=Sing"),
+    "POSS.1PL": ("Person[psor]=1", "Number[psor]=Plur"),
+    "POSS.2PL": ("Person[psor]=2", "Number[psor]=Plur"),
+    "POSS.3PL": ("Person[psor]=3", "Number[psor]=Plur"),
 }
 
 
@@ -54,10 +64,10 @@ def _find_word(document, critical_word: str) -> dict[str, Any] | None:
 def _expected_feature_check(target_feature: str, token: dict[str, Any] | None) -> bool | None:
     if token is None:
         return False
-    if target_feature.startswith("POSS."):
-        expected = ("Person[psor]=", "Number[psor]=")
-    else:
-        expected = EXPECTED_UD_FEATURES.get(target_feature)
+    normalized_feature = target_feature.removeprefix("ALLO.")
+    expected = EXPECTED_POSSESSIVE_FEATURES.get(target_feature)
+    if expected is None:
+        expected = EXPECTED_UD_FEATURES.get(normalized_feature)
     if expected is None:
         return None
     ufeats = str(token.get("ufeats", ""))
@@ -94,6 +104,9 @@ def run_morphology_audit(
     for item in items:
         query_doc = nlp(item["query"])
         query_token = _find_word(query_doc, item.get("critical_word_query", ""))
+        query_feature_ok = _expected_feature_check(
+            str(item.get("target_feature", "")), query_token
+        )
         candidate_tokens = {}
         for candidate in item["candidates"]:
             document = nlp(candidate.get("critical_sentence", candidate["text"]))
@@ -118,10 +131,15 @@ def run_morphology_audit(
                 == _lemma_key(str(minimal_token.get("lemma", "")))
                 and positive_token.get("ufeats") != minimal_token.get("ufeats")
             )
-        status = (
-            "pass" if lemma_ok and strict_pair_ok is not False and ud_feature_ok is not False
-            else "warning"
+        explicit_query_ok = (
+            query_feature_ok is not False
+            if item.get("query_expression") == "morph_explicit"
+            else True
         )
+        status = "pass" if (
+            lemma_ok and strict_pair_ok is not False
+            and ud_feature_ok is not False and explicit_query_ok
+        ) else "warning"
         counts[status] += 1
         family_rows.append({
             "family_id": item["family_id"],
@@ -133,6 +151,8 @@ def run_morphology_audit(
             "positive_token": positive_token,
             "minimal_negative_token": minimal_token,
             "lemma_match": lemma_ok,
+            "query_expression": item.get("query_expression"),
+            "query_expected_ud_feature_present": query_feature_ok,
             "expected_ud_feature_present": ud_feature_ok,
             "strict_same_lemma_different_ufeats": strict_pair_ok,
             "candidate_tokens": candidate_tokens,
