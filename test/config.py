@@ -43,9 +43,31 @@ def _check_distribution(name: str, values: dict[str, float]) -> None:
         raise ConfigError(f"{name} oranlarının tamamı pozitif olmalı")
 
 
+# A vendor reaches OpenRouter under several route prefixes, and a bare id carries no prefix at
+# all. Treating the literal prefix as the family let `google-vertex/gemini-2.5-pro` and
+# `gemini-2.5-pro` past the legacy-train ban that `google/gemini-2.5-pro` is caught by — and let
+# two routes to the same vendor count as two "distinct" families. Both checks read this function,
+# so canonicalising here closes both holes at once.
+_FAMILY_ALIASES = {
+    "google-vertex": "google",
+    "vertex": "google",
+    "gemini": "google",
+    "gemma": "google",
+    "palm": "google",
+}
+
+
 def model_family(model_id: str) -> str:
     """OpenRouter model IDs use `provider/model`; provider is our family boundary."""
-    return model_id.split("/", 1)[0].strip().lower() if "/" in model_id else model_id.lower()
+    prefix = (model_id.split("/", 1)[0] if "/" in model_id else model_id).strip().lower()
+    if prefix in _FAMILY_ALIASES:
+        return _FAMILY_ALIASES[prefix]
+    # No usable prefix (or an unknown one): fall back to the first vendor marker anywhere in the
+    # id, so an unprefixed `gemini-2.5-pro` still resolves to the google family.
+    for token in re.split(r"[^a-z0-9]+", model_id.strip().lower()):
+        if token in _FAMILY_ALIASES:
+            return _FAMILY_ALIASES[token]
+    return prefix
 
 
 def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:

@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
+import json
+import os
 from collections import Counter
 from copy import deepcopy
+from pathlib import Path
 from types import SimpleNamespace
 
-from .config import load_config
+from .config import ConfigError, load_config, model_family, validate_config
+from .prompts import (
+    _blind_candidates,
+    build_generation_prompt,
+    build_judge_prompt,
+    build_repair_prompt,
+)
 from .evaluation import evaluate_run, validate_binary_qrels
 from .morphology import _expected_feature_check
 from .planner import build_plan, make_slot, plan_statistics
@@ -444,6 +453,117 @@ def run() -> list[str]:
     negative["morph_relation"] = "allomorph_equivalent"
     if not any("geçerli allomorph negatif" in p for p in validate_family(allomorph_family, allomorph_slot, cfg)):
         failures.append("allomorph-negatif koruması çalışmadı")
+
+    failures.extend(_check_judge_blindness(cfg))
+    failures.extend(_check_model_family_gates())
+    failures.extend(_check_refill_round_nonce(cfg))
+    return failures
+
+
+def _check_refill_round_nonce(cfg) -> list[str]:
+    """A replacement round must produce a different prompt, or the provider cache (keyed on the
+    prompt hash) replays the round that already failed and the refill loop can never recover."""
+    failures = []
+    slot = _fixture_slot(cfg)
+    prompts = [build_generation_prompt({**slot, "refill_round": r}) for r in range(3)]
+    if len(set(prompts)) != 3:
+        failures.append("refill_round nonce prompt'a ulaşmıyor; replacement turları cache tekrarı")
+    if prompts[0] != build_generation_prompt(slot):
+        failures.append("refill_round=0 prompt'u nonce'suz hâlinden farklı; mevcut cache boşa düşer")
+    repairs = [build_repair_prompt({**slot, "refill_round": r}, {}, ["x"]) for r in range(3)]
+    if len(set(repairs)) != 3:
+        failures.append("repair prompt'u refill turları arasında ayrışmıyor")
+    return failures
+
+
+def _check_judge_blindness(cfg) -> list[str]:
+    """The judge must see only query + {id, text}. Every QC verdict is worthless if a label or a
+    fixed gold position leaks, so this is asserted rather than assumed."""
+    failures = []
+    slot = _fixture_slot(cfg)
+    family = normalize_family(_fixture_raw(), slot)
+    prompt = build_judge_prompt(family)
+    # Assert on the serialised DATA block only. The surrounding rule text legitimately names
+    # `relevance`/`subtype` as the judge's output contract; a substring scan of the whole prompt
+    # confuses that with a leaked label.
+    payload = json.loads(prompt[prompt.index("{"): prompt.rindex("}") + 1])
+    banned = {"gold_id", "role", "subtype", "relevance", "qrels", "candidate_slot",
+              "morph_relation", "hard_profile", "edit_script", "critical_word", "feature_delta"}
+
+    def _keys(node):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                yield key
+                yield from _keys(value)
+        elif isinstance(node, list):
+            for value in node:
+                yield from _keys(value)
+
+    for leaked in sorted(banned & set(_keys(payload))):
+        failures.append(f"judge payload etiket alanı sızdırıyor: {leaked}")
+    if set(payload["candidates"][0]) != {"id", "text"}:
+        failures.append(f"judge adayları yalnız id+text olmalı: {sorted(payload['candidates'][0])}")
+    if family["gold_id"] in json.dumps(payload, ensure_ascii=False).replace(
+        f"\"{family['gold_id']}\"", "", 1
+    ).replace(family["family_id"], ""):
+        failures.append("judge payload gold_id'yi işaretli biçimde taşıyor")
+
+    # Position/ID blindness: over many families the gold must not settle on one slot or one
+    # `_cNN` suffix, or the judge could answer from ordering alone.
+    slots, ids = Counter(), Counter()
+    for index in range(120):
+        probe_slot = make_slot(index, cfg)
+        probe = normalize_family(_fixture_raw(), probe_slot)
+        order = [c["id"] for c in _blind_candidates(probe)]
+        slots[order.index(probe["gold_id"])] += 1
+        ids[probe["gold_id"].rsplit("_c", 1)[-1]] += 1
+    if len(slots) < 11 or max(slots.values()) > 40:
+        failures.append(f"judge aday sırasında gold konumu dengesiz: {dict(sorted(slots.items()))}")
+    if len(ids) < 11 or max(ids.values()) > 40:
+        failures.append(f"gold candidate ID soneki dengesiz: {dict(sorted(ids.items()))}")
+    return failures
+
+
+def _check_model_family_gates() -> list[str]:
+    """Distinct-family and forbidden-family enforcement, including the route-prefix aliases that
+    a literal `provider/` comparison used to wave through."""
+    failures = []
+    for model_id, expected in (
+        ("google/gemini-2.5-pro", "google"),
+        ("google-vertex/gemini-2.5-pro", "google"),
+        ("gemini-2.5-pro", "google"),
+        ("openai/gpt-5", "openai"),
+        ("anthropic/claude-opus-4", "anthropic"),
+    ):
+        if model_family(model_id) != expected:
+            failures.append(f"model_family({model_id}) -> {model_family(model_id)}, beklenen {expected}")
+
+    base = json.loads((Path(__file__).resolve().parent / "config.json").read_text(encoding="utf-8"))
+
+    def _rejects(model_a, model_b, judge_model) -> bool:
+        cfg = deepcopy(base)
+        cfg["generation"]["generators"][0]["model"] = model_a
+        cfg["generation"]["generators"][1]["model"] = model_b
+        cfg["generation"]["judge"]["model"] = judge_model
+        os.environ.setdefault("OPENROUTER_API_KEY", "selftest-placeholder")
+        try:
+            validate_config(cfg, runtime=True)
+            return False
+        except ConfigError:
+            return True
+
+    for label, models, want_reject in (
+        ("yasak google ailesi", ("google/gemini-2.5-pro", "openai/gpt-5", "anthropic/claude-opus-4"), True),
+        ("google-vertex takma adı", ("google-vertex/gemini-2.5-pro", "openai/gpt-5", "anthropic/claude-opus-4"), True),
+        ("öneksiz gemini kimliği", ("gemini-2.5-pro", "openai/gpt-5", "anthropic/claude-opus-4"), True),
+        ("aynı aileden iki generator", ("openai/gpt-5", "openai/gpt-5-mini", "anthropic/claude-opus-4"), True),
+        ("iki google rotası tek aile sayılmalı",
+         ("google/gemini-2.5-pro", "google-vertex/gemini-2.5-pro", "openai/gpt-5"), True),
+        ("geçerli üç ayrı aile", ("openai/gpt-5", "anthropic/claude-opus-4", "x-ai/grok-4"), False),
+    ):
+        if _rejects(*models) is not want_reject:
+            verb = "reddetmedi" if want_reject else "gereksiz yere reddetti"
+            failures.append(f"model aile kapısı {label} durumunu {verb}")
     return failures
 
 

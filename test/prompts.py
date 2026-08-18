@@ -163,6 +163,12 @@ def build_generation_prompt(slot: dict) -> str:
         "register": slot["register"],
         "template_id": slot["template"]["id"],
     }
+    # A replacement round must not replay the previous round's cached response: the cache key is
+    # the prompt hash, so the nonce has to reach the prompt text or refills 2+ re-read round 1's
+    # answer and re-fail validation identically. Only emitted when non-zero, so first-round
+    # prompts (and their caches) stay byte-identical.
+    if int(slot.get("refill_round", 0)):
+        compact_slot["refill_round"] = int(slot["refill_round"])
 
     return f"""\
 SLOT

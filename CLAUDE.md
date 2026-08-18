@@ -12,7 +12,7 @@ Bu repo Türkçe morphology-aware retrieval projesidir. Yeni çalışma iki net 
 
 - 100 development + 500 sealed final family.
 - Family başına 1 positive + 8 hard + 2 easy; toplam 11 aday.
-- Sentence distribution %40/%35/%25 (1/2/3 cümle).
+- Query %75/%25 (1/2 cümle); pasaj %30/%30/%30/%10 (1/2/3/4 cümle).
 - Generator ve blind judge farklı OpenRouter model aileleri.
 - Valid allomorph negatif olamaz; allomorph invariance ve morpheme sensitivity ayrıdır.
 - Gerçek test örneği generation promptunda few-shot olamaz.
