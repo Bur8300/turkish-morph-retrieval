@@ -1,0 +1,72 @@
+{
+  "n_families": 20,
+  "chance_recall_at_1": 0.0909,
+  "recall_at_1_tie_aware": {
+    "bm25": 0.0234,
+    "character_3gram": 0.0,
+    "longest_candidate": 0.05,
+    "most_tokens": 0.039,
+    "word_overlap": 0.0451
+  },
+  "gold_position_counts": {
+    "1": 2,
+    "3": 1,
+    "4": 3,
+    "5": 1,
+    "6": 2,
+    "7": 1,
+    "8": 3,
+    "9": 4,
+    "10": 1,
+    "11": 2
+  },
+  "longest_gold_rate": 0.05,
+  "lexical_balance": {
+    "mean_gold_hard_median_gap": 0.0463,
+    "mean_hards_at_or_above_gold": 6.8
+  },
+  "generator_query_prefix_top10": {
+    "curated_expert": [
+      [
+        "uzman hekimin önerdiği",
+        1
+      ],
+      [
+        "hastane yönetimi doktorların",
+        1
+      ],
+      [
+        "vatandaşlar gerekli belgeleri",
+        1
+      ],
+      [
+        "denetmen ofisteki bilgisayarların",
+        1
+      ],
+      [
+        "mahalle muhtarı iki",
+        1
+      ],
+      [
+        "öğrenciler ders zili",
+        1
+      ],
+      [
+        "kullanıcı siparişi kargoya",
+        1
+      ],
+      [
+        "enflasyon oranları yükselmesine",
+        1
+      ],
+      [
+        "müdür projeyi taşerona",
+        1
+      ],
+      [
+        "resmi yardım kuruluşu",
+        1
+      ]
+    ]
+  }
+}

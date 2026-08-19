@@ -1,0 +1,100 @@
+{
+  "run_id": "curated_preview_20_v37",
+  "created_at": "2026-08-19T13:18:52.920414+00:00",
+  "source": "curated_expert_preview_v37 (slots 26-45)",
+  "count": 20,
+  "family_modes": {
+    "controlled_diverse": 9,
+    "natural_retrieval": 6,
+    "strict_minimal": 5
+  },
+  "query_expression": {
+    "morph_explicit": 9,
+    "semantic_paraphrase": 11
+  },
+  "lexical_bands": {
+    "high": 5,
+    "low": 5,
+    "medium": 10
+  },
+  "validation_problems": {},
+  "artifact_audit": {
+    "n_families": 20,
+    "chance_recall_at_1": 0.0909,
+    "recall_at_1_tie_aware": {
+      "bm25": 0.0234,
+      "character_3gram": 0.0,
+      "longest_candidate": 0.05,
+      "most_tokens": 0.039,
+      "word_overlap": 0.0451
+    },
+    "gold_position_counts": {
+      "1": 2,
+      "3": 1,
+      "4": 3,
+      "5": 1,
+      "6": 2,
+      "7": 1,
+      "8": 3,
+      "9": 4,
+      "10": 1,
+      "11": 2
+    },
+    "longest_gold_rate": 0.05,
+    "lexical_balance": {
+      "mean_gold_hard_median_gap": 0.0463,
+      "mean_hards_at_or_above_gold": 6.8
+    },
+    "generator_query_prefix_top10": {
+      "curated_expert": [
+        [
+          "uzman hekimin önerdiği",
+          1
+        ],
+        [
+          "hastane yönetimi doktorların",
+          1
+        ],
+        [
+          "vatandaşlar gerekli belgeleri",
+          1
+        ],
+        [
+          "denetmen ofisteki bilgisayarların",
+          1
+        ],
+        [
+          "mahalle muhtarı iki",
+          1
+        ],
+        [
+          "öğrenciler ders zili",
+          1
+        ],
+        [
+          "kullanıcı siparişi kargoya",
+          1
+        ],
+        [
+          "enflasyon oranları yükselmesine",
+          1
+        ],
+        [
+          "müdür projeyi taşerona",
+          1
+        ],
+        [
+          "resmi yardım kuruluşu",
+          1
+        ]
+      ]
+    }
+  },
+  "corpus_problems": [],
+  "files": {
+    "accepted.jsonl": "402519cf54c621ea3418e3694959f569761ee46aee811edf35db2b00a5649dcb",
+    "preview_internal.json": "35e404951be8dbc10ac73574cf0c39ba1514e3890f774642b8a38af9daa44333",
+    "preview_blind.json": "2ea676d22b554a2fea1a5f6da3148a6c08946b4abb7d61b898937b6269e57003",
+    "artifact_audit.json": "f88a9f2bfc531a83e08ff9e3fc114cf1d4b04dae13c1811fc2dbfa009dc6f775"
+  }
+}
