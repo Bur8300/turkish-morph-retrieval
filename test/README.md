@@ -371,6 +371,7 @@ Preview provenance her family'nin `provenance` alanında ve set manifestinde sak
 | `selection.py` | Tam 100/500 dağılım ve generator kotalarını doğrulama |
 | `exports.py` | Freeze, blind/internal JSON, BEIR ve qrels |
 | `morphology.py` | Opsiyonel Stanza audit'i |
+| `curation/` | Pilot preview kaynak tanımları ve yeniden üretim araçları |
 | `evaluation.py` | Metrikler, baseline, ablation ve istatistik |
 | `notebooks/morph_baseline_eval_preview20_colab.ipynb` | v36 + v37 ile 40-family hızlı test |
 | `notebooks/morph_baseline_eval_600_colab.ipynb` | 100 dev + 500 final paper değerlendirmesi |

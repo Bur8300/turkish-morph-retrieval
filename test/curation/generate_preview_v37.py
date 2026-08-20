@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from new_items_definitions import RAW_ITEMS
+from test.curation.new_items_definitions import RAW_ITEMS
 from test.config import load_config
 from test.evaluation import (
     EVALUATION_API_VERSION,
@@ -22,7 +22,7 @@ from test.planner import build_plan, plan_hash, plan_statistics
 from test.selection import selection_statistics
 from test.validators import artifact_report, corpus_problems, normalize_family, validate_family
 
-HERE = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def _blind_item(item: dict) -> dict[str, Any]:
     return {
@@ -111,7 +111,7 @@ def main() -> None:
     assert bm25_r1 <= max_bm25, f"BM25 R@1 {bm25_r1} > max {max_bm25}"
 
     run_id = "curated_preview_20_v37"
-    out_dir = HERE / "test" / "previews" / run_id
+    out_dir = REPO_ROOT / "test" / "previews" / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
     internal = {
