@@ -37,6 +37,10 @@ edit script ve kimlikler Python tarafından eklenir.
 Judge tek gold'u, query'yi yanlışlıkla destekleyen negatifleri, adayların iç tutarlılığını,
 doğallığı ve hedef biçimbilimi kontrol eder; başarısız family aynı kotada yeniden üretilir.
 
+Pilot provenance: `v36` Codex CLI / `gpt-5.6-sol`; `v37` deneysel Google /
+`gemini-2.5-flash` üretimidir. İkisinde de independent judge çalışmadığından paper sonucu olarak
+raporlanmaz.
+
 Qrels family oluşturulurken hazırdır:
 
 ```text

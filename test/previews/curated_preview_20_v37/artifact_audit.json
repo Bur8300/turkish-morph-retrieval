@@ -5,8 +5,8 @@
     "bm25": 0.0234,
     "character_3gram": 0.0,
     "longest_candidate": 0.05,
-    "most_tokens": 0.039,
-    "word_overlap": 0.0451
+    "most_tokens": 0.0411,
+    "word_overlap": 0.0514
   },
   "gold_position_counts": {
     "1": 2,
@@ -22,11 +22,11 @@
   },
   "longest_gold_rate": 0.05,
   "lexical_balance": {
-    "mean_gold_hard_median_gap": 0.0463,
-    "mean_hards_at_or_above_gold": 6.8
+    "mean_gold_hard_median_gap": 0.0502,
+    "mean_hards_at_or_above_gold": 6.75
   },
   "generator_query_prefix_top10": {
-    "curated_expert": [
+    "google_gemini_2_5_flash_preview": [
       [
         "uzman hekimin önerdiği",
         1
@@ -64,7 +64,7 @@
         1
       ],
       [
-        "resmi yardım kuruluşu",
+        "afetzedelere ikişer çadır",
         1
       ]
     ]

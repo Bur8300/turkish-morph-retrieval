@@ -1,7 +1,7 @@
 {
   "run_id": "curated_preview_20_v36",
   "created_at": "2026-08-16T20:42:46.630158+00:00",
-  "source": "legacy_sol_preview_20_v35@be034c4 (Git history)",
+  "source": "experimental_codex_gpt_5_6_sol_preview_v36 (legacy slots)",
   "count": 20,
   "family_modes": {
     "controlled_diverse": 9,
@@ -90,5 +90,12 @@
     }
   },
   "corpus_problems": [],
-  "semantic_revision": "manual_v2_false_negative_and_consistency_cleanup"
+  "semantic_revision": "manual_v2_false_negative_and_consistency_cleanup",
+  "generator": {
+    "provider": "codex_cli",
+    "model": "gpt-5.6-sol",
+    "model_family": "openai",
+    "reasoning_effort": "medium",
+    "independent_judge_run": false
+  }
 }

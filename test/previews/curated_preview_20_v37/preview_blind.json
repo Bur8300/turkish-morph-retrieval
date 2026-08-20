@@ -2,7 +2,7 @@
   "dataset_name": "turkish_morph_retrieval_test",
   "version": "3.6.0",
   "split": "curated_preview_blind",
-  "warning": "Curated preview; generated with deterministic QC passed, but no independent model judge was run. Do not report as benchmark data.",
+  "warning": "Experimental Gemini 2.5 Flash preview; deterministic QC passed, but no independent model judge was run. Do not report as benchmark data.",
   "items": [
     {
       "family_id": "family_raw_00026_846e3c810f",
@@ -456,11 +456,11 @@
     },
     {
       "family_id": "family_raw_00035_5de1388aac",
-      "query": "Resmi yardım kuruluşu afetzedelere çadırları ikişer ikişer dağıttı.",
+      "query": "Afetzedelere ikişer çadır teslim edildi.",
       "candidates": [
         {
           "id": "family_raw_00035_5de1388aac_c01",
-          "text": "Kızılay ekipleri bölgedeki çalışmalarını sürdürüyor. Resmi yardım kuruluşu afetzedelere çadırları üçer üçer verdi. Vatandaşlar yardımları düzenli şekilde teslim aldı."
+          "text": "Kızılay ekipleri bölgedeki çalışmalarını sürdürüyor. Resmi yardım kuruluşu afetzedelere çadırları ikişer ikişer verdi. Vatandaşlar yardımları düzenli şekilde teslim aldı."
         },
         {
           "id": "family_raw_00035_5de1388aac_c02",
@@ -506,35 +506,35 @@
     },
     {
       "family_id": "family_raw_00036_d5b2530641",
-      "query": "Banka borç yapılandırma evraklarını denetçiye onaylatılmadı gerekçesiyle resmi yazıyla bekletti.",
+      "query": "Banka, resmi açıklamasında kurula onaylatılmayan borç yapılandırma evraklarını duyurdu.",
       "candidates": [
         {
           "id": "family_raw_00036_d5b2530641_c01",
-          "text": "Banka borç yapılandırma evraklarını kurula onaylatıldı gerekçesiyle doğrudan bekletti."
+          "text": "Banka, borç yapılandırma evraklarının kurula onaylatıldığı bilgisini resmi yazıyla kayda geçirdi."
         },
         {
           "id": "family_raw_00036_d5b2530641_c02",
-          "text": "Banka borç yapılandırma evraklarını denetçiye onaylatılmadı gerekçesiyle doğrudan bekletti."
+          "text": "Banka, borç yapılandırma evraklarının denetçiye onaylatılmadığı bilgisini resmi yazıyla kayda geçirdi."
         },
         {
           "id": "family_raw_00036_d5b2530641_c03",
-          "text": "Banka borç yapılandırma evraklarını kurula onaylatılmamış gerekçesiyle doğrudan bekletti."
+          "text": "Banka, borç yapılandırma evraklarının kurula onaylatılmamış olduğunu resmi yazıyla kayda geçirdi."
         },
         {
           "id": "family_raw_00036_d5b2530641_c04",
-          "text": "Banka borç yapılandırma evraklarını denetçiye onaylanmadı gerekçesiyle doğrudan bekletti."
+          "text": "Banka, borç yapılandırma evraklarının kurulca onaylanmadığı bilgisini resmi yazıyla kayda geçirdi."
         },
         {
           "id": "family_raw_00036_d5b2530641_c05",
-          "text": "Müdür borç yapılandırma evraklarını denetçiye onaylatılmadı gerekçesiyle doğrudan bekletti."
+          "text": "Müdür, borç yapılandırma evraklarının kurula onaylatılmadığı bilgisini resmi yazıyla kayda geçirdi."
         },
         {
           "id": "family_raw_00036_d5b2530641_c06",
-          "text": "Denetçiye onaylatılmayan borç yapılandırma evrakları bankada gerekçesiyle bekletildi."
+          "text": "Banka, kurula sunulan borç yapılandırma evraklarını resmi yazıyla kayda geçirdi."
         },
         {
           "id": "family_raw_00036_d5b2530641_c07",
-          "text": "Banka borç yapılandırma evraklarını kurula onaylatılmayacak gerekçesiyle doğrudan bekletti."
+          "text": "Banka, borç yapılandırma evraklarının kurula onaylatılmayacağını resmi yazıyla kayda geçirdi."
         },
         {
           "id": "family_raw_00036_d5b2530641_c08",
@@ -546,11 +546,11 @@
         },
         {
           "id": "family_raw_00036_d5b2530641_c10",
-          "text": "Banka borç yapılandırma evraklarını denetçiye onaylatılmadı gerekçesiyle resmen onayladı."
+          "text": "Banka, borç yapılandırma evraklarının kurula onaylatılmadığı bilgisini resmi yazıyla yalanladı."
         },
         {
           "id": "family_raw_00036_d5b2530641_c11",
-          "text": "Banka borç yapılandırma evraklarını kurula onaylatılmadı gerekçesiyle doğrudan bekletti."
+          "text": "Banka, borç yapılandırma evraklarının kurula onaylatılmadığı bilgisini resmi yazıyla kayda geçirdi."
         }
       ]
     },
@@ -968,7 +968,7 @@
         },
         {
           "id": "family_raw_00045_d48ae7e233_c03",
-          "text": "Stajyerler protokol taslağını masada birlikte inceleyelim dedi."
+          "text": "Stajyerler, “Protokol taslağını masada birlikte inceleyelim,” dediler."
         },
         {
           "id": "family_raw_00045_d48ae7e233_c04",
@@ -976,15 +976,15 @@
         },
         {
           "id": "family_raw_00045_d48ae7e233_c05",
-          "text": "Protokol taslağı masadaki hukukçuları birlikte inceleyelim dedi."
+          "text": "Hukukçular, “Masadaki başka bir taslağı birlikte inceleyelim,” dediler."
         },
         {
           "id": "family_raw_00045_d48ae7e233_c06",
-          "text": "Hukukçular kira sözleşmesini masada birlikte inceleyelim dedi."
+          "text": "Hukukçular, “Kira sözleşmesini masada birlikte inceleyelim,” dediler."
         },
         {
           "id": "family_raw_00045_d48ae7e233_c07",
-          "text": "Hukukçular protokol taslağını masada birlikte inceleyelim dedi."
+          "text": "Hukukçular, “Protokol taslağını masada birlikte inceleyelim,” dediler."
         },
         {
           "id": "family_raw_00045_d48ae7e233_c08",
@@ -992,7 +992,7 @@
         },
         {
           "id": "family_raw_00045_d48ae7e233_c09",
-          "text": "Hukukçular protokol taslağını masada birlikte reddedelim dedi."
+          "text": "Hukukçular, “Protokol taslağını masada birlikte reddedelim,” dediler."
         },
         {
           "id": "family_raw_00045_d48ae7e233_c10",

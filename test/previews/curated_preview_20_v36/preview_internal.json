@@ -375,7 +375,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "439602953459219dbca6eb0d268400089968973e13aaf79a77fe0071e466b53e"
+        "repair_request_hash": "439602953459219dbca6eb0d268400089968973e13aaf79a77fe0071e466b53e",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -665,7 +669,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "1e2c0de322c42258a1fe6cdfd8cb755a11f9d38d6d5a3fbb6eb594ccd2f6f558"
+        "repair_request_hash": "1e2c0de322c42258a1fe6cdfd8cb755a11f9d38d6d5a3fbb6eb594ccd2f6f558",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -951,7 +959,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "1d779addafef56a95ae97f50798d76a4d8ced7f870cd066e829eaae1e81c077a"
+        "repair_request_hash": "1d779addafef56a95ae97f50798d76a4d8ced7f870cd066e829eaae1e81c077a",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -1235,7 +1247,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "e92da09ce6174efbcbbaba1b08530c53b5c57abdf5d6cb371fdb9d69f0315126"
+        "repair_request_hash": "e92da09ce6174efbcbbaba1b08530c53b5c57abdf5d6cb371fdb9d69f0315126",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -1521,7 +1537,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "52089dacc7f4aaa9108659efb995fd4cd54974acdf0d33e4c24394743d2e9f40"
+        "repair_request_hash": "52089dacc7f4aaa9108659efb995fd4cd54974acdf0d33e4c24394743d2e9f40",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -1803,7 +1823,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "fdf48b39a6f18f711402214a136577d727f367b57e6062be2528824bf6ac3dd9"
+        "repair_request_hash": "fdf48b39a6f18f711402214a136577d727f367b57e6062be2528824bf6ac3dd9",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -2089,7 +2113,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "415d55b2d8f50dc3b1c90a7b2d45f8ad3b1815e6054c5ec7f8a387bb5021a544"
+        "repair_request_hash": "415d55b2d8f50dc3b1c90a7b2d45f8ad3b1815e6054c5ec7f8a387bb5021a544",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -2385,7 +2413,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "8fcf5c4667e5fa9d53ca5d1fd4a36ed13e40d28b2c842f866628f52f4ec210ec"
+        "repair_request_hash": "8fcf5c4667e5fa9d53ca5d1fd4a36ed13e40d28b2c842f866628f52f4ec210ec",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -2672,7 +2704,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "a991ad51b4dcd0dc9de70c658b695e673829955409db8e4b2a744ffa2fa6fc77"
+        "repair_request_hash": "a991ad51b4dcd0dc9de70c658b695e673829955409db8e4b2a744ffa2fa6fc77",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -2958,7 +2994,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "cfe362207cca21c3fb366f2443971ac2d446a9a70f0a866ac01f857f12fcaef9"
+        "repair_request_hash": "cfe362207cca21c3fb366f2443971ac2d446a9a70f0a866ac01f857f12fcaef9",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -3244,7 +3284,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "8928c5c2bd23789d844816ea0ff226628dec322927669015c8fa8e7c8f4908ab"
+        "repair_request_hash": "8928c5c2bd23789d844816ea0ff226628dec322927669015c8fa8e7c8f4908ab",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -3528,7 +3572,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "878dbdeb3da7e362a2bf78ec53df02335ae028abe8ee1f43f1154a22727776a7"
+        "repair_request_hash": "878dbdeb3da7e362a2bf78ec53df02335ae028abe8ee1f43f1154a22727776a7",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -3811,7 +3859,11 @@
         "request_hash": "a83e9a9d96ae8f3a9ea598eb0cb4ee11ccc6d14df279c51ab36045f641f572a5",
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
-        "independent_judge": false
+        "independent_judge": false,
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -4093,7 +4145,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "f4f45011ce61b46ef8c72c4d3b66e26be7d7bd4f6e7fd33876f3bcb09d399539"
+        "repair_request_hash": "f4f45011ce61b46ef8c72c4d3b66e26be7d7bd4f6e7fd33876f3bcb09d399539",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -4374,7 +4430,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "3df63eef82d674e6c2c7f70bc3fe70f05f5965d7158584e13e2b5bff09be1ce1"
+        "repair_request_hash": "3df63eef82d674e6c2c7f70bc3fe70f05f5965d7158584e13e2b5bff09be1ce1",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -4661,7 +4721,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "61010229f0c191ee0c17a55c9a3b8f250ba23c48e3e6bb08f0ddb2d12e94cbcf"
+        "repair_request_hash": "61010229f0c191ee0c17a55c9a3b8f250ba23c48e3e6bb08f0ddb2d12e94cbcf",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -4949,7 +5013,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "88addbb339b5207a2e67f6a16739f1d16c186c47ebf3f5c22e4e0166729d352d"
+        "repair_request_hash": "88addbb339b5207a2e67f6a16739f1d16c186c47ebf3f5c22e4e0166729d352d",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -5232,7 +5300,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "eb77d8c1b5bf36d3f50e78fbed26545f4ef4f441aaa1321b1580f4e818c1cc7f"
+        "repair_request_hash": "eb77d8c1b5bf36d3f50e78fbed26545f4ef4f441aaa1321b1580f4e818c1cc7f",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -5520,7 +5592,11 @@
         "cache_hit": true,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "2f08c95db41dad7929c4a94f42604e01bffab4529b421504444815ab55bedb54"
+        "repair_request_hash": "2f08c95db41dad7929c4a94f42604e01bffab4529b421504444815ab55bedb54",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",
@@ -5806,7 +5882,11 @@
         "cache_hit": false,
         "prompt_version": "test-prompts-3.5.0",
         "independent_judge": false,
-        "repair_request_hash": "b2f296a2959cd755f55f859064372cc84d21fe56a5e98854a1773bfa28bce60b"
+        "repair_request_hash": "b2f296a2959cd755f55f859064372cc84d21fe56a5e98854a1773bfa28bce60b",
+        "source": "experimental_codex_generation",
+        "model_family": "openai",
+        "reasoning_effort": "medium",
+        "generation_mode": "experimental_preview"
       },
       "qc": {
         "deterministic": "pass",

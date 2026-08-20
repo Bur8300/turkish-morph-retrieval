@@ -60,11 +60,16 @@ def main() -> None:
 
     for idx, (slot, raw) in enumerate(zip(slots, RAW_ITEMS), start=1):
         family = normalize_family(raw, slot)
-        family["generator_id"] = "curated_expert"
-        family["source_type"] = "curated_preview_unjudged"
+        family["generator_id"] = "google_gemini_2_5_flash_preview"
+        family["source_type"] = "gemini_2_5_flash_preview_unjudged"
         family["preview_only"] = True
         family["provenance"] = {
-            "source": "curated_expert_generation",
+            "source": "experimental_gemini_generation",
+            "provider": "google",
+            "model": "gemini-2.5-flash",
+            "model_family": "google_gemini",
+            "reasoning_effort": "not_recorded",
+            "generation_mode": "experimental_preview",
             "dataset_version": cfg["version"],
             "slot_index": slot["index"],
             "slot_id": slot["slot_id"],
@@ -114,7 +119,7 @@ def main() -> None:
         "version": cfg["version"],
         "split": "curated_preview_unjudged",
         "warning": (
-            "Curated preview; generated with deterministic QC passed, but no independent "
+            "Experimental Gemini 2.5 Flash preview; deterministic QC passed, but no independent "
             "model judge was run. Do not report as benchmark data."
         ),
         "statistics": selection_statistics(accepted),
@@ -136,7 +141,14 @@ def main() -> None:
     manifest = {
         "run_id": run_id,
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "source": "curated_expert_preview_v37 (slots 26-45)",
+        "source": "experimental_gemini_2_5_flash_preview_v37 (slots 26-45)",
+        "generator": {
+            "provider": "google",
+            "model": "gemini-2.5-flash",
+            "model_family": "google_gemini",
+            "reasoning_effort": "not_recorded",
+            "independent_judge_run": False,
+        },
         "count": len(accepted),
         "family_modes": dict(Counter(item["family_mode"] for item in accepted)),
         "query_expression": dict(Counter(item["query_expression"] for item in accepted)),

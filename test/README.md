@@ -353,6 +353,11 @@ yerine geçebilecek ek slotları planlar ve çıktı yine `count` accepted famil
 Yalnız daha önce tamamlanmış cache'i yeni kullanım olmadan yeniden doğrulamak için `--cache-only`
 eklenebilir.
 
+Preview provenance her family'nin `provenance` alanında ve set manifestinde saklanır. Mevcut
+`curated_preview_20_v36`, Codex CLI / `gpt-5.6-sol` ile; deneysel
+`curated_preview_20_v37`, Google / `gemini-2.5-flash` ile üretilmiştir. İkisi de bağımsız judge
+çalıştırılmamış pilot veridir; final benchmark veya paper sonucu değildir.
+
 ## Ana dosyalar
 
 | Dosya | Görev |
@@ -367,7 +372,7 @@ eklenebilir.
 | `exports.py` | Freeze, blind/internal JSON, BEIR ve qrels |
 | `morphology.py` | Opsiyonel Stanza audit'i |
 | `evaluation.py` | Metrikler, baseline, ablation ve istatistik |
-| `notebooks/morph_baseline_eval_preview20_colab.ipynb` | 20-family hızlı test |
+| `notebooks/morph_baseline_eval_preview20_colab.ipynb` | v36 + v37 ile 40-family hızlı test |
 | `notebooks/morph_baseline_eval_600_colab.ipynb` | 100 dev + 500 final paper değerlendirmesi |
 
 Freeze çıktıları:
