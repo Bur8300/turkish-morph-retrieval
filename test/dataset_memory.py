@@ -324,11 +324,14 @@ class DatasetMemory:
     def record_outcome(
         self, slot_id: str, status: str, record: dict[str, Any], actor: str = "pipeline"
     ) -> None:
-        if status not in {"accepted", "rejected", "failed"}:
+        if status not in {"accepted", "rejected", "failed", "needs_review"}:
             raise ValueError(f"dataset memory outcome geçersiz: {status}")
         now = _now()
-        family_id = record.get("family_id") if status == "accepted" else None
-        error = None if status == "accepted" else _canonical_json(record.get("problems", []))
+        family_id = record.get("family_id") if status in {"accepted", "needs_review"} else None
+        error = (
+            None if status == "accepted"
+            else _canonical_json(record.get("problems", record.get("review_reasons", [])))
+        )
         with closing(self._connect()) as connection, connection:
             connection.execute(
                 """
@@ -345,6 +348,13 @@ class DatasetMemory:
             )
             if status == "accepted":
                 self._upsert_family(connection, record, "current_run", now)
+
+    def slot_status(self, slot_id: str) -> str | None:
+        with closing(self._connect()) as connection:
+            row = connection.execute(
+                "SELECT status FROM slots WHERE slot_id = ?", (slot_id,)
+            ).fetchone()
+        return str(row["status"]) if row else None
 
     def _upsert_family(
         self, connection: sqlite3.Connection, family: dict[str, Any], source: str, now: str

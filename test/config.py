@@ -110,34 +110,66 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
         raise ConfigError("Query–gold lexical bandları high/medium/low olmalı")
     if set(quality["family_mode_lexical_gates"]) != set(cfg["family_mode_distribution"]):
         raise ConfigError("Her family modu için lexical gate tanımlanmalı")
+    for name in ("semantic_judge_confidence_min", "morphology_judge_confidence_min"):
+        if not 0 <= int(quality[name]) <= 100:
+            raise ConfigError(f"{name} 0–100 arasında olmalı")
+    for name in ("judge_naturalness_min", "candidate_naturalness_min"):
+        if not 1 <= int(quality[name]) <= 5:
+            raise ConfigError(f"{name} 1–5 arasında olmalı")
+
+    generation = cfg["generation"]
+    judges = generation.get("judges", {})
+    if set(judges) != {"semantic", "morphology", "adjudicator"}:
+        raise ConfigError("judges semantic + morphology + adjudicator sözleşmesini taşımalı")
+    permutations = judges["semantic"].get("permutations", [])
+    if len(permutations) != 2 or len(set(permutations)) != 2:
+        raise ConfigError("Semantic judge tam iki farklı candidate permütasyonu kullanmalı")
+    human = generation.get("human_review", {})
+    if not 0 <= float(human.get("audit_rate", -1)) <= 1:
+        raise ConfigError("human_review.audit_rate 0–1 arasında olmalı")
+    for name in ("audit_reviewers_required", "conflict_reviewers_required"):
+        if int(human.get(name, 0)) < 1:
+            raise ConfigError(f"human_review.{name} en az 1 olmalı")
+
+    def _judge_specs() -> list[tuple[str, dict[str, Any]]]:
+        rows = [("semantic_judge", judges["semantic"]), ("morphology_judge", judges["morphology"])]
+        if judges["adjudicator"].get("enabled", False):
+            rows.append(("adjudicator", judges["adjudicator"]))
+        return rows
+
     if runtime:
-        generators = cfg["generation"].get("generators", [])
+        generators = generation.get("generators", [])
         if len(generators) != 2 or {row.get("id") for row in generators} != {"generator_a", "generator_b"}:
             raise ConfigError("Ana test üretimi generator_a + generator_b olmak üzere iki generator ister")
-        judge = cfg["generation"]["judge"]
-        for label, spec in (*((row["id"], row) for row in generators), ("judge", judge)):
+        judge_specs = _judge_specs()
+        role_specs = [*((row["id"], row) for row in generators), *judge_specs]
+        for label, spec in role_specs:
             if not spec.get("model") or str(spec["model"]).startswith("${"):
                 raise ConfigError(f"{label} model kimliği ayarlanmamış")
             if not os.getenv(spec["api_key_env"]):
                 raise ConfigError(f"{label} için {spec['api_key_env']} tanımlı değil")
-        if cfg["generation"].get("require_distinct_model_families", True):
-            families = [model_family(row["model"]) for row in generators] + [model_family(judge["model"])]
+            preferences = spec.get("provider_preferences", {})
+            if preferences.get("require_parameters") is not True:
+                raise ConfigError(f"{label} structured-output routing'i zorunlu tutmalı")
+            if preferences.get("data_collection") != "deny" or preferences.get("zdr") is not True:
+                raise ConfigError(f"{label} test verisi için data_collection=deny ve zdr=true kullanmalı")
+        if generation.get("require_distinct_model_families", True):
+            families = [model_family(spec["model"]) for _, spec in role_specs]
             if len(families) != len(set(families)):
                 raise ConfigError(
-                    "İki generator ve judge üç farklı model ailesinden olmalı: "
-                    + ", ".join(row["model"] for row in [*generators, judge])
+                    "Generator ve bağımsız judge rolleri farklı model ailelerinden olmalı: "
+                    + ", ".join(spec["model"] for _, spec in role_specs)
                 )
         forbidden = {
             str(value).lower()
-            for value in cfg["generation"].get("forbidden_model_families_for_test", [])
+            for value in generation.get("forbidden_model_families_for_test", [])
         }
-        used = {model_family(row["model"]) for row in [*generators, judge]}
+        used = {model_family(spec["model"]) for _, spec in role_specs}
         if forbidden & used:
             raise ConfigError(
                 "Test generator/judge, legacy train model ailesinden bağımsız olmalı; "
                 f"yasak aile kullanıldı: {sorted(forbidden & used)}"
             )
-    generation = cfg["generation"]
     if int(generation.get("max_generation_attempts", 0)) < 1:
         raise ConfigError("max_generation_attempts en az 1 olmalı")
     if int(generation.get("refill_rounds_per_call", 0)) < 1:

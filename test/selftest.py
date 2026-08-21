@@ -10,22 +10,32 @@ from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from .config import ConfigError, load_config, model_family, validate_config
 from .dataset_memory import DatasetMemory, semantic_profile_problems
 from .prompts import (
     _blind_candidates,
     build_generation_prompt,
-    build_judge_prompt,
+    build_morphology_judge_prompt,
     build_repair_prompt,
+    build_semantic_judge_prompt,
 )
 from .evaluation import evaluate_run, validate_binary_qrels
 from .morphology import _expected_feature_check
+from .judge_report import judge_calibration_report
 from .planner import build_plan, make_slot, plan_statistics
-from .pipeline import _process_slot, _resume_refill_rounds
+from .pipeline import _process_slot, _resume_refill_rounds, human_audit_slots
+from .review import apply_human_reviews, export_human_review
 from .selection import select_balanced
 from .taxonomy import FEATURES, FEATURE_BY_KEY, hard_profile
-from .validators import corpus_problems, interpret_judge, normalize_family, validate_family
+from .validators import (
+    corpus_problems,
+    interpret_morphology_judge,
+    interpret_semantic_judges,
+    normalize_family,
+    validate_family,
+)
 
 
 def _fixture_slot(cfg):
@@ -141,6 +151,12 @@ def run() -> list[str]:
     if build_plan(cfg) != slots_600:
         failures.append("varsayılan plan doğrudan 600 kota slotu üretmiyor")
     stats = plan_statistics(slots_600)
+    audit_ids = human_audit_slots(slots_600, cfg)
+    audit_splits = Counter(
+        slot["target_split"] for slot in slots_600 if slot["slot_id"] in audit_ids
+    )
+    if len(audit_ids) != 60 or audit_splits != {"development": 10, "sealed_test": 50}:
+        failures.append(f"stratified %10 human audit örneklemi yanlış: {audit_splits}")
     planned_features = Counter(slot["feature"]["key"] for slot in slots_600)
     if len(FEATURES) != 71 or set(planned_features) != {feature.key for feature in FEATURES}:
         failures.append(
@@ -308,7 +324,7 @@ def run() -> list[str]:
             ))
         if sum(reservations) != 1:
             failures.append(f"dataset memory atomik rezervasyon sayısı yanlış: {reservations}")
-        family["source_type"] = "llm_generated_llm_judged"
+        family["source_type"] = "llm_generated_cascade_judged"
         memory.record_outcome(slot["slot_id"], "accepted", family, actor="worker_a")
         external = deepcopy(family)
         external.update({
@@ -412,41 +428,67 @@ def run() -> list[str]:
     ]) for candidate in long_family["candidates"]):
         failures.append("kritik cümle planlanan üçüncü konuma yerleşmedi")
 
-    assessments = []
+    semantic_assessments = []
+    morphology_assessments = []
     for candidate in family["candidates"]:
-        intended = "positive" if candidate["role"] == "positive" else (
-            "easy_negative" if candidate["role"] == "easy_negative" else candidate["subtype"]
-        )
-        assessments.append({
-            "id": candidate["id"], "relevance": "relevant" if candidate["role"] == "positive" else "not_relevant",
-            "naturalness": 5, "inferred_type": intended, "morphology_ok": True,
-            "supports_query": candidate["role"] == "positive", "internally_consistent": True,
-            "reason": "fixture",
+        supports = candidate["role"] == "positive"
+        semantic_assessments.append({
+            "id": candidate["id"], "supports_query": supports, "naturalness": 5,
+            "internally_consistent": True, "error_dimensions": ["none"],
         })
-    judge = {
-        "answers_query": [family["gold_id"]], "candidate_assessments": assessments,
-        "length_or_style_artifact": False, "allomorph_treated_as_wrong": False,
-        "family_naturalness": 5, "notes": "fixture",
+        morphology_assessments.append({
+            "id": candidate["id"], "morphology_ok": True,
+            "target_interpretation": "supports_query" if supports else "contradicts_query",
+            "error_dimensions": ["none"],
+        })
+    semantic_judge = {
+        "answers_query": [family["gold_id"]], "candidate_assessments": semantic_assessments,
+        "length_or_style_artifact": False, "family_naturalness": 5,
+        "confidence": 95, "abstain": False, "notes": "fixture",
     }
-    judge_problems, _ = interpret_judge(family, judge, cfg)
-    if judge_problems:
-        failures.append(f"geçerli judge fixture reddedildi: {judge_problems}")
-    bad_support = deepcopy(judge)
-    negative = next(row for row in bad_support["candidate_assessments"] if row["relevance"] == "not_relevant")
+    morphology_judge = {
+        "answers_query": [family["gold_id"]], "candidate_assessments": morphology_assessments,
+        "allomorph_treated_as_wrong": False, "confidence": 95, "abstain": False,
+        "notes": "fixture",
+    }
+    semantic_problems, _ = interpret_semantic_judges(
+        family, [semantic_judge, deepcopy(semantic_judge)], cfg
+    )
+    morphology_problems, _ = interpret_morphology_judge(family, morphology_judge, cfg)
+    if semantic_problems or morphology_problems:
+        failures.append(
+            f"geçerli cascade judge fixture reddedildi: {semantic_problems + morphology_problems}"
+        )
+    bad_support = deepcopy(semantic_judge)
+    negative = next(
+        row for row in bad_support["candidate_assessments"] if not row["supports_query"]
+    )
     negative["supports_query"] = True
-    support_problems, _ = interpret_judge(family, bad_support, cfg)
+    support_problems, _ = interpret_semantic_judges(
+        family, [bad_support, deepcopy(semantic_judge)], cfg
+    )
     if not any("query desteği" in problem for problem in support_problems):
         failures.append("judge false-negative/query desteği kontrolü çalışmadı")
-    bad_consistency = deepcopy(judge)
+    bad_consistency = deepcopy(semantic_judge)
     bad_consistency["candidate_assessments"][0]["internally_consistent"] = False
-    consistency_problems, _ = interpret_judge(family, bad_consistency, cfg)
+    consistency_problems, _ = interpret_semantic_judges(
+        family, [bad_consistency, deepcopy(bad_consistency)], cfg
+    )
     if not any("iç tutarsız" in problem for problem in consistency_problems):
         failures.append("judge iç tutarlılık kontrolü çalışmadı")
+    low_naturalness = deepcopy(semantic_judge)
+    low_naturalness["candidate_assessments"][0]["naturalness"] = 3
+    naturalness_problems, _ = interpret_semantic_judges(
+        family, [low_naturalness, deepcopy(low_naturalness)], cfg
+    )
+    if not any("aday naturalness" in problem for problem in naturalness_problems):
+        failures.append("candidate-level naturalness kapısı çalışmadı")
 
     def response(data, number):
         return SimpleNamespace(
             data=deepcopy(data), provider="fake", model="fake/model",
             request_hash=f"request-{number}", cache_hit=False, usage={},
+            actual_model="fake/model", route_provider="fake-route",
         )
 
     class RefillGenerator:
@@ -458,31 +500,38 @@ def run() -> list[str]:
             self.calls += 1
             return response({} if self.calls <= self.invalid_calls else _fixture_raw(), self.calls)
 
-    class RefillJudge:
+    class SemanticJudge:
         def __init__(self, rejected_calls=0):
             self.calls = 0
             self.rejected_calls = rejected_calls
 
         def call_json(self, *_args):
             self.calls += 1
-            verdict = deepcopy(judge)
+            verdict = deepcopy(semantic_judge)
             if self.calls <= self.rejected_calls:
                 verdict["answers_query"] = []
             return response(verdict, self.calls)
 
+    class MorphologyJudge:
+        def call_json(self, *_args):
+            return response(morphology_judge, 100)
+
     generator = RefillGenerator(invalid_calls=2)
     status, refilled = _process_slot(
-        slot, cfg, {"generator_a": generator}, RefillJudge(), start_refill_round=0
+        slot, cfg, {"generator_a": generator},
+        {"semantic": SemanticJudge(), "morphology": MorphologyJudge()},
+        start_refill_round=0,
     )
     if status != "accepted" or refilled["provenance"]["refill_round"] != 1:
         failures.append("deterministic QC reddinden sonra taze refill çalışmadı")
     generator = RefillGenerator()
     status, refilled = _process_slot(
-        slot, cfg, {"generator_a": generator}, RefillJudge(rejected_calls=1),
+        slot, cfg, {"generator_a": generator},
+        {"semantic": SemanticJudge(rejected_calls=1), "morphology": MorphologyJudge()},
         start_refill_round=4,
     )
-    if status != "accepted" or refilled["provenance"]["refill_round"] != 5:
-        failures.append("blind judge reddinden sonra taze refill çalışmadı")
+    if status != "needs_review" or generator.calls != 1:
+        failures.append("judge anlaşmazlığı refill yerine needs_review kuyruğuna gitmedi")
 
     collision_items = [
         {
@@ -525,6 +574,63 @@ def run() -> list[str]:
     failures.extend(_check_judge_blindness(cfg))
     failures.extend(_check_model_family_gates())
     failures.extend(_check_refill_round_nonce(cfg))
+    failures.extend(_check_human_review_roundtrip(cfg, slot, family))
+    return failures
+
+
+def _check_human_review_roundtrip(cfg, slot, family) -> list[str]:
+    failures = []
+    with TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        paths = SimpleNamespace(
+            root=root,
+            accepted=root / "accepted.jsonl",
+            needs_review=root / "needs_review.jsonl",
+            rejected=root / "rejected.jsonl",
+            memory=root / "dataset_memory.sqlite3",
+        )
+        memory = DatasetMemory(paths.memory)
+        memory.sync_plan([slot])
+        pending = {
+            "slot_id": slot["slot_id"],
+            "family_id": family["family_id"],
+            "review_kind": "judge_conflict",
+            "review_reasons": ["fixture disagreement"],
+            "reviewers_required": 2,
+            "adjudicator": None,
+            "family": family,
+        }
+        paths.needs_review.write_text(
+            json.dumps(pending, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+        memory.record_outcome(slot["slot_id"], "needs_review", pending, actor="selftest")
+        decisions = root / "incoming.jsonl"
+        decision_rows = [
+            {
+                "slot_id": slot["slot_id"], "reviewer_id": reviewer,
+                "answers_query": [family["gold_id"]], "morphology_valid": True,
+                "naturalness_valid": True, "decision": "accept", "notes": "fixture",
+            }
+            for reviewer in ("reviewer_a", "reviewer_b")
+        ]
+        decisions.write_text(
+            "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in decision_rows),
+            encoding="utf-8",
+        )
+        with patch("test.review.paths_for", return_value=paths):
+            exported = export_human_review("fixture_review")
+            manifest = json.loads(Path(exported["manifest"]).read_text(encoding="utf-8"))
+            if any("target_feature" in row for row in manifest["semantic_items"]):
+                failures.append("human semantic review manifesti target_feature sızdırıyor")
+            applied = apply_human_reviews("fixture_review", decisions)
+        with patch("test.judge_report.paths_for", return_value=paths):
+            calibration = judge_calibration_report("fixture_review")
+        if applied["resolved"] != {"accepted": 1}:
+            failures.append(f"human review consensus accepted uygulamadı: {applied}")
+        if memory.slot_status(slot["slot_id"]) != "accepted" or not paths.accepted.exists():
+            failures.append("human review accepted sonucu registry/JSONL'e yazılmadı")
+        if calibration["human_reviewed_slots"] != 1:
+            failures.append(f"judge calibration human review'u saymadı: {calibration}")
     return failures
 
 
@@ -545,16 +651,14 @@ def _check_refill_round_nonce(cfg) -> list[str]:
 
 
 def _check_judge_blindness(cfg) -> list[str]:
-    """The judge must see only query + {id, text}. Every QC verdict is worthless if a label or a
-    fixed gold position leaks, so this is asserted rather than assumed."""
+    """Semantic judging is feature-blind; both judge stages stay role/position blind."""
     failures = []
     slot = _fixture_slot(cfg)
     family = normalize_family(_fixture_raw(), slot)
-    prompt = build_judge_prompt(family)
-    # Assert on the serialised DATA block only. The surrounding rule text legitimately names
-    # `relevance`/`subtype` as the judge's output contract; a substring scan of the whole prompt
-    # confuses that with a leaked label.
-    payload = json.loads(prompt[prompt.index("{"): prompt.rindex("}") + 1])
+    semantic_prompt = build_semantic_judge_prompt(family, "a")
+    payload = json.loads(
+        semantic_prompt[semantic_prompt.index("{"): semantic_prompt.rindex("}") + 1]
+    )
     banned = {"gold_id", "role", "subtype", "relevance", "qrels", "candidate_slot",
               "morph_relation", "hard_profile", "edit_script", "critical_word", "feature_delta"}
 
@@ -568,7 +672,9 @@ def _check_judge_blindness(cfg) -> list[str]:
                 yield from _keys(value)
 
     for leaked in sorted(banned & set(_keys(payload))):
-        failures.append(f"judge payload etiket alanı sızdırıyor: {leaked}")
+        failures.append(f"semantic judge payload etiket alanı sızdırıyor: {leaked}")
+    if "target_feature" in payload or family["target_feature"] in semantic_prompt:
+        failures.append("semantic judge target_feature görüyor")
     if set(payload["candidates"][0]) != {"id", "text"}:
         failures.append(f"judge adayları yalnız id+text olmalı: {sorted(payload['candidates'][0])}")
     if family["gold_id"] in json.dumps(payload, ensure_ascii=False).replace(
@@ -582,13 +688,23 @@ def _check_judge_blindness(cfg) -> list[str]:
     for index in range(120):
         probe_slot = make_slot(index, cfg)
         probe = normalize_family(_fixture_raw(), probe_slot)
-        order = [c["id"] for c in _blind_candidates(probe)]
+        order = [c["id"] for c in _blind_candidates(probe, "semantic_a")]
         slots[order.index(probe["gold_id"])] += 1
         ids[probe["gold_id"].rsplit("_c", 1)[-1]] += 1
     if len(slots) < 11 or max(slots.values()) > 40:
         failures.append(f"judge aday sırasında gold konumu dengesiz: {dict(sorted(slots.items()))}")
     if len(ids) < 11 or max(ids.values()) > 40:
         failures.append(f"gold candidate ID soneki dengesiz: {dict(sorted(ids.items()))}")
+    order_a = [c["id"] for c in _blind_candidates(family, "semantic_a")]
+    order_b = [c["id"] for c in _blind_candidates(family, "semantic_b")]
+    if order_a == order_b:
+        failures.append("semantic judge counterbalanced candidate sıraları aynı")
+    morph_prompt = build_morphology_judge_prompt(family)
+    morph_payload = json.loads(morph_prompt[morph_prompt.index("{"): morph_prompt.rindex("}") + 1])
+    if morph_payload.get("target_feature") != family["target_feature"]:
+        failures.append("morphology judge target_feature görmüyor")
+    for leaked in sorted(banned & set(_keys(morph_payload))):
+        failures.append(f"morphology judge payload etiket alanı sızdırıyor: {leaked}")
     return failures
 
 
@@ -608,11 +724,12 @@ def _check_model_family_gates() -> list[str]:
 
     base = json.loads((Path(__file__).resolve().parent / "config.json").read_text(encoding="utf-8"))
 
-    def _rejects(model_a, model_b, judge_model) -> bool:
+    def _rejects(model_a, model_b, semantic_model, morphology_model) -> bool:
         cfg = deepcopy(base)
         cfg["generation"]["generators"][0]["model"] = model_a
         cfg["generation"]["generators"][1]["model"] = model_b
-        cfg["generation"]["judge"]["model"] = judge_model
+        cfg["generation"]["judges"]["semantic"]["model"] = semantic_model
+        cfg["generation"]["judges"]["morphology"]["model"] = morphology_model
         os.environ.setdefault("OPENROUTER_API_KEY", "selftest-placeholder")
         try:
             validate_config(cfg, runtime=True)
@@ -621,13 +738,16 @@ def _check_model_family_gates() -> list[str]:
             return True
 
     for label, models, want_reject in (
-        ("yasak google ailesi", ("google/gemini-2.5-pro", "openai/gpt-5", "anthropic/claude-opus-4"), True),
-        ("google-vertex takma adı", ("google-vertex/gemini-2.5-pro", "openai/gpt-5", "anthropic/claude-opus-4"), True),
-        ("öneksiz gemini kimliği", ("gemini-2.5-pro", "openai/gpt-5", "anthropic/claude-opus-4"), True),
-        ("aynı aileden iki generator", ("openai/gpt-5", "openai/gpt-5-mini", "anthropic/claude-opus-4"), True),
+        ("yasak google ailesi", ("google/gemini-2.5-pro", "openai/gpt-5", "qwen/qwen3", "mistralai/small"), True),
+        ("google-vertex takma adı", ("google-vertex/gemini-2.5-pro", "openai/gpt-5", "qwen/qwen3", "mistralai/small"), True),
+        ("öneksiz gemini kimliği", ("gemini-2.5-pro", "openai/gpt-5", "qwen/qwen3", "mistralai/small"), True),
+        ("aynı aileden iki generator", ("openai/gpt-5", "openai/gpt-5-mini", "qwen/qwen3", "mistralai/small"), True),
         ("iki google rotası tek aile sayılmalı",
-         ("google/gemini-2.5-pro", "google-vertex/gemini-2.5-pro", "openai/gpt-5"), True),
-        ("geçerli üç ayrı aile", ("openai/gpt-5", "anthropic/claude-opus-4", "x-ai/grok-4"), False),
+         ("google/gemini-2.5-pro", "google-vertex/gemini-2.5-pro", "qwen/qwen3", "mistralai/small"), True),
+        ("judge generator ailesini tekrar ediyor",
+         ("openai/gpt-5", "anthropic/claude-opus-4", "openai/gpt-5-mini", "mistralai/small"), True),
+        ("geçerli dört ayrı aile",
+         ("openai/gpt-5", "anthropic/claude-opus-4", "qwen/qwen3", "mistralai/small"), False),
     ):
         if _rejects(*models) is not want_reject:
             verb = "reddetmedi" if want_reject else "gereksiz yere reddetti"

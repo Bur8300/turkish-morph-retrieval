@@ -9,10 +9,7 @@ import hashlib
 import json
 import random
 
-from .taxonomy import HARD_SUBTYPES
-
-
-PROMPT_VERSION = "test-prompts-3.7.0-dataset-memory"
+PROMPT_VERSION = "test-prompts-3.8.0-cascade-judge"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -22,11 +19,26 @@ Görevin doğal, gündelik veya kurumsal Türkçe ile tek bir sorgu ve tam 11 ad
 üslup ve ayrıntı yoğunluğu dengeli olmalıdır.
 """
 
-JUDGE_SYSTEM = """\
-Sen generator'dan bağımsız, kör bir Türkçe retrieval ve biçimbilim hakemisin. Adayların gold,
-hard/easy veya alt-tür etiketlerini görmeyeceksin. Önce sorguyu gerçekten yanıtlayan bütün adayları
-bul; sonra her adayı anlam, doğal Türkçe ve biçimbilim açısından sınıflandır. Geçerli bir allomorf
-yalnız yüzeyi değiştiği için yanlış sayılamaz. JSON dışında metin yazma.
+SEMANTIC_JUDGE_SYSTEM = """\
+Sen generator'dan bağımsız, tamamen özellik-kör bir Türkçe retrieval hakemisin. Gold, negatif,
+biçimbilim fenomeni ve alt-tür etiketlerini görmeyeceksin. Yalnız metinsel anlam, sorguya destek,
+doğal Türkçe, iç tutarlılık ve yüzey artefaktlarını değerlendir. Bilmediğin durumda abstain=true
+ver; güven puanını şişirme. JSON dışında metin yazma.
+"""
+
+MORPHOLOGY_JUDGE_SYSTEM = """\
+Sen generator ve semantik hakemden bağımsız, özellik-bilinçli bir Türkçe biçimbilim hakemisin.
+Gold/hard/easy ve alt-tür etiketlerini görmeyeceksin. Hedef özelliğin adayda hangi yorumu verdiğini,
+eklerin doğal ve dilbilgisel olup olmadığını, kapsamı ve allomorf işlevini değerlendir. Geçerli bir
+allomorfu yalnız yüzeyi değiştiği için yanlış sayma. Bilmediğin durumda abstain=true ver. JSON dışında
+metin yazma.
+"""
+
+ADJUDICATOR_SYSTEM = """\
+Sen iki bağımsız hakemin anlaşmazlığını inceleyen kıdemli Türkçe retrieval ve biçimbilim
+adjudicator'ısın. Üretim etiketlerini veya gold bilgisini görmeyeceksin. Hakem cevaplarını kanıt
+değil görüş olarak ele al; metni kendin kontrol et. Çıktın yalnız insan incelemesine tavsiyedir ve
+otomatik gold değiştirmez. JSON dışında metin yazma.
 """
 
 
@@ -266,44 +278,81 @@ ORİJİNAL GÖREV
 """
 
 
-def _blind_candidates(family: dict) -> list[dict]:
+def _blind_candidates(family: dict, permutation: str = "a") -> list[dict]:
     candidates = [{"id": c["id"], "text": c["text"]} for c in family["candidates"]]
-    seed = int(hashlib.sha256(family["family_id"].encode()).hexdigest()[:16], 16)
+    seed_material = f"{family['family_id']}|{permutation}"
+    seed = int(hashlib.sha256(seed_material.encode()).hexdigest()[:16], 16)
     random.Random(seed).shuffle(candidates)
     return candidates
 
 
-def build_judge_prompt(family: dict) -> str:
-    allowed = sorted(HARD_SUBTYPES)
+def build_semantic_judge_prompt(family: dict, permutation: str) -> str:
     visible = {
         "query": family["query"],
-        "target_feature": family["target_feature"],
-        "objective": family["objective"],
-        "layer": family["layer"],
         "query_sentence_count": family["query_sentence_count"],
         "passage_sentence_count": family["passage_sentence_count"],
-        "candidates": _blind_candidates(family),
+        "candidates": _blind_candidates(family, f"semantic_{permutation}"),
     }
     return f"""\
-Aşağıdaki family’yi etiketleri görmeden değerlendir.
+Aşağıdaki family’yi morfolojik hedefi ve üretim etiketlerini görmeden değerlendir.
 
 {json.dumps(visible, ensure_ascii=False, indent=2)}
 
 KURALLAR
 1. `answers_query`: sorguyu bütünüyle doğru yanıtlayan bütün aday kimlikleri. Kısmi aday ekleme.
-2. Her aday için binary relevance (`relevant`/`not_relevant`), 1–5 naturalness,
-   morphology_ok, supports_query, internally_consistent ve inferred_type ver.
-   Kısmi relevance kullanma.
-3. Olası inferred_type değerleri: positive, {', '.join(allowed)}, easy_negative, unclear.
-4. Bir hard aday dilbilgisel olarak bozuksa morphology_ok=false; bozukluk zorluk sayılamaz.
-5. Allomorph invariance hedefinde geçerli yüzey değişkesini yanlış sayma.
-6. Uzunluk, üslup veya ayrıntı yalnız gold’u ele veriyorsa length_or_style_artifact=true.
-7. Family doğal değilse veya birden fazla doğru aday varsa bunu açıkça kaydet.
-8. `supports_query=true` yalnız aday sorgudaki temel önermeyi doğruluyor, yeniden ifade ediyor
+2. Her aday için supports_query, 1–5 naturalness, internally_consistent ve kısa hata boyutları ver.
+3. `supports_query=true` yalnız aday sorgudaki temel önermeyi doğruluyor, yeniden ifade ediyor
    veya bu önerme için yeterli kanıt sağlıyorsa ver. Yalnız aynı konuda olmak yeterli değildir.
-   Gold dışındaki bir aday supports_query=true ise family başarısızdır.
-9. Aday kendi içinde çelişiyorsa (ör. rapor hem hazır hem henüz bitmemişse)
+4. Aday kendi içinde çelişiyorsa (ör. rapor hem hazır hem henüz bitmemişse)
    internally_consistent=false ver. Dilbilgisel ama mantıksal çelişkili aday kabul edilmez.
-10. Değerlendirmeyi iki sırayla yap: önce metinlerin relevance/doğallık/iç tutarlılığını,
-    sonra target_feature yardımıyla biçimbilim ve subtype kontrolünü değerlendir.
+5. Uzunluk, üslup veya ayrıntı tek bir cevabı yapay biçimde ele veriyorsa
+   length_or_style_artifact=true ver.
+6. Emin değilsen abstain=true ver. Confidence, kararın doğruluğuna ilişkin 0–100 puandır.
+"""
+
+
+def build_morphology_judge_prompt(family: dict) -> str:
+    visible = {
+        "query": family["query"],
+        "target_feature": family["target_feature"],
+        "target_feature_label": family["target_feature_label"],
+        "objective": family["objective"],
+        "layer": family["layer"],
+        "candidates": _blind_candidates(family, "morphology"),
+    }
+    return f"""\
+Aşağıdaki family’yi üretim rolleri ve gold bilgisini görmeden morfolojik olarak değerlendir.
+
+{json.dumps(visible, ensure_ascii=False, indent=2)}
+
+KURALLAR
+1. `answers_query`: hedef biçimbilim ve önerme birlikte düşünüldüğünde sorguyu bütünüyle karşılayan
+   bütün aday kimlikleri.
+2. Her aday dilbilgisel ve doğal bir Türkçe biçim taşıyorsa morphology_ok=true ver. Negatif olması
+   morphology_ok=false demek değildir.
+3. target_interpretation şu dört değerden biri olmalı: supports_query, contradicts_query, unrelated,
+   unclear. Yalnız konu benzerliği supports_query değildir.
+4. Kapsam, kişi, sayı, iyelik, zaman/kip ve ek zinciri işlevini yüzey benzerliğinden ayrı kontrol et.
+5. Geçerli allomorfu yanlış saydıysan allomorph_treated_as_wrong=true ver.
+6. Emin değilsen abstain=true ver. Confidence, kararın doğruluğuna ilişkin 0–100 puandır.
+"""
+
+
+def build_adjudicator_prompt(
+    family: dict, semantic_verdicts: list[dict], morphology_verdict: dict, problems: list[str]
+) -> str:
+    visible = {
+        "query": family["query"],
+        "target_feature": family["target_feature"],
+        "target_feature_label": family["target_feature_label"],
+        "candidates": _blind_candidates(family, "adjudicator"),
+        "semantic_judge_outputs": semantic_verdicts,
+        "morphology_judge_output": morphology_verdict,
+        "detected_disagreements": problems,
+    }
+    return f"""\
+Aşağıdaki anlaşmazlığı metinlerden bağımsız olarak yeniden değerlendir. Üretim gold'unu tahmin
+etmeye çalışma; `recommendation` yalnız insan hakeme tavsiyedir.
+
+{json.dumps(visible, ensure_ascii=False, indent=2)}
 """

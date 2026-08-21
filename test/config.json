@@ -1,6 +1,6 @@
 {
   "dataset_name": "turkish_morph_retrieval_test",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "seed": 20260814,
   "targets": {
     "development": 100,
@@ -80,8 +80,10 @@
     "freeze_tie_aware_word_overlap_recall_at_1_max": 0.20,
     "freeze_tie_aware_character_3gram_recall_at_1_max": 0.30,
     "freeze_tie_aware_bm25_recall_at_1_max": 0.30,
-    "judge_subtype_agreement_min": 0.90,
-    "judge_naturalness_min": 4
+    "judge_naturalness_min": 4,
+    "candidate_naturalness_min": 4,
+    "semantic_judge_confidence_min": 80,
+    "morphology_judge_confidence_min": 80
   },
   "generation": {
     "max_generation_attempts": 2,
@@ -97,7 +99,12 @@
         "temperature": 0.70,
         "max_tokens": 6500,
         "requests_per_minute": 20,
-        "timeout_seconds": 180
+        "timeout_seconds": 180,
+        "provider_preferences": {
+          "require_parameters": true,
+          "data_collection": "deny",
+          "zdr": true
+        }
       },
       {
         "id": "generator_b",
@@ -108,18 +115,68 @@
         "temperature": 0.70,
         "max_tokens": 6500,
         "requests_per_minute": 20,
-        "timeout_seconds": 180
+        "timeout_seconds": 180,
+        "provider_preferences": {
+          "require_parameters": true,
+          "data_collection": "deny",
+          "zdr": true
+        }
       }
     ],
-    "judge": {
-      "provider": "openrouter",
-      "model": "${TEST_JUDGE_MODEL}",
-      "api_key_env": "OPENROUTER_API_KEY",
-      "base_url": "https://openrouter.ai/api/v1/chat/completions",
-      "temperature": 0.10,
-      "max_tokens": 5000,
-      "requests_per_minute": 20,
-      "timeout_seconds": 180
+    "judges": {
+      "semantic": {
+        "provider": "openrouter",
+        "model": "${TEST_SEMANTIC_JUDGE_MODEL}",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "base_url": "https://openrouter.ai/api/v1/chat/completions",
+        "temperature": 0.0,
+        "max_tokens": 2600,
+        "requests_per_minute": 30,
+        "timeout_seconds": 180,
+        "permutations": ["a", "b"],
+        "provider_preferences": {
+          "require_parameters": true,
+          "data_collection": "deny",
+          "zdr": true
+        }
+      },
+      "morphology": {
+        "provider": "openrouter",
+        "model": "${TEST_MORPHOLOGY_JUDGE_MODEL}",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "base_url": "https://openrouter.ai/api/v1/chat/completions",
+        "temperature": 0.0,
+        "max_tokens": 2600,
+        "requests_per_minute": 30,
+        "timeout_seconds": 180,
+        "provider_preferences": {
+          "require_parameters": true,
+          "data_collection": "deny",
+          "zdr": true
+        }
+      },
+      "adjudicator": {
+        "enabled": false,
+        "provider": "openrouter",
+        "model": "",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "base_url": "https://openrouter.ai/api/v1/chat/completions",
+        "temperature": 0.0,
+        "max_tokens": 1400,
+        "requests_per_minute": 20,
+        "timeout_seconds": 180,
+        "provider_preferences": {
+          "require_parameters": true,
+          "data_collection": "deny",
+          "zdr": true
+        }
+      }
+    },
+    "human_review": {
+      "audit_rate": 0.10,
+      "audit_reviewers_required": 1,
+      "conflict_reviewers_required": 2,
+      "seed": 3801
     },
     "require_distinct_model_families": true,
     "forbidden_model_families_for_test": ["google"]

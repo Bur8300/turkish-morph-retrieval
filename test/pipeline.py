@@ -1,14 +1,15 @@
-"""Generation pipeline: plan -> generate -> deterministic QC -> blind independent judge."""
+"""Generation pipeline: plan -> generate -> QC -> cascade judges -> human-review gate."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import random
 import subprocess
 import threading
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -19,16 +20,26 @@ from .config import load_config
 from .dataset_memory import DatasetMemory, family_memory_tags
 from .planner import build_plan, plan_hash, plan_statistics
 from .prompts import (
+    ADJUDICATOR_SYSTEM,
     GENERATOR_SYSTEM,
-    JUDGE_SYSTEM,
+    MORPHOLOGY_JUDGE_SYSTEM,
     PROMPT_VERSION,
+    SEMANTIC_JUDGE_SYSTEM,
+    build_adjudicator_prompt,
     build_generation_prompt,
-    build_judge_prompt,
+    build_morphology_judge_prompt,
     build_repair_prompt,
+    build_semantic_judge_prompt,
 )
 from .providers import make_provider
-from .schema import GENERATION_SCHEMA, JUDGE_SCHEMA
-from .validators import interpret_judge, normalize_family, quality_score, validate_family
+from .schema import ADJUDICATOR_SCHEMA, GENERATION_SCHEMA, MORPHOLOGY_JUDGE_SCHEMA, SEMANTIC_JUDGE_SCHEMA
+from .validators import (
+    interpret_morphology_judge,
+    interpret_semantic_judges,
+    normalize_family,
+    quality_score,
+    validate_family,
+)
 
 
 HERE = Path(__file__).resolve().parent
@@ -40,6 +51,7 @@ class RunPaths:
     plan: Path
     manifest: Path
     accepted: Path
+    needs_review: Path
     rejected: Path
     failures: Path
     report: Path
@@ -54,6 +66,7 @@ def paths_for(run_id: str) -> RunPaths:
         plan=root / "plan.json",
         manifest=root / "run_manifest.json",
         accepted=root / "accepted.jsonl",
+        needs_review=root / "needs_review.jsonl",
         rejected=root / "rejected.jsonl",
         failures=root / "failures.jsonl",
         report=root / "generation_report.json",
@@ -74,7 +87,7 @@ def _git_commit() -> str | None:
 def _pipeline_source_hashes() -> dict[str, str]:
     names = (
         "config.py", "pipeline.py", "planner.py", "prompts.py", "schema.py", "taxonomy.py",
-        "validators.py", "dataset_memory.py",
+        "validators.py", "dataset_memory.py", "review.py", "judge_report.py",
     )
     return {
         name: hashlib.sha256((HERE / name).read_bytes()).hexdigest()
@@ -142,16 +155,22 @@ def initialise_run(run_id: str, cfg: dict[str, Any], slots: list[dict[str, Any]]
             {"id": spec["id"], "provider": spec["provider"], "model": spec["model"]}
             for spec in cfg["generation"]["generators"]
         ],
-        "judge": {
-            "provider": cfg["generation"]["judge"]["provider"],
-            "model": cfg["generation"]["judge"]["model"],
+        "judges": {
+            name: {
+                "enabled": spec.get("enabled", True),
+                "provider": spec["provider"],
+                "model": spec.get("model", ""),
+                "provider_preferences": spec.get("provider_preferences", {}),
+            }
+            for name, spec in cfg["generation"]["judges"].items()
         },
+        "human_review": cfg["generation"]["human_review"],
     }
     if paths.manifest.exists():
         previous = json.loads(paths.manifest.read_text(encoding="utf-8"))
         invariant_keys = (
             "dataset_version", "prompt_version", "pipeline_source_sha256", "config_sha256",
-            "plan_sha256", "generators", "judge"
+            "plan_sha256", "generators", "judges", "human_review"
         )
         changed = [key for key in invariant_keys if previous.get(key) != manifest.get(key)]
         if changed:
@@ -172,11 +191,29 @@ def _request_provenance(response) -> dict[str, Any]:
         "request_hash": response.request_hash,
         "cache_hit": response.cache_hit,
         "usage": response.usage,
+        "actual_model": response.actual_model,
+        "route_provider": response.route_provider,
     }
 
 
+def human_audit_slots(slots: list[dict[str, Any]], cfg: dict[str, Any]) -> set[str]:
+    """Select a deterministic stratified audit sample by split and holdout bucket."""
+    rate = float(cfg["generation"]["human_review"]["audit_rate"])
+    base_seed = int(cfg["generation"]["human_review"].get("seed", cfg.get("seed", 0)))
+    groups: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for slot in slots:
+        groups[(slot["target_split"], slot["generalization_bucket"])].append(slot["slot_id"])
+    selected: set[str] = set()
+    for stratum, slot_ids in sorted(groups.items()):
+        count = round(len(slot_ids) * rate)
+        material = f"{base_seed}|{stratum[0]}|{stratum[1]}"
+        seed = int(hashlib.sha256(material.encode()).hexdigest()[:16], 16)
+        selected.update(random.Random(seed).sample(sorted(slot_ids), count))
+    return selected
+
+
 def _process_slot(
-    slot, cfg, generators, judge, start_refill_round: int = 0, stage_callback=None,
+    slot, cfg, generators, judges, start_refill_round: int = 0, stage_callback=None,
     memory_validator=None,
 ) -> tuple[str, dict[str, Any]]:
     generator = generators[slot["generator_id"]]
@@ -247,42 +284,108 @@ def _process_slot(
                 stage_callback("dataset_memory_rejected", {"refill_round": refill_round})
             continue
 
-        judge_response = judge.call_json(
-            JUDGE_SYSTEM, build_judge_prompt(family), JUDGE_SCHEMA, "blind_judge"
+        semantic_responses = []
+        semantic_verdicts = []
+        for permutation in cfg["generation"]["judges"]["semantic"]["permutations"]:
+            response = judges["semantic"].call_json(
+                SEMANTIC_JUDGE_SYSTEM,
+                build_semantic_judge_prompt(family, permutation),
+                SEMANTIC_JUDGE_SCHEMA,
+                f"semantic_judge_{permutation}",
+            )
+            semantic_responses.append(_request_provenance(response))
+            semantic_verdicts.append(response.data)
+        semantic_problems, semantic_metadata = interpret_semantic_judges(
+            family, semantic_verdicts, cfg
         )
-        judge_problems, judge_metadata = interpret_judge(family, judge_response.data, cfg)
+
+        morphology_response = judges["morphology"].call_json(
+            MORPHOLOGY_JUDGE_SYSTEM,
+            build_morphology_judge_prompt(family),
+            MORPHOLOGY_JUDGE_SCHEMA,
+            "morphology_judge",
+        )
+        morphology_problems, morphology_metadata = interpret_morphology_judge(
+            family, morphology_response.data, cfg
+        )
+        judge_problems = sorted(set(semantic_problems + morphology_problems))
+        judging_provenance = {
+            "semantic": semantic_responses,
+            "morphology": _request_provenance(morphology_response),
+        }
+        judging_metadata = {
+            "semantic": semantic_metadata,
+            "morphology": morphology_metadata,
+        }
         if stage_callback:
             stage_callback(
-                "judge_completed",
+                "cascade_judges_completed",
                 {"refill_round": refill_round, "accepted": not bool(judge_problems)},
             )
-        if judge_problems:
-            last_stage = "blind_judge"
-            last_problems = judge_problems
-            refill_history.append({
-                "refill_round": refill_round,
-                "stage": last_stage,
-                "problems": judge_problems,
-                "generator_attempts": generation_provenance,
-                "judge": _request_provenance(judge_response),
-            })
-            continue
+
+        adjudicator_record = None
+        if judge_problems and judges.get("adjudicator") is not None:
+            adjudicator_response = judges["adjudicator"].call_json(
+                ADJUDICATOR_SYSTEM,
+                build_adjudicator_prompt(
+                    family, semantic_verdicts, morphology_response.data, judge_problems
+                ),
+                ADJUDICATOR_SCHEMA,
+                "judge_disagreement_advisory",
+            )
+            adjudicator_record = {
+                "verdict": adjudicator_response.data,
+                "provenance": _request_provenance(adjudicator_response),
+            }
+            judging_metadata["adjudicator"] = adjudicator_response.data
+            judging_provenance["adjudicator"] = adjudicator_record["provenance"]
 
         family["provenance"] = {
             "generator_id": slot["generator_id"],
             "refill_round": refill_round,
-            "rejected_replacements_before_acceptance": refill_history,
+            "rejected_replacements_before_review": refill_history,
             "generator_attempts": generation_provenance,
-            "judge": _request_provenance(judge_response),
+            "judges": judging_provenance,
             "prompt_version": PROMPT_VERSION,
         }
         family["qc"] = {
             "deterministic": "pass",
-            "judge": judge_metadata,
-            "quality_score": round(quality_score(family), 5),
+            "judging": judging_metadata,
         }
-        family["source_type"] = "llm_generated_llm_judged"
+        family["qc"]["quality_score"] = round(quality_score(family), 5)
         family["memory_tags"] = family_memory_tags(family)
+
+        review_reasons = list(judge_problems)
+        review_kind = "judge_conflict"
+        if not review_reasons and slot.get("human_review_audit"):
+            review_reasons = ["deterministic stratified human audit sample"]
+            review_kind = "stratified_audit"
+        if review_reasons:
+            reviewers_key = (
+                "audit_reviewers_required"
+                if review_kind == "stratified_audit"
+                else "conflict_reviewers_required"
+            )
+            family["source_type"] = "llm_generated_pending_human_review"
+            record = {
+                "slot_id": slot["slot_id"],
+                "family_id": family["family_id"],
+                "review_kind": review_kind,
+                "review_reasons": review_reasons,
+                "reviewers_required": int(
+                    cfg["generation"]["human_review"][reviewers_key]
+                ),
+                "adjudicator": adjudicator_record,
+                "family": family,
+            }
+            if stage_callback:
+                stage_callback(
+                    "needs_human_review",
+                    {"refill_round": refill_round, "review_kind": review_kind},
+                )
+            return "needs_review", record
+
+        family["source_type"] = "llm_generated_cascade_judged"
         return "accepted", family
 
     return "rejected", {
@@ -312,19 +415,42 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     paths = initialise_run(run_id, cfg, all_slots)
     memory = DatasetMemory(paths.memory)
     accepted_before = read_jsonl(paths.accepted)
+    needs_review_before = read_jsonl(paths.needs_review)
     rejected_before = read_jsonl(paths.rejected)
     completed = {row.get("slot_id") for row in accepted_before if row.get("slot_id")}
     refill_rounds = _resume_refill_rounds(rejected_before)
     for item in accepted_before:
         if item.get("slot_id"):
             memory.record_outcome(item["slot_id"], "accepted", item, actor="jsonl_reconcile")
-    pending = [slot for slot in slots if slot["slot_id"] not in completed]
+    for item in needs_review_before:
+        slot_id = item.get("slot_id")
+        if slot_id and memory.slot_status(slot_id) not in {"accepted", "rejected"}:
+            memory.record_outcome(slot_id, "needs_review", item, actor="jsonl_reconcile")
+    review_pending = {
+        slot["slot_id"] for slot in slots if memory.slot_status(slot["slot_id"]) == "needs_review"
+    }
+    audit_slot_ids = human_audit_slots(all_slots, cfg)
+    pending = [
+        {**slot, "human_review_audit": slot["slot_id"] in audit_slot_ids}
+        for slot in slots
+        if slot["slot_id"] not in completed and slot["slot_id"] not in review_pending
+    ]
     metadata = {"dataset_version": cfg["version"], "prompt_version": PROMPT_VERSION}
     generators = {
         spec["id"]: make_provider(spec, paths.cache / spec["id"], metadata)
         for spec in cfg["generation"]["generators"]
     }
-    judge = make_provider(cfg["generation"]["judge"], paths.cache / "judge", metadata)
+    judge_specs = cfg["generation"]["judges"]
+    judges = {
+        "semantic": make_provider(judge_specs["semantic"], paths.cache / "semantic_judge", metadata),
+        "morphology": make_provider(
+            judge_specs["morphology"], paths.cache / "morphology_judge", metadata
+        ),
+    }
+    if judge_specs["adjudicator"].get("enabled", False):
+        judges["adjudicator"] = make_provider(
+            judge_specs["adjudicator"], paths.cache / "adjudicator", metadata
+        )
     write_lock = threading.Lock()
     counts = Counter()
     errors = []
@@ -357,7 +483,7 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
                     memory.record_stage(_slot["slot_id"], stage, _owner, payload)
 
                 future = executor.submit(
-                    _process_slot, prompt_slot, cfg, generators, judge,
+                    _process_slot, prompt_slot, cfg, generators, judges,
                     refill_rounds.get(slot["slot_id"], 0), stage_callback,
                     memory.conflicts_for,
                 )
@@ -381,6 +507,7 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
                     errors.append(record)
                 target_path = {
                     "accepted": paths.accepted,
+                    "needs_review": paths.needs_review,
                     "rejected": paths.rejected,
                     "failed": paths.failures,
                 }[status]
@@ -390,6 +517,7 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
             fill_workers()
 
     accepted = read_jsonl(paths.accepted)
+    needs_review = read_jsonl(paths.needs_review)
     rejected = read_jsonl(paths.rejected)
     failures = read_jsonl(paths.failures)
     accepted_slot_ids = {item.get("slot_id") for item in accepted}
@@ -401,6 +529,9 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
         "reservation_skips_this_call": reservation_skips,
         "outcomes_this_call": dict(counts),
         "accepted_total": len(accepted),
+        "needs_review_total": sum(
+            memory.slot_status(slot["slot_id"]) == "needs_review" for slot in slots
+        ),
         "target_total": target_count,
         "unfilled_slots": sum(slot["slot_id"] not in accepted_slot_ids for slot in slots),
         "complete": all(slot["slot_id"] in accepted_slot_ids for slot in slots),
@@ -417,6 +548,12 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
         "accepted_by_generator": dict(Counter(item["generator_id"] for item in accepted)),
         "accepted_strict_minimal_pairs": sum(bool(item["strict_minimal_pair"]) for item in accepted),
         "rejection_stages": dict(Counter(item.get("stage", "unknown") for item in rejected)),
+        "human_review_reasons": dict(Counter(
+            reason
+            for item in needs_review
+            if memory.slot_status(item.get("slot_id", "")) == "needs_review"
+            for reason in item.get("review_reasons", [])
+        )),
         "uncaught_errors_this_call": errors,
         "dataset_memory": memory.report(),
     }

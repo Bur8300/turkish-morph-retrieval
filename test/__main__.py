@@ -10,8 +10,10 @@ from .config import load_config
 from .dataset_memory import DatasetMemory
 from .evaluation import load_items
 from .exports import finalize
+from .judge_report import judge_calibration_report
 from .pipeline import default_run_id, generate, paths_for, read_jsonl, write_plan
 from .preview import generate_codex_preview
+from .review import apply_human_reviews, export_human_review
 from .selftest import run as run_selftest
 from .validators import artifact_report, train_test_leakage_problems
 
@@ -29,10 +31,10 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     plan = sub.add_parser("plan", help="API çağrısı yapmadan kapsam planı üret")
-    plan.add_argument("--run-id", default="planned_test_v36")
+    plan.add_argument("--run-id", default="planned_test_v38")
     plan.add_argument("--size", type=int, default=None)
 
-    generation = sub.add_parser("generate", help="üret + deterministic QC + kör judge")
+    generation = sub.add_parser("generate", help="üret + QC + iki-aşamalı judge + review kuyruğu")
     generation.add_argument("--run-id", default=None)
     generation.add_argument("--limit", type=int, default=None, help="pilot için plan prefix'i")
     generation.add_argument("--workers", type=int, default=None)
@@ -81,6 +83,22 @@ def main() -> int:
     memory_ingest.add_argument("--source", required=True)
     memory_ingest.add_argument("--split", default=None)
 
+    review_export = sub.add_parser(
+        "review-export", help="bekleyen family'ler için kör insan review manifesti üret"
+    )
+    review_export.add_argument("--run-id", required=True)
+
+    review_apply = sub.add_parser(
+        "review-apply", help="bağımsız insan kararlarını consensus ile uygula"
+    )
+    review_apply.add_argument("--run-id", required=True)
+    review_apply.add_argument("--input", required=True)
+
+    judge_report = sub.add_parser(
+        "judge-report", help="cascade judge, order ve human-calibration metriklerini raporla"
+    )
+    judge_report.add_argument("--run-id", required=True)
+
     sub.add_parser("self-test", help="API kullanmadan regression testleri")
     args = parser.parse_args()
 
@@ -126,6 +144,12 @@ def main() -> int:
             "ingested": memory.ingest_families(rows, args.source),
             "memory": memory.report(),
         }
+    elif args.command == "review-export":
+        result = export_human_review(args.run_id)
+    elif args.command == "review-apply":
+        result = apply_human_reviews(args.run_id, args.input, args.config)
+    elif args.command == "judge-report":
+        result = judge_calibration_report(args.run_id)
     else:
         failures = run_selftest()
         if failures:

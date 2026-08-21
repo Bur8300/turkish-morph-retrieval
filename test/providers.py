@@ -30,6 +30,8 @@ class ProviderResponse:
     request_hash: str
     model: str
     provider: str
+    actual_model: str | None = None
+    route_provider: str | None = None
 
 
 class RateLimiter:
@@ -92,6 +94,7 @@ class OpenRouterProvider:
             "schema": schema,
             "temperature": self.spec.get("temperature", 0.1),
             "max_tokens": self.spec.get("max_tokens", 5000),
+            "provider_preferences": self.spec.get("provider_preferences", {}),
             "pipeline": self.run_metadata,
         }
         canonical = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -103,7 +106,8 @@ class OpenRouterProvider:
         if cache_path.exists():
             cached = json.loads(cache_path.read_text(encoding="utf-8"))
             return ProviderResponse(
-                cached["data"], cached.get("usage", {}), True, request_hash, self.model, self.provider
+                cached["data"], cached.get("usage", {}), True, request_hash, self.model,
+                self.provider, cached.get("response_model"), cached.get("route_provider"),
             )
 
         key = os.getenv(self.spec["api_key_env"])
@@ -119,7 +123,10 @@ class OpenRouterProvider:
             "temperature": self.spec.get("temperature", 0.1),
             "max_tokens": self.spec.get("max_tokens", 5000),
             "response_format": {"type": "json_schema", "json_schema": schema},
-            "provider": {"require_parameters": True},
+            "provider": {
+                "require_parameters": True,
+                **self.spec.get("provider_preferences", {}),
+            },
         }
         payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
         headers = {
@@ -143,13 +150,17 @@ class OpenRouterProvider:
                     "data": data,
                     "usage": raw.get("usage", {}),
                     "response_model": raw.get("model", self.model),
+                    "route_provider": raw.get("provider"),
                     "created_at_unix": int(time.time()),
                 }
                 tmp = cache_path.with_suffix(f".{threading.get_ident()}.tmp")
                 with self._write_lock:
                     tmp.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
                     tmp.replace(cache_path)
-                return ProviderResponse(data, record["usage"], False, request_hash, self.model, self.provider)
+                return ProviderResponse(
+                    data, record["usage"], False, request_hash, self.model, self.provider,
+                    record["response_model"], record["route_provider"],
+                )
             except urllib.error.HTTPError as exc:
                 detail = exc.read().decode("utf-8", errors="replace")[:1000]
                 last_error = ProviderError(f"OpenRouter HTTP {exc.code}: {detail}")
@@ -202,7 +213,8 @@ class CodexCliProvider:
             cached = json.loads(cache_path.read_text(encoding="utf-8"))
             return ProviderResponse(
                 cached["data"], cached.get("usage", {}), True, request_hash,
-                self.model, self.provider,
+                self.model, self.provider, cached.get("response_model", self.model),
+                cached.get("route_provider", "codex_cli"),
             )
         if self.spec.get("cache_only"):
             raise ProviderError(f"Codex cache-only modunda yanıt bulunamadı: {request_hash}")
@@ -265,7 +277,10 @@ class CodexCliProvider:
         with self._write_lock:
             tmp.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
             tmp.replace(cache_path)
-        return ProviderResponse(data, usage, False, request_hash, self.model, self.provider)
+        return ProviderResponse(
+            data, usage, False, request_hash, self.model, self.provider,
+            self.model, "codex_cli",
+        )
 
 
 def make_provider(spec: dict[str, Any], cache_dir: Path, run_metadata: dict[str, Any]):

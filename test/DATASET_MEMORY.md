@@ -16,8 +16,8 @@ Generator yalnız coverage sayımlarını ve daha önce kullanılan lemma/anlat�
 ## Akış
 
 ```text
-plan → slot reserve → aggregate memory context → generate → deterministic QC → judge
-     → accepted metadata commit → sonraki worker güncel coverage'ı görür
+plan → slot reserve → aggregate memory → generate → deterministic QC → cascade judge
+     → accepted metadata commit veya needs_review → insan consensus → accept/reopen
 ```
 
 SQLite `WAL` ve `BEGIN IMMEDIATE` rezervasyonu aynı slotun iki workera verilmesini engeller. JSONL
@@ -65,5 +65,6 @@ Her yeni family aşağıdaki küçük `semantic_profile` nesnesini üretir:
 
 Etiketler ASCII `snake_case` olmalı; özel ad veya ham cümle içermemelidir. Morfoloji metadata'sı
 generator beyanından değil, güvenilir plandaki feature taksonomisinden eklenir. Semantic profil
-generator niyetidir ve family ancak mevcut deterministic QC ile bağımsız judge'u geçerse registry'ye
-`accepted` olarak girer.
+generator niyetidir. Cascade judge anlaşmazlığı registry'de `needs_review` olarak kilitlenir;
+otomatik refill yapılmaz. İnsan consensus'u accept verirse metadata `accepted` olarak eklenir,
+reject verirse slot yeniden üretim için `rejected` durumuna açılır.

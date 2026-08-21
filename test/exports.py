@@ -1,4 +1,4 @@
-"""Freeze the automatically verified 100/500 split and export private/public/BEIR views."""
+"""Freeze the cascade-verified 100/500 split and export private/public/BEIR views."""
 
 from __future__ import annotations
 
@@ -12,7 +12,9 @@ from pathlib import Path
 from typing import Any
 
 from .config import load_config
-from .pipeline import paths_for, read_jsonl
+from .dataset_memory import DatasetMemory
+from .pipeline import human_audit_slots, paths_for, read_jsonl
+from .planner import build_plan
 from .selection import select_balanced, selection_statistics
 from .validators import artifact_report, corpus_problems, tr_lower
 
@@ -146,6 +148,17 @@ def _critical_position_audit(items: list[dict]) -> tuple[dict[str, dict[str, int
 def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
     cfg = load_config(config_path, runtime=False)
     run = paths_for(run_id)
+    memory = DatasetMemory(run.memory)
+    pending_review_slots = [
+        row["slot_id"] for row in read_jsonl(run.needs_review)
+        if row.get("slot_id") and memory.slot_status(row["slot_id"]) == "needs_review"
+    ]
+    if pending_review_slots:
+        _write_json(
+            run.root / "freeze_blockers.json",
+            {"problems": [f"çözülmemiş human review: {len(set(pending_review_slots))} slot"]},
+        )
+        raise ValueError("Test dondurulamadı; çözülmemiş human review kayıtları var")
     accepted = read_jsonl(run.accepted)
     selected = select_balanced(
         accepted,
@@ -154,11 +167,19 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
     )
     for item in selected:
         item["split"] = item.pop("target_split")
-        item["source_type"] = "llm_generated_auto_verified"
+        item["source_type"] = "llm_generated_cascade_verified"
     dev = [item for item in selected if item["split"] == "development"]
     sealed = [item for item in selected if item["split"] == "sealed_test"]
     position_audit, position_problems = _critical_position_audit(selected)
     problems = corpus_problems(selected, cfg) + _leakage_checks(dev, sealed) + position_problems
+    required_audits = human_audit_slots(build_plan(cfg), cfg)
+    reviewed_audits = {
+        item["slot_id"] for item in selected
+        if item.get("qc", {}).get("human_review", {}).get("status") == "pass"
+    }
+    missing_audits = required_audits - reviewed_audits
+    if missing_audits:
+        problems.append(f"stratified human audit eksik: {len(missing_audits)} slot")
     artifacts = artifact_report(selected)
     if artifacts["longest_gold_rate"] >= 0.15:
         problems.append(f"longest-gold oranı freeze sınırını aşıyor: {artifacts['longest_gold_rate']:.3f}")
@@ -236,6 +257,10 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
         "statistics": selection_statistics(selected),
         "critical_sentence_position_audit": position_audit,
         "artifact_audit": artifacts,
+        "human_review": {
+            "required_stratified_audits": len(required_audits),
+            "completed_reviewed_slots": len(reviewed_audits),
+        },
         "files": {str(path.relative_to(run.root)): _sha256(path) for path in hashed_files},
         "qrels_definition": (
             "Her query için tek gold=1'dir. Kendi family'sindeki 10 generated negative ve "

@@ -279,7 +279,7 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
         "candidates": candidates,
         "gold_id": gold_id,
         "qrels": {candidate["id"]: candidate["relevance"] for candidate in candidates},
-        "source_type": "llm_generated_pending_llm_judge",
+        "source_type": "llm_generated_pending_cascade_judge",
     }
     family["memory_tags"] = family_memory_tags(family)
     return family
@@ -528,77 +528,151 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
     return sorted(set(problems))
 
 
-def interpret_judge(
+def interpret_semantic_judges(
+    family: dict[str, Any], verdicts: list[dict[str, Any]], cfg: dict[str, Any]
+) -> tuple[list[str], dict[str, Any]]:
+    """Interpret two feature-blind, counterbalanced semantic passes."""
+    problems: list[str] = []
+    candidates = {candidate["id"]: candidate for candidate in family["candidates"]}
+    expected_answers = {family["gold_id"]}
+    naturalness_floor = int(cfg["quality"]["judge_naturalness_min"])
+    candidate_floor = int(cfg["quality"]["candidate_naturalness_min"])
+    confidence_floor = int(cfg["quality"]["semantic_judge_confidence_min"])
+    summaries = []
+    decision_signatures = []
+
+    for index, verdict in enumerate(verdicts, start=1):
+        label = f"semantic_{index}"
+        answers = verdict.get("answers_query", [])
+        if not isinstance(answers, list) or set(answers) != expected_answers:
+            problems.append(f"{label} tek gold üzerinde anlaşmadı: {answers}")
+        assessments = verdict.get("candidate_assessments", [])
+        if not isinstance(assessments, list) or {
+            row.get("id") for row in assessments if isinstance(row, dict)
+        } != set(candidates):
+            problems.append(f"{label} candidate kapsamı eksik/fazla")
+            assessments = []
+
+        naturalness_values = [
+            row["naturalness"] for row in assessments
+            if isinstance(row.get("naturalness"), int)
+        ]
+        support_map = {
+            row["id"]: bool(row.get("supports_query")) for row in assessments
+            if row.get("id") in candidates
+        }
+        support_mismatches = [
+            candidate_id for candidate_id, supports in support_map.items()
+            if supports != (candidate_id == family["gold_id"])
+        ]
+        inconsistent = [
+            row["id"] for row in assessments if not row.get("internally_consistent", False)
+        ]
+        if support_mismatches:
+            problems.append(f"{label} query desteği uyuşmazlığı: {support_mismatches}")
+        if inconsistent:
+            problems.append(f"{label} iç tutarsız aday buldu: {inconsistent}")
+        family_naturalness = verdict.get("family_naturalness", 0)
+        candidate_min = min(naturalness_values, default=0)
+        if not isinstance(family_naturalness, int) or family_naturalness < naturalness_floor:
+            problems.append(f"{label} family naturalness düşük: {family_naturalness}")
+        if candidate_min < candidate_floor:
+            problems.append(f"{label} aday naturalness minimumu düşük: {candidate_min}")
+        if verdict.get("length_or_style_artifact"):
+            problems.append(f"{label} uzunluk/üslup artefaktı buldu")
+        confidence = verdict.get("confidence", 0)
+        if not isinstance(confidence, int) or confidence < confidence_floor:
+            problems.append(f"{label} düşük güven: {confidence}")
+        if verdict.get("abstain"):
+            problems.append(f"{label} abstain verdi")
+
+        decision_signatures.append((frozenset(answers) if isinstance(answers, list) else frozenset(), support_map))
+        summaries.append({
+            "answers_query": answers,
+            "confidence": confidence,
+            "abstain": bool(verdict.get("abstain")),
+            "family_naturalness": family_naturalness,
+            "candidate_naturalness_min": candidate_min,
+            "support_mismatches": support_mismatches,
+            "internally_inconsistent_candidates": inconsistent,
+            "length_or_style_artifact": bool(verdict.get("length_or_style_artifact")),
+            "candidate_assessments": assessments,
+            "notes": verdict.get("notes", ""),
+        })
+
+    order_stable = len(decision_signatures) >= 2 and all(
+        signature == decision_signatures[0] for signature in decision_signatures[1:]
+    )
+    if not order_stable:
+        problems.append("semantic judge candidate sırası değişince karar değiştirdi")
+    return sorted(set(problems)), {
+        "order_stable": order_stable,
+        "passes": summaries,
+        "family_naturalness": min(
+            (row["family_naturalness"] for row in summaries), default=0
+        ),
+        "candidate_naturalness_min": min(
+            (row["candidate_naturalness_min"] for row in summaries), default=0
+        ),
+        "confidence_min": min((row["confidence"] for row in summaries), default=0),
+    }
+
+
+def interpret_morphology_judge(
     family: dict[str, Any], verdict: dict[str, Any], cfg: dict[str, Any]
 ) -> tuple[list[str], dict[str, Any]]:
+    """Interpret the independent feature-aware morphology pass without subtype matching."""
     problems: list[str] = []
     candidates = {candidate["id"]: candidate for candidate in family["candidates"]}
     answers = verdict.get("answers_query", [])
     if not isinstance(answers, list) or set(answers) != {family["gold_id"]}:
-        problems.append(f"judge tek gold üzerinde anlaşmadı: {answers}")
+        problems.append(f"morphology judge tek gold üzerinde anlaşmadı: {answers}")
     assessments = verdict.get("candidate_assessments", [])
-    if not isinstance(assessments, list) or {row.get("id") for row in assessments} != set(candidates):
-        problems.append("judge assessment candidate id kapsamı eksik/fazla")
+    if not isinstance(assessments, list) or {
+        row.get("id") for row in assessments if isinstance(row, dict)
+    } != set(candidates):
+        problems.append("morphology judge candidate kapsamı eksik/fazla")
         assessments = []
 
-    agreement = 0
-    naturalness_values: list[int] = []
-    morphology_failures = []
-    relevance_mismatches = []
-    support_mismatches = []
-    inconsistent_candidates = []
+    morphology_failures = [
+        row["id"] for row in assessments if not row.get("morphology_ok", False)
+    ]
+    interpretation_mismatches = []
     for row in assessments:
-        candidate = candidates[row["id"]]
-        intended = "positive" if candidate["role"] == "positive" else (
-            "easy_negative" if candidate["role"] == "easy_negative" else candidate["subtype"]
-        )
-        agreement += int(row.get("inferred_type") == intended)
-        if isinstance(row.get("naturalness"), int):
-            naturalness_values.append(row["naturalness"])
-        if not row.get("morphology_ok", False):
-            morphology_failures.append(row["id"])
-        expected_relevance = "relevant" if candidate["role"] == "positive" else "not_relevant"
-        if row.get("relevance") != expected_relevance:
-            relevance_mismatches.append(row["id"])
-        if bool(row.get("supports_query")) != (candidate["role"] == "positive"):
-            support_mismatches.append(row["id"])
-        if not row.get("internally_consistent", False):
-            inconsistent_candidates.append(row["id"])
-    agreement_rate = agreement / max(1, len(candidates))
-    if agreement_rate < float(cfg["quality"]["judge_subtype_agreement_min"]):
-        problems.append(f"judge subtype uyumu düşük: {agreement_rate:.3f}")
+        expected = row.get("id") == family["gold_id"]
+        observed = row.get("target_interpretation") == "supports_query"
+        if observed != expected or row.get("target_interpretation") == "unclear":
+            interpretation_mismatches.append(row.get("id"))
     if morphology_failures:
-        problems.append(f"judge bozuk biçimbilim işaretledi: {morphology_failures}")
-    if relevance_mismatches:
-        problems.append(f"judge binary qrels ile anlaşmadı: {relevance_mismatches}")
-    if support_mismatches:
-        problems.append(f"judge gold dışında query desteği/eksik gold desteği buldu: {support_mismatches}")
-    if inconsistent_candidates:
-        problems.append(f"judge iç tutarsız aday buldu: {inconsistent_candidates}")
-    if verdict.get("length_or_style_artifact"):
-        problems.append("judge uzunluk/üslup artefaktı buldu")
+        problems.append(f"morphology judge bozuk biçimbilim işaretledi: {morphology_failures}")
+    if interpretation_mismatches:
+        problems.append(
+            f"morphology judge hedef yorum uyuşmazlığı: {interpretation_mismatches}"
+        )
     if verdict.get("allomorph_treated_as_wrong"):
-        problems.append("judge geçerli allomorphun yanlış kullanıldığını buldu")
-    family_naturalness = verdict.get("family_naturalness", 0)
-    if not isinstance(family_naturalness, int) or family_naturalness < int(cfg["quality"]["judge_naturalness_min"]):
-        problems.append(f"judge family naturalness düşük: {family_naturalness}")
-
-    metadata = {
+        problems.append("morphology judge geçerli allomorfu yanlış saydı")
+    confidence = verdict.get("confidence", 0)
+    floor = int(cfg["quality"]["morphology_judge_confidence_min"])
+    if not isinstance(confidence, int) or confidence < floor:
+        problems.append(f"morphology judge düşük güven: {confidence}")
+    if verdict.get("abstain"):
+        problems.append("morphology judge abstain verdi")
+    return sorted(set(problems)), {
         "answers_query": answers,
-        "subtype_agreement": round(agreement_rate, 4),
-        "family_naturalness": family_naturalness,
-        "candidate_naturalness_min": min(naturalness_values, default=0),
-        "length_or_style_artifact": bool(verdict.get("length_or_style_artifact")),
+        "confidence": confidence,
+        "abstain": bool(verdict.get("abstain")),
+        "morphology_failures": morphology_failures,
+        "interpretation_mismatches": interpretation_mismatches,
         "allomorph_treated_as_wrong": bool(verdict.get("allomorph_treated_as_wrong")),
-        "support_mismatches": support_mismatches,
-        "internally_inconsistent_candidates": inconsistent_candidates,
+        "candidate_assessments": assessments,
         "notes": verdict.get("notes", ""),
     }
-    return sorted(set(problems)), metadata
 
 
 def quality_score(family: dict[str, Any]) -> float:
-    judge = family.get("qc", {}).get("judge", {})
+    judging = family.get("qc", {}).get("judging", {})
+    semantic = judging.get("semantic", family.get("qc", {}).get("judge", {}))
+    morphology = judging.get("morphology", {})
     lexical = family.get("lexical_audit", {})
     lengths = [len(tokens(candidate["text"])) for candidate in family["candidates"]]
     balance = min(lengths) / max(lengths) if lengths and max(lengths) else 0.0
@@ -610,8 +684,9 @@ def quality_score(family: dict[str, Any]) -> float:
         if cheap_top else 0.0
     )
     return (
-        float(judge.get("family_naturalness", 0))
-        + 2.0 * float(judge.get("subtype_agreement", 0))
+        float(semantic.get("family_naturalness", 0))
+        + float(bool(semantic.get("order_stable", False)))
+        + float(morphology.get("confidence", 0)) / 100.0
         + balance
         + lexical_balance
         + 0.5 * close_hard_share

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from .dataset_memory import SEMANTIC_PROFILE_SCHEMA
-from .taxonomy import HARD_SUBTYPES
 
 
 CANDIDATE_SCHEMA = {
@@ -50,10 +49,33 @@ GENERATION_SCHEMA = {
 }
 
 
-JUDGE_TYPES = ["positive", *HARD_SUBTYPES, "easy_negative", "unclear"]
+SEMANTIC_ERROR_DIMENSIONS = [
+    "none",
+    "semantic_content_mismatch",
+    "argument_role_error",
+    "scope_error",
+    "time_or_state_error",
+    "internal_contradiction",
+    "unnatural_turkish",
+    "style_or_length_artifact",
+]
 
-JUDGE_SCHEMA = {
-    "name": "blind_morph_family_judgment",
+MORPH_ERROR_DIMENSIONS = [
+    "none",
+    "morph_feature_mismatch",
+    "wrong_inflection",
+    "argument_role_error",
+    "scope_error",
+    "tense_or_modality_error",
+    "possessor_number_error",
+    "allomorph_function_error",
+    "semantic_content_mismatch",
+    "unclear",
+]
+
+
+SEMANTIC_JUDGE_SCHEMA = {
+    "name": "blind_semantic_retrieval_judgment",
     "strict": True,
     "schema": {
         "type": "object",
@@ -69,28 +91,111 @@ JUDGE_SCHEMA = {
                     "additionalProperties": False,
                     "properties": {
                         "id": {"type": "string"},
-                        "relevance": {"type": "string", "enum": ["relevant", "not_relevant"]},
-                        "naturalness": {"type": "integer", "minimum": 1, "maximum": 5},
-                        "inferred_type": {"type": "string", "enum": JUDGE_TYPES},
-                        "morphology_ok": {"type": "boolean"},
                         "supports_query": {"type": "boolean"},
+                        "naturalness": {"type": "integer", "minimum": 1, "maximum": 5},
                         "internally_consistent": {"type": "boolean"},
-                        "reason": {"type": "string"},
+                        "error_dimensions": {
+                            "type": "array",
+                            "items": {"type": "string", "enum": SEMANTIC_ERROR_DIMENSIONS},
+                            "uniqueItems": True,
+                        },
                     },
                     "required": [
-                        "id", "relevance", "naturalness", "inferred_type", "morphology_ok",
-                        "supports_query", "internally_consistent", "reason",
+                        "id", "supports_query", "naturalness", "internally_consistent",
+                        "error_dimensions",
                     ],
                 },
             },
             "length_or_style_artifact": {"type": "boolean"},
-            "allomorph_treated_as_wrong": {"type": "boolean"},
             "family_naturalness": {"type": "integer", "minimum": 1, "maximum": 5},
+            "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+            "abstain": {"type": "boolean"},
             "notes": {"type": "string"},
         },
         "required": [
             "answers_query", "candidate_assessments", "length_or_style_artifact",
-            "allomorph_treated_as_wrong", "family_naturalness", "notes",
+            "family_naturalness", "confidence", "abstain", "notes",
+        ],
+    },
+}
+
+
+MORPHOLOGY_JUDGE_SCHEMA = {
+    "name": "feature_aware_morphology_judgment",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "answers_query": {"type": "array", "items": {"type": "string"}},
+            "candidate_assessments": {
+                "type": "array",
+                "minItems": 11,
+                "maxItems": 11,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "id": {"type": "string"},
+                        "morphology_ok": {"type": "boolean"},
+                        "target_interpretation": {
+                            "type": "string",
+                            "enum": ["supports_query", "contradicts_query", "unrelated", "unclear"],
+                        },
+                        "error_dimensions": {
+                            "type": "array",
+                            "items": {"type": "string", "enum": MORPH_ERROR_DIMENSIONS},
+                            "uniqueItems": True,
+                        },
+                    },
+                    "required": [
+                        "id", "morphology_ok", "target_interpretation", "error_dimensions",
+                    ],
+                },
+            },
+            "allomorph_treated_as_wrong": {"type": "boolean"},
+            "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+            "abstain": {"type": "boolean"},
+            "notes": {"type": "string"},
+        },
+        "required": [
+            "answers_query", "candidate_assessments", "allomorph_treated_as_wrong",
+            "confidence", "abstain", "notes",
+        ],
+    },
+}
+
+
+ADJUDICATOR_SCHEMA = {
+    "name": "judge_disagreement_advisory",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "recommendation": {
+                "type": "string", "enum": ["accept", "reject", "human_review"],
+            },
+            "answers_query": {"type": "array", "items": {"type": "string"}},
+            "morphology_valid": {"type": "boolean"},
+            "naturalness_valid": {"type": "boolean"},
+            "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+            "reason_codes": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "semantic_disagreement", "order_instability", "morphology_disagreement",
+                        "naturalness_disagreement", "low_confidence", "other",
+                    ],
+                },
+                "uniqueItems": True,
+            },
+            "notes": {"type": "string"},
+        },
+        "required": [
+            "recommendation", "answers_query", "morphology_valid", "naturalness_valid",
+            "confidence", "reason_codes", "notes",
         ],
     },
 }

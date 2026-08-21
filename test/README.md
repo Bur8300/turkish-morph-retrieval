@@ -1,4 +1,4 @@
-# Turkish Morph Retrieval Test — v3.7.0
+# Turkish Morph Retrieval Test — v3.8.0
 
 Bu dizin Türkçe encoder'ların küçük fakat anlam değiştiren morfolojik farkları ayırt edip
 etmediğini ölçen benchmark'ı üretir ve değerlendirir. Train sistemi [`../train/`](../train/)
@@ -73,21 +73,25 @@ iki farklı LLM generator (300 + 300)
         ↓
 strict JSON + deterministic QC
         ↓
-generator'lardan farklı model ailesinden blind LLM judge
+özellik-kör semantic judge (iki candidate sırası)
         ↓
-kalırsa aynı slot için taze replacement; geçerse slot tamamlanır
+ayrı model ailesinden feature-aware morphology judge
+        ↓
+anlaşmazlık + katmanlı %10 audit → kör insan review
         ↓
 duplicate/leakage/artefakt kontrolü + otomatik qrels + freeze
 ```
 
-Her replacement aynı split, fenomen, generator, cümle uzunluğu ve holdout kotasını korur; yalnız
-metin yeniden üretilir. Bir komutta en fazla üç taze replacement turu denenir. Slot hâlâ geçmezse
-run durumu kaydedilir ve aynı `generate` komutu sonraki refill turundan devam eder. Böylece sonsuz
-API döngüsü olmadan tam 600 kabul edilmiş family hedeflenir.
+Deterministic QC veya dataset-memory ihlali aynı slotta taze replacement üretir. Judge
+anlaşmazlığı ise otomatik refill üretmez; `needs_review.jsonl` kuyruğuna alınır. İnsan consensus'u
+reddederse slot yeniden açılır. Böylece veri, tek bir judge modelinin tercih ettiği örneklere doğru
+sessizce seçilmez.
 
-İki generator ve judge üç farklı model ailesinden olmalıdır. Legacy train Gemini ile üretildiği
-için `google/*` test generator/judge rollerinde varsayılan olarak yasaktır. Model, prompt, config,
-request hash, kullanım ve git commit bilgileri manifestte saklanır.
+İki generator, semantic judge ve morphology judge dört farklı model ailesinden olmalıdır. Opsiyonel
+adjudicator etkinse o da ayrı aile olmalıdır. Legacy train Gemini ile üretildiği için `google/*`
+rollerde varsayılan olarak yasaktır. OpenRouter istekleri structured output, `data_collection=deny`
+ve `zdr=true` kullanır; configured model, gerçek response model/route, request hash ve kullanım
+provenance'a yazılır. `provider_preferences.order + allow_fallbacks=false` ile endpoint pinlenebilir.
 
 Provider-facing üretim JSON'u bilerek küçüktür. LLM yalnız query, ortak context, kritik
 lemma/query sözcüğü ve her aday için `candidate_slot + critical_sentence + critical_word`
@@ -274,7 +278,10 @@ Family düzeyi:
 - Positive ile hard kritik cümlelerinde dengeli query-word overlap
 - En az dört hard'ın gold kadar lexical overlap ve query içeriği taşıması
 - Tek ve doğru gold qrels
-- Etiket/konum-kör, feature-aware LLM judge ile benzersiz positive, doğallık, morfoloji ve subtype
+- Özellik-kör semantic judge ile benzersiz positive, doğallık ve iç tutarlılık
+- Ayrı feature-aware morphology judge ile ek işlevi, kapsam ve allomorf kontrolü
+- İki counterbalanced candidate sırasında karar kararlılığı, confidence ve abstain
+- Tüm judge anlaşmazlıkları + split/holdout katmanlı `%10` insan audit'i
 - Her negatif için query'yi doğrulama/paraphrase etme riski ve her aday için iç tutarlılık
 
 Corpus/freeze düzeyi:
@@ -293,6 +300,12 @@ Opsiyonel [Stanza](https://stanfordnlp.github.io/stanza/pipeline.html) audit'i k
 `UFeats` bilgisini kontrol eder. `morph_explicit` query'lerde hedef özelliğin kritik query
 sözcüğünde bulunmasını da denetler. Bu gerçek morfem segmentasyonu değildir; audit uyarıları otomatik
 gold değiştirmez.
+
+Opsiyonel güçlü adjudicator `config.json > generation > judges > adjudicator` altında
+`enabled=true` ve ayrı bir model ailesi verilerek açılır. Kararı otomatik gold değiştirmez; tavsiyesi
+insan manifestine eklenir. `review-export` semantic ve morphology görünümlerini ayırır;
+`review-apply` aynı reviewer'ın tekrarını saymaz ve gerekli bağımsız reviewer çoğunluğu oluşmadan
+slotu accept/reject durumuna geçirmez.
 
 ## Evaluation
 
@@ -328,22 +341,29 @@ tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyinde
 ```bash
 # API'siz regresyon testi ve plan
 python3 -m test self-test
-python3 -m test plan --run-id test_v36
-python3 -m test memory-report --run-id test_v36
+python3 -m test plan --run-id test_v38
+python3 -m test memory-report --run-id test_v38
 
 # Mevcut train metadata'sını tekrar önleme hafızasına ekle
-python3 -m test memory-ingest --run-id test_v36 --input TRAIN.json \
+python3 -m test memory-ingest --run-id test_v38 --input TRAIN.json \
   --source train_current --split train
 
-# İki generator + bağımsız blind judge
+# İki generator + semantic/morphology cascade judge
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"
 export TEST_GENERATOR_MODEL_B="provider-b/model-b"
-export TEST_JUDGE_MODEL="provider-c/model-c"
-python3 -m test generate --run-id test_v36
+export TEST_SEMANTIC_JUDGE_MODEL="qwen/model"
+export TEST_MORPHOLOGY_JUDGE_MODEL="mistralai/model"
+python3 -m test generate --run-id test_v38
+
+# Judge conflict'leri ve stratified %10 audit için kör insan review
+python3 -m test review-export --run-id test_v38
+python3 -m test review-apply --run-id test_v38 --input decisions.jsonl
+python3 -m test judge-report --run-id test_v38
+python3 -m test generate --run-id test_v38  # yalnız insanın reddettiği slotları refill eder
 
 # Tamamlanan 100/500 kotasını doğrula, freeze et ve qrels export et
-python3 -m test finalize --run-id test_v36
+python3 -m test finalize --run-id test_v38
 
 # Train üretildikten sonra leakage audit
 python3 -m test audit-leakage --test TEST.json --train TRAIN.json
@@ -377,7 +397,9 @@ Preview provenance her family'nin `provenance` alanında ve set manifestinde sak
 | `taxonomy.py` | Fenomen ve hard-negative kataloğu |
 | `planner.py` | 600 dengeli slot ve iki-generator için 300/300 atama |
 | `schema.py`, `prompts.py` | Strict üretim/judge sözleşmesi |
-| `pipeline.py` | Generate → QC → LLM judge → reject/refill → checkpoint |
+| `pipeline.py` | Generate → QC → semantic/morph judges → review queue → checkpoint |
+| `review.py` | Kör review manifesti, reviewer consensus'u ve slot reopen/accept |
+| `judge_report.py` | Order stability, escalation ve insan-kalibrasyon raporu |
 | `validators.py` | Family/corpus/duplicate/leakage kontrolleri ve qrels |
 | `selection.py` | Tam 100/500 dağılım ve generator kotalarını doğrulama |
 | `exports.py` | Freeze, blind/internal JSON, BEIR ve qrels |
