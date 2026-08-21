@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from .config import load_config
+from .dataset_memory import DatasetMemory
 from .evaluation import load_items
 from .exports import finalize
 from .pipeline import default_run_id, generate, paths_for, read_jsonl, write_plan
@@ -67,6 +68,19 @@ def main() -> int:
     morph.add_argument("--download-model", action="store_true")
     morph.add_argument("--use-gpu", action="store_true")
 
+    memory_report = sub.add_parser(
+        "memory-report", help="dataset memory slot durumlarını ve aggregate kapsamı göster"
+    )
+    memory_report.add_argument("--run-id", required=True)
+
+    memory_ingest = sub.add_parser(
+        "memory-ingest", help="train/dev metadata'sını generation memory'ye ekle"
+    )
+    memory_ingest.add_argument("--run-id", required=True)
+    memory_ingest.add_argument("--input", required=True)
+    memory_ingest.add_argument("--source", required=True)
+    memory_ingest.add_argument("--split", default=None)
+
     sub.add_parser("self-test", help="API kullanmadan regression testleri")
     args = parser.parse_args()
 
@@ -98,6 +112,20 @@ def main() -> int:
         result = run_morphology_audit(
             args.input, args.output, args.download_model, args.use_gpu
         )
+    elif args.command == "memory-report":
+        result = DatasetMemory(paths_for(args.run_id).memory).report()
+    elif args.command == "memory-ingest":
+        rows = _load_flexible(args.input)
+        if args.split:
+            rows = [
+                {**row, "target_split": row.get("target_split", row.get("split", args.split))}
+                for row in rows
+            ]
+        memory = DatasetMemory(paths_for(args.run_id).memory)
+        result = {
+            "ingested": memory.ingest_families(rows, args.source),
+            "memory": memory.report(),
+        }
     else:
         failures = run_selftest()
         if failures:

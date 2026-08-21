@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .dataset_memory import SEMANTIC_PROFILE_SCHEMA
 from .taxonomy import HARD_SUBTYPES
 
 
@@ -25,6 +26,7 @@ GENERATION_SCHEMA = {
         "additionalProperties": False,
         "properties": {
             "semantic_frame_id": {"type": "string"},
+            "semantic_profile": SEMANTIC_PROFILE_SCHEMA,
             "critical_lemma": {"type": "string", "minLength": 2},
             "critical_word_query": {"type": "string", "minLength": 2},
             "query": {"type": "string", "minLength": 8},
@@ -41,7 +43,7 @@ GENERATION_SCHEMA = {
             },
         },
         "required": [
-            "semantic_frame_id", "critical_lemma", "critical_word_query", "query",
+            "semantic_frame_id", "semantic_profile", "critical_lemma", "critical_word_query", "query",
             "context_sentences", "candidates",
         ],
     },

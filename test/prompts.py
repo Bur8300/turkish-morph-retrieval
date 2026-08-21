@@ -12,7 +12,7 @@ import random
 from .taxonomy import HARD_SUBTYPES
 
 
-PROMPT_VERSION = "test-prompts-3.6.1-compact"
+PROMPT_VERSION = "test-prompts-3.7.0-dataset-memory"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -169,6 +169,8 @@ def build_generation_prompt(slot: dict) -> str:
     # prompts (and their caches) stay byte-identical.
     if int(slot.get("refill_round", 0)):
         compact_slot["refill_round"] = int(slot["refill_round"])
+    if slot.get("dataset_memory"):
+        compact_slot["dataset_memory"] = slot["dataset_memory"]
 
     return f"""\
 SLOT
@@ -233,11 +235,18 @@ GENERALİZASYON
 - Domain: {slot['domain']}; register: {slot['register']}.
 - Soyut template: {slot['template']['id']} — {slot['template']['description']}.
 - Testteki gerçek örneklerden veya eski JSON cümlelerinden alıntı/kopya yapma.
+- SLOT içinde `dataset_memory` varsa bu ham örnek değil, aggregate kapsam hafızasıdır. Sabit kotayı
+  değiştirme; `avoid_critical_lemmas` ve `avoid_narrative_tags` değerlerini yeniden kullanma.
+- `semantic_profile.narrative_tag` ve `event_type` kısa ASCII snake_case etiketler olmalı
+  (`banka_para_transferi`, `belge_teslimi` gibi); cümleyi veya özel kişi adını etikete kopyalama.
+- `participant_roles`, polarity, temporal_frame ve scope_target gerçekleşen query–gold anlamını
+  tanımlamalı. Bunlar generator niyet etiketi olarak ayrıca doğrulanacaktır.
 
 ALANLAR
 - Yalnız şemanın istediği küçük üretim alanlarını yaz. Rol, subtype, morph_relation, qrels,
   edit_script, feature açıklaması ve bütün kimlikler Python tarafından güvenilir plandan eklenir.
-- `semantic_frame_id` SLOT değeriyle aynı olsun; `critical_lemma` ve query kritik sözcüğünü yaz.
+- `semantic_frame_id` SLOT değeriyle aynı olsun; `semantic_profile`, `critical_lemma` ve query
+  kritik sözcüğünü yaz.
 - Positive `candidate_slot=positive_01`; hard slotları `hard_01`…`hard_08`, easy slotları
   `easy_01` ve `easy_02` olsun.
 - Her candidate için yalnız tek cümlelik `critical_sentence` ve o cümlede geçen `critical_word` ver.

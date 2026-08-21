@@ -4,17 +4,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import threading
 import time
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from .config import load_config
+from .dataset_memory import DatasetMemory, family_memory_tags
 from .planner import build_plan, plan_hash, plan_statistics
 from .prompts import (
     GENERATOR_SYSTEM,
@@ -42,6 +44,7 @@ class RunPaths:
     failures: Path
     report: Path
     cache: Path
+    memory: Path
 
 
 def paths_for(run_id: str) -> RunPaths:
@@ -55,6 +58,7 @@ def paths_for(run_id: str) -> RunPaths:
         failures=root / "failures.jsonl",
         report=root / "generation_report.json",
         cache=root / "cache",
+        memory=root / "dataset_memory.sqlite3",
     )
 
 
@@ -70,7 +74,7 @@ def _git_commit() -> str | None:
 def _pipeline_source_hashes() -> dict[str, str]:
     names = (
         "config.py", "pipeline.py", "planner.py", "prompts.py", "schema.py", "taxonomy.py",
-        "validators.py",
+        "validators.py", "dataset_memory.py",
     )
     return {
         name: hashlib.sha256((HERE / name).read_bytes()).hexdigest()
@@ -157,6 +161,7 @@ def initialise_run(run_id: str, cfg: dict[str, Any], slots: list[dict[str, Any]]
             )
     else:
         _write_json(paths.manifest, manifest)
+    DatasetMemory(paths.memory).sync_plan(slots)
     return paths
 
 
@@ -171,7 +176,8 @@ def _request_provenance(response) -> dict[str, Any]:
 
 
 def _process_slot(
-    slot, cfg, generators, judge, start_refill_round: int = 0
+    slot, cfg, generators, judge, start_refill_round: int = 0, stage_callback=None,
+    memory_validator=None,
 ) -> tuple[str, dict[str, Any]]:
     generator = generators[slot["generator_id"]]
     max_attempts = int(cfg["generation"]["max_generation_attempts"])
@@ -199,6 +205,8 @@ def _process_slot(
             response = generator.call_json(
                 GENERATOR_SYSTEM, prompt, GENERATION_SCHEMA, "generate_test_family"
             )
+            if stage_callback:
+                stage_callback("generated", {"refill_round": refill_round, "attempt": attempt})
             generation_provenance.append(_request_provenance(response))
             previous = response.data
             try:
@@ -208,6 +216,8 @@ def _process_slot(
                 validation_problems = [f"normalizasyon hatası: {type(exc).__name__}: {exc}"]
                 family = None
             if not validation_problems:
+                if stage_callback:
+                    stage_callback("deterministic_validated", {"refill_round": refill_round})
                 break
 
         last_raw = previous
@@ -223,10 +233,29 @@ def _process_slot(
             })
             continue
 
+        memory_problems = memory_validator(family) if memory_validator else []
+        if memory_problems:
+            last_stage = "dataset_memory"
+            last_problems = memory_problems
+            refill_history.append({
+                "refill_round": refill_round,
+                "stage": last_stage,
+                "problems": memory_problems,
+                "generator_attempts": generation_provenance,
+            })
+            if stage_callback:
+                stage_callback("dataset_memory_rejected", {"refill_round": refill_round})
+            continue
+
         judge_response = judge.call_json(
             JUDGE_SYSTEM, build_judge_prompt(family), JUDGE_SCHEMA, "blind_judge"
         )
         judge_problems, judge_metadata = interpret_judge(family, judge_response.data, cfg)
+        if stage_callback:
+            stage_callback(
+                "judge_completed",
+                {"refill_round": refill_round, "accepted": not bool(judge_problems)},
+            )
         if judge_problems:
             last_stage = "blind_judge"
             last_problems = judge_problems
@@ -253,6 +282,7 @@ def _process_slot(
             "quality_score": round(quality_score(family), 5),
         }
         family["source_type"] = "llm_generated_llm_judged"
+        family["memory_tags"] = family_memory_tags(family)
         return "accepted", family
 
     return "rejected", {
@@ -280,10 +310,14 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     all_slots = build_plan(cfg)
     slots = all_slots[:limit] if limit is not None else all_slots
     paths = initialise_run(run_id, cfg, all_slots)
+    memory = DatasetMemory(paths.memory)
     accepted_before = read_jsonl(paths.accepted)
     rejected_before = read_jsonl(paths.rejected)
     completed = {row.get("slot_id") for row in accepted_before if row.get("slot_id")}
     refill_rounds = _resume_refill_rounds(rejected_before)
+    for item in accepted_before:
+        if item.get("slot_id"):
+            memory.record_outcome(item["slot_id"], "accepted", item, actor="jsonl_reconcile")
     pending = [slot for slot in slots if slot["slot_id"] not in completed]
     metadata = {"dataset_version": cfg["version"], "prompt_version": PROMPT_VERSION}
     generators = {
@@ -297,33 +331,63 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     started = time.time()
 
     worker_count = int(workers or cfg["generation"].get("workers", 4))
+    submitted = 0
+    reservation_skips = 0
+    pending_iter = iter(pending)
     with ThreadPoolExecutor(max_workers=max(1, worker_count)) as executor:
-        future_to_slot = {
-            executor.submit(
-                _process_slot, slot, cfg, generators, judge,
-                refill_rounds.get(slot["slot_id"], 0),
-            ): slot
-            for slot in pending
-        }
-        for future in as_completed(future_to_slot):
-            slot = future_to_slot[future]
-            try:
-                status, record = future.result()
-            except Exception as exc:  # transient/provider failures are retryable on the next resume
-                status = "failed"
-                record = {
-                    "slot_id": slot["slot_id"],
-                    "stage": "exception",
-                    "problems": [f"{type(exc).__name__}: {exc}"],
+        future_to_slot: dict[Any, tuple[dict[str, Any], str]] = {}
+
+        def fill_workers() -> None:
+            nonlocal submitted, reservation_skips
+            while len(future_to_slot) < max(1, worker_count):
+                try:
+                    slot = next(pending_iter)
+                except StopIteration:
+                    return
+                owner = f"{run_id}:{os.getpid()}:{slot['slot_id']}"
+                if not memory.reserve_slot(slot["slot_id"], owner):
+                    reservation_skips += 1
+                    continue
+                prompt_slot = {
+                    **slot,
+                    "dataset_memory": memory.generation_context(slot),
                 }
-                errors.append(record)
-            target_path = {
-                "accepted": paths.accepted,
-                "rejected": paths.rejected,
-                "failed": paths.failures,
-            }[status]
-            _append_jsonl(target_path, record, write_lock)
-            counts[status] += 1
+
+                def stage_callback(stage, payload, *, _slot=slot, _owner=owner):
+                    memory.record_stage(_slot["slot_id"], stage, _owner, payload)
+
+                future = executor.submit(
+                    _process_slot, prompt_slot, cfg, generators, judge,
+                    refill_rounds.get(slot["slot_id"], 0), stage_callback,
+                    memory.conflicts_for,
+                )
+                future_to_slot[future] = (slot, owner)
+                submitted += 1
+
+        fill_workers()
+        while future_to_slot:
+            done, _ = wait(set(future_to_slot), return_when=FIRST_COMPLETED)
+            for future in done:
+                slot, owner = future_to_slot.pop(future)
+                try:
+                    status, record = future.result()
+                except Exception as exc:  # transient/provider failures are retryable on the next resume
+                    status = "failed"
+                    record = {
+                        "slot_id": slot["slot_id"],
+                        "stage": "exception",
+                        "problems": [f"{type(exc).__name__}: {exc}"],
+                    }
+                    errors.append(record)
+                target_path = {
+                    "accepted": paths.accepted,
+                    "rejected": paths.rejected,
+                    "failed": paths.failures,
+                }[status]
+                _append_jsonl(target_path, record, write_lock)
+                memory.record_outcome(slot["slot_id"], status, record, actor=owner)
+                counts[status] += 1
+            fill_workers()
 
     accepted = read_jsonl(paths.accepted)
     rejected = read_jsonl(paths.rejected)
@@ -333,7 +397,8 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     report = {
         "run_id": run_id,
         "elapsed_seconds_this_call": round(time.time() - started, 2),
-        "pending_processed_this_call": len(pending),
+        "pending_processed_this_call": submitted,
+        "reservation_skips_this_call": reservation_skips,
         "outcomes_this_call": dict(counts),
         "accepted_total": len(accepted),
         "target_total": target_count,
@@ -353,6 +418,7 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
         "accepted_strict_minimal_pairs": sum(bool(item["strict_minimal_pair"]) for item in accepted),
         "rejection_stages": dict(Counter(item.get("stage", "unknown") for item in rejected)),
         "uncaught_errors_this_call": errors,
+        "dataset_memory": memory.report(),
     }
     _write_json(paths.report, report)
     return report
@@ -364,6 +430,7 @@ def write_plan(run_id: str, config_path: str | None = None, size: int | None = N
     paths = paths_for(run_id)
     paths.root.mkdir(parents=True, exist_ok=True)
     _write_json(paths.plan, slots)
+    DatasetMemory(paths.memory).sync_plan(slots)
     report = {"run_id": run_id, "size": len(slots), "sha256": plan_hash(slots), "statistics": plan_statistics(slots)}
     _write_json(paths.root / "plan_report.json", report)
     return report

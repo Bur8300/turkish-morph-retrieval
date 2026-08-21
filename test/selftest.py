@@ -5,11 +5,14 @@ from __future__ import annotations
 import json
 import os
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 
 from .config import ConfigError, load_config, model_family, validate_config
+from .dataset_memory import DatasetMemory, semantic_profile_problems
 from .prompts import (
     _blind_candidates,
     build_generation_prompt,
@@ -69,6 +72,14 @@ def _fixture_raw():
     ]
     return {
         "semantic_frame_id": "frame_fixture",
+        "semantic_profile": {
+            "narrative_tag": "rapor_teslimi",
+            "event_type": "belge_tamamlama",
+            "participant_roles": ["agent", "theme"],
+            "polarity": "negative",
+            "temporal_frame": "past",
+            "scope_target": "predicate",
+        },
         "template_id": "event_report",
         "critical_lemma": "tamamlamak",
         "critical_word_query": "tamamlamadı",
@@ -92,6 +103,11 @@ def _fixture_raw():
 
 def run() -> list[str]:
     failures = []
+    if semantic_profile_problems(_fixture_raw()["semantic_profile"]):
+        failures.append("geçerli semantic_profile reddedildi")
+    bad_profile = {**_fixture_raw()["semantic_profile"], "narrative_tag": "Ham cümle etiketi"}
+    if not semantic_profile_problems(bad_profile):
+        failures.append("serbest metin semantic_profile etiketi reddedilmedi")
     if not _expected_feature_check("ALLO.ACC", {"ufeats": "Case=Acc|Number=Sing"}):
         failures.append("allomorph query UFeats eşlemesi çalışmadı")
     if not _expected_feature_check(
@@ -274,6 +290,58 @@ def run() -> list[str]:
     problems = validate_family(family, slot, cfg)
     if problems:
         failures.append(f"geçerli fixture reddedildi: {problems}")
+    with TemporaryDirectory() as temporary:
+        memory = DatasetMemory(Path(temporary) / "dataset_memory.sqlite3")
+        second_slot = deepcopy(slot)
+        second_slot.update({"slot_id": "fixture_neg_0001", "index": 1})
+        concurrent_slot = deepcopy(slot)
+        concurrent_slot.update({"slot_id": "fixture_neg_0002", "index": 2})
+        memory.sync_plan([slot, second_slot, concurrent_slot])
+        if not memory.reserve_slot(slot["slot_id"], "worker_a"):
+            failures.append("dataset memory planlanmış slotu rezerve edemedi")
+        if memory.reserve_slot(slot["slot_id"], "worker_b"):
+            failures.append("dataset memory aynı slotu iki workera verdi")
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            reservations = list(executor.map(
+                lambda worker: memory.reserve_slot(concurrent_slot["slot_id"], worker),
+                [f"parallel_{index}" for index in range(8)],
+            ))
+        if sum(reservations) != 1:
+            failures.append(f"dataset memory atomik rezervasyon sayısı yanlış: {reservations}")
+        family["source_type"] = "llm_generated_llm_judged"
+        memory.record_outcome(slot["slot_id"], "accepted", family, actor="worker_a")
+        external = deepcopy(family)
+        external.update({
+            "family_id": "external_train_fixture",
+            "slot_id": "external_train_slot",
+            "target_split": "train",
+        })
+        memory.ingest_families([external], "train_fixture")
+        for bucket, expected_text in (
+            ("lemma_holdout", "lemma_holdout"),
+            ("template_holdout", "template_holdout"),
+            ("composition_holdout", "composition_holdout"),
+        ):
+            probe = {**family, "family_id": f"probe_{bucket}", "generalization_bucket": bucket}
+            if not any(expected_text in problem for problem in memory.conflicts_for(probe)):
+                failures.append(f"dataset memory {bucket} external çakışmasını yakalamadı")
+        context = memory.generation_context(second_slot)
+        if family["critical_lemma"] not in context["avoid_critical_lemmas"]:
+            failures.append("dataset memory kabul edilen lemmayı sonraki bağlama taşımadı")
+        if family["semantic_profile"]["narrative_tag"] not in context["avoid_narrative_tags"]:
+            failures.append("dataset memory anlatı etiketini sonraki bağlama taşımadı")
+        if family["query"] in json.dumps(context, ensure_ascii=False):
+            failures.append("dataset memory ham örneği generation context'e sızdırdı")
+        report = memory.report()
+        if report["slot_states"] != {"accepted": 1, "planned": 1, "reserved": 1}:
+            failures.append(f"dataset memory slot durumları yanlış: {report['slot_states']}")
+        drifted = deepcopy(second_slot)
+        drifted["domain"] = "finance"
+        try:
+            memory.sync_plan([drifted])
+            failures.append("dataset memory slot contract drift'ini reddetmedi")
+        except ValueError:
+            pass
     copied_gold_raw = _fixture_raw()
     copied_gold_raw["query"] = "Ece raporu toplantıdan önce tamamlamadı."
     copied_gold_raw["critical_word_query"] = "tamamlamadı"

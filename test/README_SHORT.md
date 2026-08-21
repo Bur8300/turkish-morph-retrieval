@@ -25,6 +25,11 @@ Bir family kontrolden kalırsa fenomeni, split'i, generator'ı ve uzunluk kotas�
 örnek yeniden üretilir. Üç refill turu yetmezse aynı komut yeniden çalıştırıldığında kaldığı yerden
 devam eder. Amaç fazladan 1.800 örnek yazmak değil, tam 600 kabul edilmiş family elde etmektir.
 
+Çoklu generator koordinasyonu `dataset_memory.sqlite3` üzerinden yapılır. Registry slotları atomik
+rezerve eder; kabul edilen fenomen/lemma/anlatı metadata'sından aggregate coverage ve kaçınılacak
+etiketler üretir. Önceki test cümleleri generator promptuna verilmez. Ayrıntı:
+[`DATASET_MEMORY.md`](DATASET_MEMORY.md).
+
 Strict modda gold–`hard_01` yalnız hedef biçimde ayrışır. Controlled modda gold ve hard farklı
 doğal sözdizimi kullanabilir. Natural modda query, gold ve negatifler bağımsız yazılabilir; gold
 bilgi ihtiyacını karşılayan tek passage'dır. Lexical kapılar moda göre 4/3/2 içerik-koruyan hard
@@ -61,6 +66,7 @@ Komutlar:
 ```bash
 python3 -m test self-test
 python3 -m test plan --run-id test_v36
+python3 -m test memory-report --run-id test_v36
 
 export OPENROUTER_API_KEY="..."
 export TEST_GENERATOR_MODEL_A="provider-a/model-a"

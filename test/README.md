@@ -1,4 +1,4 @@
-# Turkish Morph Retrieval Test — v3.6.0
+# Turkish Morph Retrieval Test — v3.7.0
 
 Bu dizin Türkçe encoder'ların küçük fakat anlam değiştiren morfolojik farkları ayırt edip
 etmediğini ölçen benchmark'ı üretir ve değerlendirir. Train sistemi [`../train/`](../train/)
@@ -51,6 +51,12 @@ Generalizasyon dağılımı:
 - `%20 template_holdout`
 - `%20 composition_holdout`
 - Yaklaşık `%20` ek `domain_shift` etiketi
+
+Çoklu generator'lar run'a özel SQLite dataset memory üzerinden koordine edilir. Registry atomik
+slot rezervasyonu, kabul edilen morfoloji/semantik metadata'sı ve aggregate coverage tutar. Prompt
+yalnız sayımları ve tekrar edilmemesi gereken lemma/anlatı etiketlerini görür; eski test cümleleri
+memory üzerinden few-shot olarak sızmaz. Tasarım ve import akışı:
+[`DATASET_MEMORY.md`](DATASET_MEMORY.md).
 
 `development` model/ayar seçimi içindir. `sealed_test`, kararlar tamamlandıktan sonra yalnız final
 sonuç için kullanılır; kapalı tutulması gereken şey veri metni değil, model seçerken final gold
@@ -323,6 +329,11 @@ tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyinde
 # API'siz regresyon testi ve plan
 python3 -m test self-test
 python3 -m test plan --run-id test_v36
+python3 -m test memory-report --run-id test_v36
+
+# Mevcut train metadata'sını tekrar önleme hafızasına ekle
+python3 -m test memory-ingest --run-id test_v36 --input TRAIN.json \
+  --source train_current --split train
 
 # İki generator + bağımsız blind judge
 export OPENROUTER_API_KEY="..."

@@ -10,6 +10,8 @@ from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from typing import Any
 
+from .dataset_memory import family_memory_tags, semantic_profile_problems
+
 _TOKEN_RE = re.compile(r"[a-zçğıöşü0-9]+", re.I)
 _META_PATTERNS = ("kaydı bul", "kaydi bul", "arıyorum", "ariyorum", "hangi kayıt", "hangi kayit")
 _ABBREVIATIONS = ("Dr.", "Prof.", "Doç.", "Sn.", "vb.", "vs.", "örn.", "T.C.")
@@ -234,7 +236,7 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
     minimal_word = minimal.get("critical_word", "") if minimal else ""
     strict = bool(slot["strict_minimal_pair"])
     gold_id = positives[0]["id"] if len(positives) == 1 else None
-    return {
+    family = {
         "family_id": family_id,
         "slot_id": slot["slot_id"],
         "target_split": slot["target_split"],
@@ -258,6 +260,7 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
         "strict_minimal_pair": bool(slot["strict_minimal_pair"]),
         "generator_id": slot["generator_id"],
         "semantic_frame_id": raw.get("semantic_frame_id"),
+        "semantic_profile": raw.get("semantic_profile"),
         "template_id": slot["template"]["id"],
         "critical_lemma": raw.get("critical_lemma"),
         "critical_word_query": raw.get("critical_word_query"),
@@ -278,6 +281,8 @@ def normalize_family(raw: dict[str, Any], slot: dict[str, Any]) -> dict[str, Any
         "qrels": {candidate["id"]: candidate["relevance"] for candidate in candidates},
         "source_type": "llm_generated_pending_llm_judge",
     }
+    family["memory_tags"] = family_memory_tags(family)
+    return family
 
 
 def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str, Any]) -> list[str]:
@@ -374,6 +379,11 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
 
     if family.get("semantic_frame_id") != slot["semantic_frame_id"]:
         problems.append("semantic_frame_id SLOT ile uyuşmuyor")
+    # New provider-facing generation schema requires this profile. Historical curated previews
+    # predate dataset memory, so they remain reproducible when the field is absent; if present it
+    # is always validated.
+    if family.get("semantic_profile") is not None:
+        problems.extend(semantic_profile_problems(family.get("semantic_profile")))
     if family.get("template_id") != slot["template"]["id"]:
         problems.append("template_id SLOT ile uyuşmuyor")
     for field in ("family_mode", "query_expression", "query_gold_lexical_band"):
