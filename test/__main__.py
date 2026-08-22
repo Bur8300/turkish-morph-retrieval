@@ -34,7 +34,7 @@ def main() -> int:
     plan.add_argument("--run-id", default="planned_test_v38")
     plan.add_argument("--size", type=int, default=None)
 
-    generation = sub.add_parser("generate", help="üret + QC + iki-aşamalı judge + review kuyruğu")
+    generation = sub.add_parser("generate", help="üret + QC + iki-aşamalı judge; kalmayan slotları refill et")
     generation.add_argument("--run-id", default=None)
     generation.add_argument("--limit", type=int, default=None, help="pilot için plan prefix'i")
     generation.add_argument("--workers", type=int, default=None)
@@ -53,7 +53,7 @@ def main() -> int:
 
     freeze = sub.add_parser(
         "finalize",
-        help="otomatik doğrulanmış 100 dev + 500 sealed testi dondur",
+        help="final human review tamamlanmış 100 dev + 500 sealed testi dondur",
     )
     freeze.add_argument("--run-id", required=True)
 
@@ -84,12 +84,12 @@ def main() -> int:
     memory_ingest.add_argument("--split", default=None)
 
     review_export = sub.add_parser(
-        "review-export", help="bekleyen family'ler için kör insan review manifesti üret"
+        "review-export", help="600 accepted family için freeze öncesi kör insan review manifesti üret"
     )
     review_export.add_argument("--run-id", required=True)
 
     review_apply = sub.add_parser(
-        "review-apply", help="bağımsız insan kararlarını consensus ile uygula"
+        "review-apply", help="final insan kararlarını uygula; red olan slotlar refill için açılır"
     )
     review_apply.add_argument("--run-id", required=True)
     review_apply.add_argument("--input", required=True)

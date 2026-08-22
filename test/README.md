@@ -69,7 +69,7 @@ config + taxonomy
         ↓
 600 dengeli ve sabit kota slotu
         ↓
-iki farklı LLM generator (300 + 300)
+Codex CLI generator (300) + Claude Code CLI generator (300)
         ↓
 strict JSON + deterministic QC
         ↓
@@ -77,21 +77,20 @@ strict JSON + deterministic QC
         ↓
 ayrı model ailesinden feature-aware morphology judge
         ↓
-anlaşmazlık + katmanlı %10 audit → kör insan review
+judge başarısızsa aynı slot için otomatik refill
         ↓
-duplicate/leakage/artefakt kontrolü + otomatik qrels + freeze
+600 kabul edilmiş family → kör insan final review → freeze
 ```
 
-Deterministic QC veya dataset-memory ihlali aynı slotta taze replacement üretir. Judge
-anlaşmazlığı ise otomatik refill üretmez; `needs_review.jsonl` kuyruğuna alınır. İnsan consensus'u
-reddederse slot yeniden açılır. Böylece veri, tek bir judge modelinin tercih ettiği örneklere doğru
-sessizce seçilmez.
+Deterministic QC, dataset-memory ihlali veya iki judge'dan birinin başarısız olması aynı sabit slotta
+taze replacement üretir. İnsan incelemesi üretim döngüsünde değildir: 600 otomatik kabul edilmiş
+family tamamlandıktan sonra, freeze öncesinde yapılır. İnsan redleri ilgili slotu yeniden açar.
 
-İki generator, semantic judge ve morphology judge dört farklı model ailesinden olmalıdır. Opsiyonel
-adjudicator etkinse o da ayrı aile olmalıdır. Legacy train Gemini ile üretildiği için `google/*`
-rollerde varsayılan olarak yasaktır. OpenRouter istekleri structured output, `data_collection=deny`
-ve `zdr=true` kullanır; configured model, gerçek response model/route, request hash ve kullanım
-provenance'a yazılır. `provider_preferences.order + allow_fallbacks=false` ile endpoint pinlenebilir.
+Codex ve Claude generator'ları kayıtlı CLI abonelik oturumlarını kullanır; OpenRouter API key yalnız
+semantic ve morphology judge çağrılarında kullanılır. Dört rol farklı model ailesinden olmalıdır.
+Legacy train Gemini ile üretildiği için `google/*` rollerde varsayılan olarak yasaktır. CLI ve
+OpenRouter için requested/actual model, request hash ve kullanım provenance'a yazılır. OpenRouter
+judge'larında `data_collection=deny`, `zdr=true` ve structured output zorunludur.
 
 Provider-facing üretim JSON'u bilerek küçüktür. LLM yalnız query, ortak context, kritik
 lemma/query sözcüğü ve her aday için `candidate_slot + critical_sentence + critical_word`
@@ -281,7 +280,8 @@ Family düzeyi:
 - Özellik-kör semantic judge ile benzersiz positive, doğallık ve iç tutarlılık
 - Ayrı feature-aware morphology judge ile ek işlevi, kapsam ve allomorf kontrolü
 - İki counterbalanced candidate sırasında karar kararlılığı, confidence ve abstain
-- Tüm judge anlaşmazlıkları + split/holdout katmanlı `%10` insan audit'i
+- Judge başarısızlığında sabit slotta otomatik refill
+- 600 accepted family tamamlandıktan sonra freeze öncesi kör insan review
 - Her negatif için query'yi doğrulama/paraphrase etme riski ve her aday için iç tutarlılık
 
 Corpus/freeze düzeyi:
@@ -303,7 +303,7 @@ gold değiştirmez.
 
 Opsiyonel güçlü adjudicator `config.json > generation > judges > adjudicator` altında
 `enabled=true` ve ayrı bir model ailesi verilerek açılır. Kararı otomatik gold değiştirmez; tavsiyesi
-insan manifestine eklenir. `review-export` semantic ve morphology görünümlerini ayırır;
+final insan manifestine eklenir. `review-export` semantic ve morphology görünümlerini ayırır;
 `review-apply` aynı reviewer'ın tekrarını saymaz ve gerekli bağımsız reviewer çoğunluğu oluşmadan
 slotu accept/reject durumuna geçirmez.
 
@@ -312,7 +312,7 @@ slotu accept/reject durumuna geçirmez.
 Kontrollü 11-aday metrikleri:
 
 - `Recall@1/3`, `MRR@10`, `nDCG@10`
-- `hard_only_recall@1/3`, `hard_only_mrr@10`, `hard_only_ndcg@10`
+- `hard_only_mrr@10`, `hard_only_ndcg@10`
 - `pairwise_hard_accuracy`
 - `pairwise_morph_hard_accuracy`
 - `pairwise_semantic_hard_accuracy`
@@ -348,15 +348,17 @@ python3 -m test memory-report --run-id test_v38
 python3 -m test memory-ingest --run-id test_v38 --input TRAIN.json \
   --source train_current --split train
 
-# İki generator + semantic/morphology cascade judge
+# 300 Codex CLI + 300 Claude Code CLI; judge'lar OpenRouter
+codex login status
+claude  # ilk açılışta /login ile Claude abonelik hesabını seç
 export OPENROUTER_API_KEY="..."
-export TEST_GENERATOR_MODEL_A="provider-a/model-a"
-export TEST_GENERATOR_MODEL_B="provider-b/model-b"
+export TEST_CODEX_GENERATOR_MODEL="gpt-5.6-sol"
+export TEST_CLAUDE_GENERATOR_MODEL="claude-full-model-id"
 export TEST_SEMANTIC_JUDGE_MODEL="qwen/model"
 export TEST_MORPHOLOGY_JUDGE_MODEL="mistralai/model"
 python3 -m test generate --run-id test_v38
 
-# Judge conflict'leri ve stratified %10 audit için kör insan review
+# 600 accepted family tamamlanınca freeze öncesi kör insan review
 python3 -m test review-export --run-id test_v38
 python3 -m test review-apply --run-id test_v38 --input decisions.jsonl
 python3 -m test judge-report --run-id test_v38
@@ -397,8 +399,9 @@ Preview provenance her family'nin `provenance` alanında ve set manifestinde sak
 | `taxonomy.py` | Fenomen ve hard-negative kataloğu |
 | `planner.py` | 600 dengeli slot ve iki-generator için 300/300 atama |
 | `schema.py`, `prompts.py` | Strict üretim/judge sözleşmesi |
-| `pipeline.py` | Generate → QC → semantic/morph judges → review queue → checkpoint |
-| `review.py` | Kör review manifesti, reviewer consensus'u ve slot reopen/accept |
+| `providers.py` | Codex/Claude CLI generator ve OpenRouter judge adapter'ları |
+| `pipeline.py` | Generate → QC → semantic/morph judges → refill → checkpoint |
+| `review.py` | 600 kabulden sonra kör final-review manifesti ve slot reopen/accept |
 | `judge_report.py` | Order stability, escalation ve insan-kalibrasyon raporu |
 | `validators.py` | Family/corpus/duplicate/leakage kontrolleri ve qrels |
 | `selection.py` | Tam 100/500 dağılım ve generator kotalarını doğrulama |

@@ -25,7 +25,8 @@ from .evaluation import evaluate_run, validate_binary_qrels
 from .morphology import _expected_feature_check
 from .judge_report import judge_calibration_report
 from .planner import build_plan, make_slot, plan_statistics
-from .pipeline import _process_slot, _resume_refill_rounds, human_audit_slots
+from .pipeline import _process_slot, _resume_refill_rounds
+from .providers import ClaudeCliProvider
 from .review import apply_human_reviews, export_human_review
 from .selection import select_balanced
 from .taxonomy import FEATURES, FEATURE_BY_KEY, hard_profile
@@ -151,12 +152,9 @@ def run() -> list[str]:
     if build_plan(cfg) != slots_600:
         failures.append("varsayılan plan doğrudan 600 kota slotu üretmiyor")
     stats = plan_statistics(slots_600)
-    audit_ids = human_audit_slots(slots_600, cfg)
-    audit_splits = Counter(
-        slot["target_split"] for slot in slots_600 if slot["slot_id"] in audit_ids
-    )
-    if len(audit_ids) != 60 or audit_splits != {"development": 10, "sealed_test": 50}:
-        failures.append(f"stratified %10 human audit örneklemi yanlış: {audit_splits}")
+    split_counts = Counter(slot["target_split"] for slot in slots_600)
+    if split_counts != {"development": 100, "sealed_test": 500}:
+        failures.append(f"600 slot split kotası yanlış: {split_counts}")
     planned_features = Counter(slot["feature"]["key"] for slot in slots_600)
     if len(FEATURES) != 71 or set(planned_features) != {feature.key for feature in FEATURES}:
         failures.append(
@@ -530,8 +528,8 @@ def run() -> list[str]:
         {"semantic": SemanticJudge(rejected_calls=1), "morphology": MorphologyJudge()},
         start_refill_round=4,
     )
-    if status != "needs_review" or generator.calls != 1:
-        failures.append("judge anlaşmazlığı refill yerine needs_review kuyruğuna gitmedi")
+    if status != "accepted" or generator.calls != 2 or refilled["provenance"]["refill_round"] != 5:
+        failures.append("judge reddinden sonra taze refill çalışmadı")
 
     collision_items = [
         {
@@ -573,6 +571,7 @@ def run() -> list[str]:
 
     failures.extend(_check_judge_blindness(cfg))
     failures.extend(_check_model_family_gates())
+    failures.extend(_check_claude_cli_adapter())
     failures.extend(_check_refill_round_nonce(cfg))
     failures.extend(_check_human_review_roundtrip(cfg, slot, family))
     return failures
@@ -585,25 +584,13 @@ def _check_human_review_roundtrip(cfg, slot, family) -> list[str]:
         paths = SimpleNamespace(
             root=root,
             accepted=root / "accepted.jsonl",
-            needs_review=root / "needs_review.jsonl",
             rejected=root / "rejected.jsonl",
             memory=root / "dataset_memory.sqlite3",
         )
         memory = DatasetMemory(paths.memory)
         memory.sync_plan([slot])
-        pending = {
-            "slot_id": slot["slot_id"],
-            "family_id": family["family_id"],
-            "review_kind": "judge_conflict",
-            "review_reasons": ["fixture disagreement"],
-            "reviewers_required": 2,
-            "adjudicator": None,
-            "family": family,
-        }
-        paths.needs_review.write_text(
-            json.dumps(pending, ensure_ascii=False) + "\n", encoding="utf-8"
-        )
-        memory.record_outcome(slot["slot_id"], "needs_review", pending, actor="selftest")
+        memory.record_outcome(slot["slot_id"], "accepted", family, actor="selftest")
+        paths.accepted.write_text(json.dumps(family, ensure_ascii=False) + "\n", encoding="utf-8")
         decisions = root / "incoming.jsonl"
         decision_rows = [
             {
@@ -617,7 +604,9 @@ def _check_human_review_roundtrip(cfg, slot, family) -> list[str]:
             "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in decision_rows),
             encoding="utf-8",
         )
-        with patch("test.review.paths_for", return_value=paths):
+        with patch("test.review.paths_for", return_value=paths), \
+             patch("test.review.current_accepted", return_value=[family]), \
+             patch("test.review.select_balanced", return_value=[family]):
             exported = export_human_review("fixture_review")
             manifest = json.loads(Path(exported["manifest"]).read_text(encoding="utf-8"))
             if any("target_feature" in row for row in manifest["semantic_items"]):
@@ -717,7 +706,9 @@ def _check_model_family_gates() -> list[str]:
         ("google-vertex/gemini-2.5-pro", "google"),
         ("gemini-2.5-pro", "google"),
         ("openai/gpt-5", "openai"),
+        ("gpt-5.6-sol", "openai"),
         ("anthropic/claude-opus-4", "anthropic"),
+        ("claude-sonnet-test", "anthropic"),
     ):
         if model_family(model_id) != expected:
             failures.append(f"model_family({model_id}) -> {model_family(model_id)}, beklenen {expected}")
@@ -752,6 +743,46 @@ def _check_model_family_gates() -> list[str]:
         if _rejects(*models) is not want_reject:
             verb = "reddetmedi" if want_reject else "gereksiz yere reddetti"
             failures.append(f"model aile kapısı {label} durumunu {verb}")
+    return failures
+
+
+def _check_claude_cli_adapter() -> list[str]:
+    failures = []
+    with TemporaryDirectory() as temporary:
+        captured = {}
+
+        def fake_run(command, **kwargs):
+            captured["command"] = command
+            return SimpleNamespace(
+                returncode=0, stderr="", stdout=json.dumps({
+                    "type": "result", "subtype": "success", "is_error": False,
+                    "structured_output": {"ok": True},
+                    "modelUsage": {"claude-fixture-model": {"inputTokens": 10}},
+                    "num_turns": 1,
+                }),
+            )
+
+        provider = ClaudeCliProvider(
+            {
+                "provider": "claude_cli", "model": "claude-fixture-model",
+                "executable": "/mock/claude", "workdir": temporary,
+            },
+            Path(temporary) / "cache", {"selftest": True},
+        )
+        schema = {
+            "name": "fixture", "schema": {
+                "type": "object", "properties": {"ok": {"type": "boolean"}},
+                "required": ["ok"], "additionalProperties": False,
+            },
+        }
+        with patch("test.providers.subprocess.run", side_effect=fake_run):
+            response = provider.call_json("system", "prompt", schema, "selftest")
+        command = captured.get("command", [])
+        if response.data != {"ok": True} or response.actual_model != "claude-fixture-model":
+            failures.append("Claude CLI structured output/provenance ayrıştırması yanlış")
+        for flag in ("--model", "--json-schema", "--tools", "--no-session-persistence"):
+            if flag not in command:
+                failures.append(f"Claude CLI güvenli structured-output flag'i eksik: {flag}")
     return failures
 
 

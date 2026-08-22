@@ -49,6 +49,9 @@ def _check_distribution(name: str, values: dict[str, float]) -> None:
 # two routes to the same vendor count as two "distinct" families. Both checks read this function,
 # so canonicalising here closes both holes at once.
 _FAMILY_ALIASES = {
+    "gpt": "openai",
+    "codex": "openai",
+    "claude": "anthropic",
     "google-vertex": "google",
     "vertex": "google",
     "gemini": "google",
@@ -58,7 +61,7 @@ _FAMILY_ALIASES = {
 
 
 def model_family(model_id: str) -> str:
-    """OpenRouter model IDs use `provider/model`; provider is our family boundary."""
+    """Map OpenRouter and CLI model IDs to a vendor-family boundary."""
     prefix = (model_id.split("/", 1)[0] if "/" in model_id else model_id).strip().lower()
     if prefix in _FAMILY_ALIASES:
         return _FAMILY_ALIASES[prefix]
@@ -125,11 +128,8 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
     if len(permutations) != 2 or len(set(permutations)) != 2:
         raise ConfigError("Semantic judge tam iki farklı candidate permütasyonu kullanmalı")
     human = generation.get("human_review", {})
-    if not 0 <= float(human.get("audit_rate", -1)) <= 1:
-        raise ConfigError("human_review.audit_rate 0–1 arasında olmalı")
-    for name in ("audit_reviewers_required", "conflict_reviewers_required"):
-        if int(human.get(name, 0)) < 1:
-            raise ConfigError(f"human_review.{name} en az 1 olmalı")
+    if int(human.get("reviewers_required", 0)) < 1:
+        raise ConfigError("human_review.reviewers_required en az 1 olmalı")
 
     def _judge_specs() -> list[tuple[str, dict[str, Any]]]:
         rows = [("semantic_judge", judges["semantic"]), ("morphology_judge", judges["morphology"])]
@@ -146,13 +146,19 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
         for label, spec in role_specs:
             if not spec.get("model") or str(spec["model"]).startswith("${"):
                 raise ConfigError(f"{label} model kimliği ayarlanmamış")
-            if not os.getenv(spec["api_key_env"]):
-                raise ConfigError(f"{label} için {spec['api_key_env']} tanımlı değil")
-            preferences = spec.get("provider_preferences", {})
-            if preferences.get("require_parameters") is not True:
-                raise ConfigError(f"{label} structured-output routing'i zorunlu tutmalı")
-            if preferences.get("data_collection") != "deny" or preferences.get("zdr") is not True:
-                raise ConfigError(f"{label} test verisi için data_collection=deny ve zdr=true kullanmalı")
+            provider = spec.get("provider")
+            if provider == "openrouter":
+                if not os.getenv(spec["api_key_env"]):
+                    raise ConfigError(f"{label} için {spec['api_key_env']} tanımlı değil")
+                preferences = spec.get("provider_preferences", {})
+                if preferences.get("require_parameters") is not True:
+                    raise ConfigError(f"{label} structured-output routing'i zorunlu tutmalı")
+                if preferences.get("data_collection") != "deny" or preferences.get("zdr") is not True:
+                    raise ConfigError(
+                        f"{label} test verisi için data_collection=deny ve zdr=true kullanmalı"
+                    )
+            elif provider not in {"codex_cli", "claude_cli"}:
+                raise ConfigError(f"{label} desteklenmeyen provider kullanıyor: {provider}")
         if generation.get("require_distinct_model_families", True):
             families = [model_family(spec["model"]) for _, spec in role_specs]
             if len(families) != len(set(families)):

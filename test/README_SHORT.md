@@ -7,7 +7,7 @@
 - Family modları: 150 strict minimal + 270 controlled diverse + 180 natural retrieval.
 - Query anlatımı: 300 morph-explicit + 300 semantic-paraphrase.
 - Query–gold lexical bandı: 180 high + 240 medium + 180 low.
-- İki generator: 300 + 300; ayrı ailelerden semantic-kör + feature-aware morphology judge.
+- Generator'lar: 300 Codex CLI + 300 Claude Code CLI; API key yalnız iki OpenRouter judge içindir.
 - Query: `%75` 1 cümle, `%25` 2 cümle.
 - Pasaj: `%30/%30/%30/%10` oranında 1/2/3/4 cümle.
 - 71 fenomen, 6 macro grup; morph-hard ve semantic-hard ayrı raporlanır.
@@ -17,8 +17,8 @@
 Tek akış:
 
 ```text
-600 dengeli slot → iki LLM generator → deterministic QC → semantic judge (iki sıra)
-→ morphology judge → anlaşmazlık/audit için insan review → duplicate/leakage → freeze
+600 dengeli slot → 300 Codex + 300 Claude → deterministic QC → semantic judge (iki sıra)
+→ morphology judge → başarısız slotu refill → 600 accepted → insan final review → freeze
 ```
 
 Bir family kontrolden kalırsa fenomeni, split'i, generator'ı ve uzunluk kotası değişmez; yalnız
@@ -40,9 +40,9 @@ LLM küçük bir JSON üretir: query, ortak context, kritik lemma/sözcük ve ad
 edit script ve kimlikler Python tarafından eklenir.
 
 Semantic judge hedef özelliği görmeden tek gold, destek, tutarlılık ve doğallığı kontrol eder.
-Morphology judge hedef özelliği ayrı değerlendirir. Judge anlaşmazlığı refill üretmez;
-`needs_review.jsonl` kuyruğuna gider. Tüm anlaşmazlıklar ve split/holdout katmanlı `%10` örnek
-kör insan review'u tamamlanmadan freeze edilemez.
+Morphology judge hedef özelliği ayrı değerlendirir. İki judge'dan biri reddederse aynı slot taze
+adayla refill edilir. Human review üretim sırasında değil, 600 kabul edilmiş family tamamlandıktan
+sonra freeze öncesinde uygulanır; insanın reddettiği slotlar yeniden üretilir.
 
 Pilot provenance: `v36` Codex CLI / `gpt-5.6-sol`; `v37` deneysel Google /
 `gemini-2.5-flash` üretimidir. İkisinde de independent judge çalışmadığından paper sonucu olarak
@@ -71,15 +71,15 @@ python3 -m test plan --run-id test_v38
 python3 -m test memory-report --run-id test_v38
 
 export OPENROUTER_API_KEY="..."
-export TEST_GENERATOR_MODEL_A="provider-a/model-a"
-export TEST_GENERATOR_MODEL_B="provider-b/model-b"
+export TEST_CODEX_GENERATOR_MODEL="gpt-5.6-sol"
+export TEST_CLAUDE_GENERATOR_MODEL="claude-full-model-id"
 export TEST_SEMANTIC_JUDGE_MODEL="qwen/model"
 export TEST_MORPHOLOGY_JUDGE_MODEL="mistralai/model"
 python3 -m test generate --run-id test_v38
-python3 -m test review-export --run-id test_v38
+python3 -m test review-export --run-id test_v38  # 600 accepted family hazır olunca
 python3 -m test review-apply --run-id test_v38 --input decisions.jsonl
 python3 -m test judge-report --run-id test_v38
-python3 -m test generate --run-id test_v38  # insanın reddettiği slotları refill eder
+python3 -m test generate --run-id test_v38  # yalnız insanın reddettiği slotları refill eder
 python3 -m test finalize --run-id test_v38
 ```
 

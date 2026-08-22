@@ -1,15 +1,14 @@
-"""Generation pipeline: plan -> generate -> QC -> cascade judges -> human-review gate."""
+"""Generation pipeline: plan -> generate -> QC -> cascade judges -> accepted families."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import os
-import random
 import subprocess
 import threading
 import time
-from collections import Counter, defaultdict
+from collections import Counter
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -51,7 +50,6 @@ class RunPaths:
     plan: Path
     manifest: Path
     accepted: Path
-    needs_review: Path
     rejected: Path
     failures: Path
     report: Path
@@ -66,7 +64,6 @@ def paths_for(run_id: str) -> RunPaths:
         plan=root / "plan.json",
         manifest=root / "run_manifest.json",
         accepted=root / "accepted.jsonl",
-        needs_review=root / "needs_review.jsonl",
         rejected=root / "rejected.jsonl",
         failures=root / "failures.jsonl",
         report=root / "generation_report.json",
@@ -152,7 +149,11 @@ def initialise_run(run_id: str, cfg: dict[str, Any], slots: list[dict[str, Any]]
         "plan_size": len(slots),
         "plan_statistics": plan_statistics(slots),
         "generators": [
-            {"id": spec["id"], "provider": spec["provider"], "model": spec["model"]}
+            {
+                "id": spec["id"], "provider": spec["provider"], "model": spec["model"],
+                "reasoning_effort": spec.get("reasoning_effort"),
+                "authentication_mode": spec.get("authentication_mode"),
+            }
             for spec in cfg["generation"]["generators"]
         ],
         "judges": {
@@ -194,22 +195,6 @@ def _request_provenance(response) -> dict[str, Any]:
         "actual_model": response.actual_model,
         "route_provider": response.route_provider,
     }
-
-
-def human_audit_slots(slots: list[dict[str, Any]], cfg: dict[str, Any]) -> set[str]:
-    """Select a deterministic stratified audit sample by split and holdout bucket."""
-    rate = float(cfg["generation"]["human_review"]["audit_rate"])
-    base_seed = int(cfg["generation"]["human_review"].get("seed", cfg.get("seed", 0)))
-    groups: dict[tuple[str, str], list[str]] = defaultdict(list)
-    for slot in slots:
-        groups[(slot["target_split"], slot["generalization_bucket"])].append(slot["slot_id"])
-    selected: set[str] = set()
-    for stratum, slot_ids in sorted(groups.items()):
-        count = round(len(slot_ids) * rate)
-        material = f"{base_seed}|{stratum[0]}|{stratum[1]}"
-        seed = int(hashlib.sha256(material.encode()).hexdigest()[:16], 16)
-        selected.update(random.Random(seed).sample(sorted(slot_ids), count))
-    return selected
 
 
 def _process_slot(
@@ -343,7 +328,7 @@ def _process_slot(
         family["provenance"] = {
             "generator_id": slot["generator_id"],
             "refill_round": refill_round,
-            "rejected_replacements_before_review": refill_history,
+            "rejected_replacements": refill_history,
             "generator_attempts": generation_provenance,
             "judges": judging_provenance,
             "prompt_version": PROMPT_VERSION,
@@ -355,35 +340,17 @@ def _process_slot(
         family["qc"]["quality_score"] = round(quality_score(family), 5)
         family["memory_tags"] = family_memory_tags(family)
 
-        review_reasons = list(judge_problems)
-        review_kind = "judge_conflict"
-        if not review_reasons and slot.get("human_review_audit"):
-            review_reasons = ["deterministic stratified human audit sample"]
-            review_kind = "stratified_audit"
-        if review_reasons:
-            reviewers_key = (
-                "audit_reviewers_required"
-                if review_kind == "stratified_audit"
-                else "conflict_reviewers_required"
-            )
-            family["source_type"] = "llm_generated_pending_human_review"
-            record = {
-                "slot_id": slot["slot_id"],
-                "family_id": family["family_id"],
-                "review_kind": review_kind,
-                "review_reasons": review_reasons,
-                "reviewers_required": int(
-                    cfg["generation"]["human_review"][reviewers_key]
-                ),
+        if judge_problems:
+            # A judge failure is a generation failure, not a queue for people during production.
+            # The fixed slot is refilled until it passes the automatic cascade.
+            refill_history.append({
+                "refill_round": refill_round,
+                "stage": "cascade_judges",
+                "problems": judge_problems,
                 "adjudicator": adjudicator_record,
-                "family": family,
-            }
-            if stage_callback:
-                stage_callback(
-                    "needs_human_review",
-                    {"refill_round": refill_round, "review_kind": review_kind},
-                )
-            return "needs_review", record
+            })
+            last_stage, last_problems, last_family = "cascade_judges", judge_problems, family
+            continue
 
         family["source_type"] = "llm_generated_cascade_judged"
         return "accepted", family
@@ -408,38 +375,50 @@ def _resume_refill_rounds(rejected: list[dict[str, Any]]) -> dict[str, int]:
     return rounds
 
 
+def current_accepted(run_id: str) -> list[dict[str, Any]]:
+    """Return the latest accepted record for slots whose current memory state is accepted."""
+    paths = paths_for(run_id)
+    memory = DatasetMemory(paths.memory)
+    latest = {}
+    for row in read_jsonl(paths.accepted):
+        if row.get("slot_id"):
+            latest[row["slot_id"]] = row
+    return [
+        latest[slot_id] for slot_id in sorted(latest)
+        if memory.slot_status(slot_id) == "accepted"
+    ]
+
+
 def generate(run_id: str, config_path: str | None = None, limit: int | None = None, workers: int | None = None) -> dict[str, Any]:
     cfg = load_config(config_path, runtime=True)
     all_slots = build_plan(cfg)
     slots = all_slots[:limit] if limit is not None else all_slots
     paths = initialise_run(run_id, cfg, all_slots)
     memory = DatasetMemory(paths.memory)
-    accepted_before = read_jsonl(paths.accepted)
-    needs_review_before = read_jsonl(paths.needs_review)
+    accepted_before = current_accepted(run_id)
     rejected_before = read_jsonl(paths.rejected)
     completed = {row.get("slot_id") for row in accepted_before if row.get("slot_id")}
     refill_rounds = _resume_refill_rounds(rejected_before)
     for item in accepted_before:
         if item.get("slot_id"):
             memory.record_outcome(item["slot_id"], "accepted", item, actor="jsonl_reconcile")
-    for item in needs_review_before:
-        slot_id = item.get("slot_id")
-        if slot_id and memory.slot_status(slot_id) not in {"accepted", "rejected"}:
-            memory.record_outcome(slot_id, "needs_review", item, actor="jsonl_reconcile")
-    review_pending = {
-        slot["slot_id"] for slot in slots if memory.slot_status(slot["slot_id"]) == "needs_review"
-    }
-    audit_slot_ids = human_audit_slots(all_slots, cfg)
     pending = [
-        {**slot, "human_review_audit": slot["slot_id"] in audit_slot_ids}
+        slot
         for slot in slots
-        if slot["slot_id"] not in completed and slot["slot_id"] not in review_pending
+        if slot["slot_id"] not in completed
     ]
     metadata = {"dataset_version": cfg["version"], "prompt_version": PROMPT_VERSION}
+    cli_workdir = paths.root / "cli_workdir"
+    cli_workdir.mkdir(parents=True, exist_ok=True)
     generators = {
-        spec["id"]: make_provider(spec, paths.cache / spec["id"], metadata)
+        spec["id"]: make_provider(
+            {**spec, "workdir": str(cli_workdir / spec["id"])},
+            paths.cache / spec["id"], metadata,
+        )
         for spec in cfg["generation"]["generators"]
     }
+    for spec in cfg["generation"]["generators"]:
+        (cli_workdir / spec["id"]).mkdir(parents=True, exist_ok=True)
     judge_specs = cfg["generation"]["judges"]
     judges = {
         "semantic": make_provider(judge_specs["semantic"], paths.cache / "semantic_judge", metadata),
@@ -507,7 +486,6 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
                     errors.append(record)
                 target_path = {
                     "accepted": paths.accepted,
-                    "needs_review": paths.needs_review,
                     "rejected": paths.rejected,
                     "failed": paths.failures,
                 }[status]
@@ -517,7 +495,7 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
             fill_workers()
 
     accepted = read_jsonl(paths.accepted)
-    needs_review = read_jsonl(paths.needs_review)
+    accepted = current_accepted(run_id)
     rejected = read_jsonl(paths.rejected)
     failures = read_jsonl(paths.failures)
     accepted_slot_ids = {item.get("slot_id") for item in accepted}
@@ -529,9 +507,6 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
         "reservation_skips_this_call": reservation_skips,
         "outcomes_this_call": dict(counts),
         "accepted_total": len(accepted),
-        "needs_review_total": sum(
-            memory.slot_status(slot["slot_id"]) == "needs_review" for slot in slots
-        ),
         "target_total": target_count,
         "unfilled_slots": sum(slot["slot_id"] not in accepted_slot_ids for slot in slots),
         "complete": all(slot["slot_id"] in accepted_slot_ids for slot in slots),
@@ -548,12 +523,6 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
         "accepted_by_generator": dict(Counter(item["generator_id"] for item in accepted)),
         "accepted_strict_minimal_pairs": sum(bool(item["strict_minimal_pair"]) for item in accepted),
         "rejection_stages": dict(Counter(item.get("stage", "unknown") for item in rejected)),
-        "human_review_reasons": dict(Counter(
-            reason
-            for item in needs_review
-            if memory.slot_status(item.get("slot_id", "")) == "needs_review"
-            for reason in item.get("review_reasons", [])
-        )),
         "uncaught_errors_this_call": errors,
         "dataset_memory": memory.report(),
     }

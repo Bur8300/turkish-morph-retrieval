@@ -1,4 +1,4 @@
-"""Blind human-review export and consensus application for judge disagreements/audits."""
+"""Blind final human-review export and application after automatic generation completes."""
 
 from __future__ import annotations
 
@@ -12,7 +12,8 @@ from typing import Any
 
 from .config import load_config
 from .dataset_memory import DatasetMemory, family_memory_tags
-from .pipeline import paths_for, read_jsonl
+from .pipeline import current_accepted, paths_for, read_jsonl
+from .selection import select_balanced
 from .prompts import _blind_candidates
 
 
@@ -31,14 +32,16 @@ def _append_jsonl(path: Path, value: dict[str, Any]) -> None:
 
 def unresolved_reviews(run_id: str) -> list[dict[str, Any]]:
     paths = paths_for(run_id)
-    memory = DatasetMemory(paths.memory)
-    latest = {}
-    for record in read_jsonl(paths.needs_review):
-        if record.get("slot_id"):
-            latest[record["slot_id"]] = record
+    cfg = load_config(runtime=False)
+    selected = select_balanced(
+        current_accepted(run_id), cfg,
+        {"development": cfg["targets"]["development"], "sealed_test": cfg["targets"]["sealed_test"]},
+    )
     return [
-        latest[slot_id] for slot_id in sorted(latest)
-        if memory.slot_status(slot_id) == "needs_review"
+        {"slot_id": family["slot_id"], "family": family,
+         "review_kind": "final_freeze", "reviewers_required": cfg["generation"]["human_review"]["reviewers_required"]}
+        for family in selected
+        if family.get("qc", {}).get("human_review", {}).get("status") != "pass"
     ]
 
 
@@ -151,7 +154,6 @@ def apply_human_reviews(
         if row.get("slot_id") in pending:
             grouped[row["slot_id"]].append(row)
 
-    accepted_ids = {row.get("slot_id") for row in read_jsonl(paths.accepted)}
     resolved = Counter()
     unresolved = []
     for slot_id, record in pending.items():
@@ -190,8 +192,8 @@ def apply_human_reviews(
             }
             accepted["source_type"] = "llm_generated_cascade_and_human_verified"
             accepted["memory_tags"] = family_memory_tags(accepted)
-            if slot_id not in accepted_ids:
-                _append_jsonl(paths.accepted, accepted)
+            # Keep an append-only history; current_accepted() resolves the latest record per slot.
+            _append_jsonl(paths.accepted, accepted)
             memory.record_outcome(slot_id, "accepted", accepted, actor="human_review_consensus")
             resolved["accepted"] += 1
         else:

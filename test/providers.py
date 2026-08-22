@@ -174,11 +174,7 @@ class OpenRouterProvider:
 
 
 class CodexCliProvider:
-    """Structured-output calls through the locally authenticated Codex CLI.
-
-    This provider is intended for preview data only. It uses the user's ChatGPT/Codex login,
-    not an API key, and therefore cannot serve as an independent judge for its own generations.
-    """
+    """Structured generation through the locally authenticated Codex CLI."""
 
     def __init__(self, spec: dict[str, Any], cache_dir: Path, run_metadata: dict[str, Any]):
         self.spec = dict(spec)
@@ -196,6 +192,7 @@ class CodexCliProvider:
         identity = {
             "provider": self.provider,
             "model": self.model,
+            "authentication_mode": self.spec.get("authentication_mode", "saved_cli_login"),
             "reasoning_effort": self.spec.get("reasoning_effort", "medium"),
             "purpose": purpose,
             "system": system,
@@ -283,10 +280,134 @@ class CodexCliProvider:
         )
 
 
+class ClaudeCliProvider:
+    """Structured generation through Claude Code's authenticated non-interactive mode."""
+
+    def __init__(self, spec: dict[str, Any], cache_dir: Path, run_metadata: dict[str, Any]):
+        self.spec = dict(spec)
+        self.model = self.spec["model"]
+        self.provider = "claude_cli"
+        self.cache_dir = cache_dir / self.provider
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.run_metadata = dict(run_metadata)
+        self._write_lock = threading.Lock()
+        self.executable = self.spec.get("executable") or shutil.which("claude")
+        if not self.executable:
+            raise ProviderError(
+                "Claude Code CLI bulunamadı; kurulumdan sonra `claude login` ile giriş yap"
+            )
+
+    def _identity(self, system: str, prompt: str, schema: dict, purpose: str) -> tuple[str, dict]:
+        identity = {
+            "provider": self.provider,
+            "model": self.model,
+            "authentication_mode": self.spec.get("authentication_mode", "saved_cli_login"),
+            "reasoning_effort": self.spec.get("reasoning_effort", "medium"),
+            "purpose": purpose,
+            "system": system,
+            "prompt": prompt,
+            "schema": schema,
+            "pipeline": self.run_metadata,
+        }
+        canonical = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest(), identity
+
+    def call_json(self, system: str, prompt: str, schema: dict, purpose: str) -> ProviderResponse:
+        request_hash, identity = self._identity(system, prompt, schema, purpose)
+        cache_path = self.cache_dir / f"{request_hash}.json"
+        if cache_path.exists():
+            cached = json.loads(cache_path.read_text(encoding="utf-8"))
+            return ProviderResponse(
+                cached["data"], cached.get("usage", {}), True, request_hash,
+                self.model, self.provider, cached.get("response_model", self.model),
+                "claude_cli",
+            )
+
+        output_schema = schema.get("schema", schema)
+        command = [
+            str(self.executable), "-p",
+            "--model", str(self.model),
+            "--effort", str(self.spec.get("reasoning_effort", "medium")),
+            "--output-format", "json",
+            "--json-schema", json.dumps(output_schema, ensure_ascii=False, separators=(",", ":")),
+            "--max-turns", "1",
+            "--tools", "",
+            "--bare",
+            "--no-session-persistence",
+            "--permission-mode", "plan",
+            "--system-prompt", system.strip(),
+            prompt.strip() + "\n\nReturn only the JSON value required by the schema.",
+        ]
+        started = time.monotonic()
+        try:
+            process = subprocess.run(
+                command,
+                text=True,
+                capture_output=True,
+                cwd=str(Path(self.spec.get("workdir", Path.cwd())).resolve()),
+                timeout=float(self.spec.get("timeout_seconds", 1800)),
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise ProviderError(f"Claude Code CLI zaman aşımı: {exc}") from exc
+        if process.returncode != 0:
+            detail = (process.stderr or process.stdout)[-4000:]
+            raise ProviderError(
+                f"Claude Code CLI başarısız (exit={process.returncode}): {detail}"
+            )
+        try:
+            envelope = json.loads(process.stdout)
+        except json.JSONDecodeError as exc:
+            raise ProviderError(f"Claude Code CLI JSON envelope döndürmedi: {exc}") from exc
+        if envelope.get("is_error") or envelope.get("subtype") not in {None, "success"}:
+            raise ProviderError(
+                f"Claude Code structured output başarısız: {envelope.get('subtype', 'unknown')}"
+            )
+        structured = envelope.get("structured_output")
+        if isinstance(structured, dict):
+            data = structured
+        else:
+            data = _extract_json(envelope.get("result", ""))
+
+        model_usage = envelope.get("modelUsage") or envelope.get("model_usage") or {}
+        actual_models = sorted(model_usage) if isinstance(model_usage, dict) else []
+        if len(actual_models) > 1:
+            raise ProviderError(
+                "Claude Code birden fazla model kullandı; provenance için fallback kapatılmalı: "
+                + ", ".join(actual_models)
+            )
+        actual_model = actual_models[0] if actual_models else self.model
+        usage = {
+            key: envelope[key]
+            for key in ("total_cost_usd", "duration_ms", "duration_api_ms", "num_turns", "usage")
+            if key in envelope
+        }
+        usage["wall_seconds"] = round(time.monotonic() - started, 3)
+        if model_usage:
+            usage["model_usage"] = model_usage
+        record = {
+            "identity": identity,
+            "data": data,
+            "usage": usage,
+            "response_model": actual_model,
+            "created_at_unix": int(time.time()),
+        }
+        tmp = cache_path.with_suffix(f".{threading.get_ident()}.tmp")
+        with self._write_lock:
+            tmp.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+            tmp.replace(cache_path)
+        return ProviderResponse(
+            data, usage, False, request_hash, self.model, self.provider,
+            actual_model, "claude_cli",
+        )
+
+
 def make_provider(spec: dict[str, Any], cache_dir: Path, run_metadata: dict[str, Any]):
     provider = spec.get("provider")
     if provider == "openrouter":
         return OpenRouterProvider(spec, cache_dir, run_metadata)
     if provider == "codex_cli":
         return CodexCliProvider(spec, cache_dir, run_metadata)
+    if provider == "claude_cli":
+        return ClaudeCliProvider(spec, cache_dir, run_metadata)
     raise ProviderError(f"Desteklenmeyen test provider'ı: {provider}")

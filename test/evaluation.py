@@ -208,8 +208,6 @@ def score_encoder(
 
         row.update({
             "hard_rank": hard_rank,
-            "hard_only_recall@1": float(hard_rank <= 1),
-            "hard_only_recall@3": float(hard_rank <= 3),
             "hard_only_mrr@10": 1.0 / hard_rank if hard_rank <= 10 else 0.0,
             "hard_only_ndcg@10": 1.0 / math.log2(hard_rank + 1) if hard_rank <= 10 else 0.0,
             "pairwise_hard_accuracy": (
@@ -263,7 +261,7 @@ def score_encoder(
             ),
         })
     for metric in (
-        "hard_only_recall@1", "hard_only_recall@3", "hard_only_mrr@10", "hard_only_ndcg@10",
+        "hard_only_mrr@10", "hard_only_ndcg@10",
         "pairwise_hard_accuracy", "pairwise_easy_accuracy", "pairwise_all_accuracy",
         "pairwise_morph_hard_accuracy", "pairwise_semantic_hard_accuracy",
         "morph_hard_family_consistency", "semantic_hard_family_consistency",

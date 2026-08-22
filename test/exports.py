@@ -12,9 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import load_config
-from .dataset_memory import DatasetMemory
-from .pipeline import human_audit_slots, paths_for, read_jsonl
-from .planner import build_plan
+from .pipeline import current_accepted, paths_for
 from .selection import select_balanced, selection_statistics
 from .validators import artifact_report, corpus_problems, tr_lower
 
@@ -148,18 +146,7 @@ def _critical_position_audit(items: list[dict]) -> tuple[dict[str, dict[str, int
 def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
     cfg = load_config(config_path, runtime=False)
     run = paths_for(run_id)
-    memory = DatasetMemory(run.memory)
-    pending_review_slots = [
-        row["slot_id"] for row in read_jsonl(run.needs_review)
-        if row.get("slot_id") and memory.slot_status(row["slot_id"]) == "needs_review"
-    ]
-    if pending_review_slots:
-        _write_json(
-            run.root / "freeze_blockers.json",
-            {"problems": [f"çözülmemiş human review: {len(set(pending_review_slots))} slot"]},
-        )
-        raise ValueError("Test dondurulamadı; çözülmemiş human review kayıtları var")
-    accepted = read_jsonl(run.accepted)
+    accepted = current_accepted(run_id)
     selected = select_balanced(
         accepted,
         cfg,
@@ -172,14 +159,13 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
     sealed = [item for item in selected if item["split"] == "sealed_test"]
     position_audit, position_problems = _critical_position_audit(selected)
     problems = corpus_problems(selected, cfg) + _leakage_checks(dev, sealed) + position_problems
-    required_audits = human_audit_slots(build_plan(cfg), cfg)
-    reviewed_audits = {
+    reviewed_slots = {
         item["slot_id"] for item in selected
         if item.get("qc", {}).get("human_review", {}).get("status") == "pass"
     }
-    missing_audits = required_audits - reviewed_audits
-    if missing_audits:
-        problems.append(f"stratified human audit eksik: {len(missing_audits)} slot")
+    missing_reviews = {item["slot_id"] for item in selected} - reviewed_slots
+    if missing_reviews:
+        problems.append(f"final human review eksik: {len(missing_reviews)} slot")
     artifacts = artifact_report(selected)
     if artifacts["longest_gold_rate"] >= 0.15:
         problems.append(f"longest-gold oranı freeze sınırını aşıyor: {artifacts['longest_gold_rate']:.3f}")
@@ -258,8 +244,9 @@ def finalize(run_id: str, config_path: str | None = None) -> dict[str, Any]:
         "critical_sentence_position_audit": position_audit,
         "artifact_audit": artifacts,
         "human_review": {
-            "required_stratified_audits": len(required_audits),
-            "completed_reviewed_slots": len(reviewed_audits),
+            "stage": "final_freeze_only",
+            "required_reviewed_slots": len(selected),
+            "completed_reviewed_slots": len(reviewed_slots),
         },
         "files": {str(path.relative_to(run.root)): _sha256(path) for path in hashed_files},
         "qrels_definition": (

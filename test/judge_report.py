@@ -8,8 +8,7 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
-from .dataset_memory import DatasetMemory
-from .pipeline import paths_for, read_jsonl
+from .pipeline import current_accepted, paths_for, read_jsonl
 
 
 def _write_json(path: Path, value: Any) -> None:
@@ -21,15 +20,7 @@ def _write_json(path: Path, value: Any) -> None:
 
 def judge_calibration_report(run_id: str) -> dict[str, Any]:
     paths = paths_for(run_id)
-    memory = DatasetMemory(paths.memory)
-    families: dict[str, dict[str, Any]] = {}
-    review_records = read_jsonl(paths.needs_review)
-    for record in review_records:
-        if record.get("slot_id") and record.get("family"):
-            families[record["slot_id"]] = record["family"]
-    for family in read_jsonl(paths.accepted):
-        if family.get("slot_id"):
-            families[family["slot_id"]] = family
+    families = {family["slot_id"]: family for family in current_accepted(run_id) if family.get("slot_id")}
 
     semantic_pass_total = 0
     semantic_unique_gold = 0
@@ -86,10 +77,6 @@ def judge_calibration_report(run_id: str) -> dict[str, Any]:
                 set(row.get("answers_query", [])) == human_answers for row in semantic_passes
             )
 
-    pending_slots = {
-        row.get("slot_id") for row in review_records
-        if row.get("slot_id") and memory.slot_status(row["slot_id"]) == "needs_review"
-    }
     denominator = max(1, len(families))
     report = {
         "run_id": run_id,
@@ -101,8 +88,8 @@ def judge_calibration_report(run_id: str) -> dict[str, Any]:
         "candidate_naturalness_gate_rate": candidate_naturalness_pass / denominator,
         "morphology_unique_gold_rate": morphology_unique_gold / denominator,
         "morphology_confidence_mean": mean(morphology_confidences) if morphology_confidences else None,
-        "review_escalation_rate": len({row.get("slot_id") for row in review_records}) / denominator,
-        "pending_human_review": len(pending_slots),
+        "review_escalation_rate": len(by_slot) / denominator,
+        "pending_human_review": max(0, len(families) - len(by_slot)),
         "human_reviewed_slots": len(by_slot),
         "human_consensus_slots": human_consensus,
         "human_disagreement_slots": human_disagreement,

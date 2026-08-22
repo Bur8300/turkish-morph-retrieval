@@ -92,35 +92,19 @@
     "generators": [
       {
         "id": "generator_a",
-        "provider": "openrouter",
-        "model": "${TEST_GENERATOR_MODEL_A}",
-        "api_key_env": "OPENROUTER_API_KEY",
-        "base_url": "https://openrouter.ai/api/v1/chat/completions",
-        "temperature": 0.70,
-        "max_tokens": 6500,
-        "requests_per_minute": 20,
-        "timeout_seconds": 180,
-        "provider_preferences": {
-          "require_parameters": true,
-          "data_collection": "deny",
-          "zdr": true
-        }
+        "provider": "codex_cli",
+        "model": "${TEST_CODEX_GENERATOR_MODEL}",
+        "authentication_mode": "chatgpt_subscription",
+        "reasoning_effort": "medium",
+        "timeout_seconds": 1800
       },
       {
         "id": "generator_b",
-        "provider": "openrouter",
-        "model": "${TEST_GENERATOR_MODEL_B}",
-        "api_key_env": "OPENROUTER_API_KEY",
-        "base_url": "https://openrouter.ai/api/v1/chat/completions",
-        "temperature": 0.70,
-        "max_tokens": 6500,
-        "requests_per_minute": 20,
-        "timeout_seconds": 180,
-        "provider_preferences": {
-          "require_parameters": true,
-          "data_collection": "deny",
-          "zdr": true
-        }
+        "provider": "claude_cli",
+        "model": "${TEST_CLAUDE_GENERATOR_MODEL}",
+        "authentication_mode": "claude_subscription",
+        "reasoning_effort": "medium",
+        "timeout_seconds": 1800
       }
     ],
     "judges": {
@@ -173,10 +157,8 @@
       }
     },
     "human_review": {
-      "audit_rate": 0.10,
-      "audit_reviewers_required": 1,
-      "conflict_reviewers_required": 2,
-      "seed": 3801
+      "reviewers_required": 1,
+      "stage": "final_freeze_only"
     },
     "require_distinct_model_families": true,
     "forbidden_model_families_for_test": ["google"]
