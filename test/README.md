@@ -73,17 +73,18 @@ Codex CLI generator (300) + Claude Code CLI generator (300)
         ↓
 strict JSON + deterministic QC
         ↓
-özellik-kör semantic judge (iki candidate sırası)
+özellik-kör semantic judge (kör ve deterministik karıştırılmış candidate sırası)
         ↓
 ayrı model ailesinden feature-aware morphology judge
         ↓
-judge başarısızsa aynı slot için otomatik refill
+yüksek güvenli açık judge hatası varsa aynı slot için otomatik refill
         ↓
 600 kabul edilmiş family → kör insan final review → freeze
 ```
 
-Deterministic QC, dataset-memory ihlali veya iki judge'dan birinin başarısız olması aynı sabit slotta
-taze replacement üretir. İnsan incelemesi üretim döngüsünde değildir: 600 otomatik kabul edilmiş
+Deterministic QC, dataset-memory ihlali veya bir judge'ın kendi uzmanlık alanında en az 90 güvenle
+açık ve somut aday-ID hatası bulması aynı sabit slotta onarım üretir. Genel puan, belirsizlik,
+düşük güven ve abstain yalnız QC notudur. İnsan incelemesi üretim döngüsünde değildir: 600 otomatik kabul edilmiş
 family tamamlandıktan sonra, freeze öncesinde yapılır. İnsan redleri ilgili slotu yeniden açar.
 
 Codex ve Claude generator'ları kayıtlı CLI abonelik oturumlarını kullanır; OpenRouter API key yalnız
@@ -96,7 +97,8 @@ Provider-facing üretim JSON'u bilerek küçüktür. LLM yalnız query, ortak co
 lemma/query sözcüğü ve her aday için `candidate_slot + critical_sentence + critical_word`
 yazar. Rol, subtype, `morph_relation`, qrels, edit script, feature açıklaması ve kimlikler
 güvenilir plandan Python tarafından eklenir. Böylece model onlarca sabit metadata alanını her
-family'de tekrar üretmez; repair çağrısı da önceki uzun JSON'u prompt'a geri gömmez.
+family'de tekrar üretmez. Yerel repair çağrısı bu küçük önceki JSON'u görür ve yalnız judge'ın
+işaretlediği candidate slotlarını değiştirir; family-geneli hatalarda kontrollü geniş onarım yapar.
 
 Easy negatifler rastgele konu dışı cümleler değildir. Query ile aynı domain/register içinde
 kalır; mümkünse kişi, kurum, yer veya konu ipuçlarından birini paylaşır, fakat farklı bir olay
@@ -279,7 +281,7 @@ Family düzeyi:
 - Tek ve doğru gold qrels
 - Özellik-kör semantic judge ile benzersiz positive, doğallık ve iç tutarlılık
 - Ayrı feature-aware morphology judge ile ek işlevi, kapsam ve allomorf kontrolü
-- İki counterbalanced candidate sırasında karar kararlılığı, confidence ve abstain
+- Karıştırılmış candidate sırası, confidence ve abstain kaydı
 - Judge başarısızlığında sabit slotta otomatik refill
 - 600 accepted family tamamlandıktan sonra freeze öncesi kör insan review
 - Her negatif için query'yi doğrulama/paraphrase etme riski ve her aday için iç tutarlılık
@@ -354,8 +356,13 @@ claude  # ilk açılışta /login ile Claude abonelik hesabını seç
 export OPENROUTER_API_KEY="..."
 export TEST_CODEX_GENERATOR_MODEL="gpt-5.6-sol"
 export TEST_CLAUDE_GENERATOR_MODEL="claude-full-model-id"
-export TEST_SEMANTIC_JUDGE_MODEL="qwen/model"
-export TEST_MORPHOLOGY_JUDGE_MODEL="mistralai/model"
+
+# 1-slot ücretli smoke test; varsayılan judge'lar DeepSeek V4 Flash + GLM 5.2'dir.
+python3 -m test generate --run-id smoke_v38 --limit 1 --workers 1
+
+# İstenirse modeller environment ile override edilebilir.
+export TEST_SEMANTIC_JUDGE_MODEL="deepseek/deepseek-v4-flash-0731"
+export TEST_MORPHOLOGY_JUDGE_MODEL="z-ai/glm-5.2"
 python3 -m test generate --run-id test_v38
 
 # 600 accepted family tamamlanınca freeze öncesi kör insan review
@@ -386,10 +393,9 @@ yerine geçebilecek ek slotları planlar ve çıktı yine `count` accepted famil
 Yalnız daha önce tamamlanmış cache'i yeni kullanım olmadan yeniden doğrulamak için `--cache-only`
 eklenebilir.
 
-Preview provenance her family'nin `provenance` alanında ve set manifestinde saklanır. Mevcut
-`curated_preview_20_v36`, Codex CLI / `gpt-5.6-sol` ile; deneysel
-`curated_preview_20_v37`, Google / `gemini-2.5-flash` ile üretilmiştir. İkisi de bağımsız judge
-çalıştırılmamış pilot veridir; final benchmark veya paper sonucu değildir.
+Eski iki pilot set, sade dosya yapısı için `data/deneme_verisi_40.json` içinde birleştirilmiştir.
+İlk 20 family Codex CLI / `gpt-5.6-sol`, sonraki 20 family `gemini-2.5-flash` provenance'ı taşır.
+Bağımsız judge çalıştırılmamış bu veri yalnız notebook denemesidir; final benchmark değildir.
 
 ## Ana dosyalar
 
@@ -407,9 +413,9 @@ Preview provenance her family'nin `provenance` alanında ve set manifestinde sak
 | `selection.py` | Tam 100/500 dağılım ve generator kotalarını doğrulama |
 | `exports.py` | Freeze, blind/internal JSON, BEIR ve qrels |
 | `morphology.py` | Opsiyonel Stanza audit'i |
-| `curation/` | Pilot preview kaynak tanımları ve yeniden üretim araçları |
 | `evaluation.py` | Metrikler, baseline, ablation ve istatistik |
-| `notebooks/morph_baseline_eval_preview20_colab.ipynb` | v36 + v37 ile 40-family hızlı test |
+| `data/deneme_verisi_40.json` | Eski iki pilotun provenance koruyan tek deneme dosyası |
+| `notebooks/morph_baseline_eval_deneme40_colab.ipynb` | Tek dosyayla 40-family hızlı test |
 | `notebooks/morph_baseline_eval_600_colab.ipynb` | 100 dev + 500 final paper değerlendirmesi |
 
 Freeze çıktıları:

@@ -37,7 +37,13 @@ def main() -> int:
     generation = sub.add_parser("generate", help="üret + QC + iki-aşamalı judge; kalmayan slotları refill et")
     generation.add_argument("--run-id", default=None)
     generation.add_argument("--limit", type=int, default=None, help="pilot için plan prefix'i")
+    generation.add_argument("--offset", type=int, default=0, help="pilot için başlangıç slotu")
     generation.add_argument("--workers", type=int, default=None)
+    generation.add_argument(
+        "--generator-id",
+        default=None,
+        help="yalnız --limit pilotunda bütün seçili slotları tek generator ile üret",
+    )
 
     preview = sub.add_parser(
         "preview-codex", help="API key olmadan yerel Codex oturumuyla preview üret"
@@ -106,7 +112,9 @@ def main() -> int:
         result = write_plan(args.run_id, args.config, args.size)
     elif args.command == "generate":
         run_id = args.run_id or default_run_id()
-        result = generate(run_id, args.config, args.limit, args.workers)
+        result = generate(
+            run_id, args.config, args.limit, args.workers, args.generator_id, args.offset
+        )
         result["run_id"] = run_id
     elif args.command == "preview-codex":
         result = generate_codex_preview(

@@ -200,7 +200,7 @@ def generate_codex_preview(
         raise ValueError("Preview count + reserve-slots toplamı 1–60 arasında olmalı")
     cfg = load_config(config_path, runtime=False)
     slots = build_plan(cfg, size=count + reserve_slots)
-    root = HERE / "previews" / run_id
+    root = HERE / "runs" / "previews" / run_id
     cache = root / "cache"
     isolated_workdir = root / "isolated_workdir"
     root.mkdir(parents=True, exist_ok=True)

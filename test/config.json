@@ -82,8 +82,8 @@
     "freeze_tie_aware_bm25_recall_at_1_max": 0.30,
     "judge_naturalness_min": 4,
     "candidate_naturalness_min": 4,
-    "semantic_judge_confidence_min": 80,
-    "morphology_judge_confidence_min": 80
+    "semantic_judge_confidence_min": 90,
+    "morphology_judge_confidence_min": 90
   },
   "generation": {
     "max_generation_attempts": 2,
@@ -93,7 +93,7 @@
       {
         "id": "generator_a",
         "provider": "codex_cli",
-        "model": "${TEST_CODEX_GENERATOR_MODEL}",
+        "model": "${TEST_CODEX_GENERATOR_MODEL:-gpt-5.6-sol}",
         "authentication_mode": "chatgpt_subscription",
         "reasoning_effort": "medium",
         "timeout_seconds": 1800
@@ -101,7 +101,7 @@
       {
         "id": "generator_b",
         "provider": "claude_cli",
-        "model": "${TEST_CLAUDE_GENERATOR_MODEL}",
+        "model": "${TEST_CLAUDE_GENERATOR_MODEL:-claude-sonnet-4-6}",
         "authentication_mode": "claude_subscription",
         "reasoning_effort": "medium",
         "timeout_seconds": 1800
@@ -110,31 +110,37 @@
     "judges": {
       "semantic": {
         "provider": "openrouter",
-        "model": "${TEST_SEMANTIC_JUDGE_MODEL}",
+        "model": "${TEST_SEMANTIC_JUDGE_MODEL:-deepseek/deepseek-v4-flash-0731}",
         "api_key_env": "OPENROUTER_API_KEY",
         "base_url": "https://openrouter.ai/api/v1/chat/completions",
         "temperature": 0.0,
         "max_tokens": 2600,
+        "reasoning": {"effort": "none", "exclude": true},
+        "plugins": [{"id": "response-healing"}],
         "requests_per_minute": 30,
         "timeout_seconds": 180,
-        "permutations": ["a", "b"],
+        "permutations": ["a"],
         "provider_preferences": {
           "require_parameters": true,
+          "sort": "latency",
           "data_collection": "deny",
           "zdr": true
         }
       },
       "morphology": {
         "provider": "openrouter",
-        "model": "${TEST_MORPHOLOGY_JUDGE_MODEL}",
+        "model": "${TEST_MORPHOLOGY_JUDGE_MODEL:-z-ai/glm-5.2}",
         "api_key_env": "OPENROUTER_API_KEY",
         "base_url": "https://openrouter.ai/api/v1/chat/completions",
         "temperature": 0.0,
         "max_tokens": 2600,
+        "reasoning": {"effort": "none", "exclude": true},
+        "plugins": [{"id": "response-healing"}],
         "requests_per_minute": 30,
         "timeout_seconds": 180,
         "provider_preferences": {
           "require_parameters": true,
+          "sort": "latency",
           "data_collection": "deny",
           "zdr": true
         }

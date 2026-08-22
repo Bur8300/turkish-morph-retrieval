@@ -17,7 +17,7 @@
 Tek akış:
 
 ```text
-600 dengeli slot → 300 Codex + 300 Claude → deterministic QC → semantic judge (iki sıra)
+600 dengeli slot → 300 Codex + 300 Claude → deterministic QC → semantic judge (kör/karıştırılmış sıra)
 → morphology judge → başarısız slotu refill → 600 accepted → insan final review → freeze
 ```
 
@@ -39,9 +39,10 @@ LLM küçük bir JSON üretir: query, ortak context, kritik lemma/sözcük ve ad
 `candidate_slot + critical_sentence + critical_word`. Rol, subtype, morph relation, qrels,
 edit script ve kimlikler Python tarafından eklenir.
 
-Semantic judge hedef özelliği görmeden tek gold, destek, tutarlılık ve doğallığı kontrol eder.
-Morphology judge hedef özelliği ayrı değerlendirir. İki judge'dan biri reddederse aynı slot taze
-adayla refill edilir. Human review üretim sırasında değil, 600 kabul edilmiş family tamamlandıktan
+Semantic judge hedef özelliği görmeden açık ikinci-gold, tutarlılık ve doğallık hatalarını kontrol
+eder. Morphology judge yalnız hedef özellik, bozuk çekim ve allomorfa bakar. Yalnız güveni en az
+90 olan somut aday-ID hatası aynı slotu onartır; genel puan, belirsizlik ve abstain QC notudur. Human review üretim
+sırasında değil, 600 kabul edilmiş family tamamlandıktan
 sonra freeze öncesinde uygulanır; insanın reddettiği slotlar yeniden üretilir.
 
 Pilot provenance: `v36` Codex CLI / `gpt-5.6-sol`; `v37` deneysel Google /
@@ -73,8 +74,9 @@ python3 -m test memory-report --run-id test_v38
 export OPENROUTER_API_KEY="..."
 export TEST_CODEX_GENERATOR_MODEL="gpt-5.6-sol"
 export TEST_CLAUDE_GENERATOR_MODEL="claude-full-model-id"
-export TEST_SEMANTIC_JUDGE_MODEL="qwen/model"
-export TEST_MORPHOLOGY_JUDGE_MODEL="mistralai/model"
+# Opsiyonel override; varsayılanlar aşağıdaki ücretli ve ZDR uyumlu modellerdir.
+export TEST_SEMANTIC_JUDGE_MODEL="deepseek/deepseek-v4-flash-0731"
+export TEST_MORPHOLOGY_JUDGE_MODEL="z-ai/glm-5.2"
 python3 -m test generate --run-id test_v38
 python3 -m test review-export --run-id test_v38  # 600 accepted family hazır olunca
 python3 -m test review-apply --run-id test_v38 --input decisions.jsonl

@@ -9,7 +9,7 @@ import hashlib
 import json
 import random
 
-PROMPT_VERSION = "test-prompts-3.8.0-cascade-judge"
+PROMPT_VERSION = "test-prompts-3.8.2-feedback-specialized-judges"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -28,10 +28,10 @@ ver; güven puanını şişirme. JSON dışında metin yazma.
 
 MORPHOLOGY_JUDGE_SYSTEM = """\
 Sen generator ve semantik hakemden bağımsız, özellik-bilinçli bir Türkçe biçimbilim hakemisin.
-Gold/hard/easy ve alt-tür etiketlerini görmeyeceksin. Hedef özelliğin adayda hangi yorumu verdiğini,
-eklerin doğal ve dilbilgisel olup olmadığını, kapsamı ve allomorf işlevini değerlendir. Geçerli bir
-allomorfu yalnız yüzeyi değiştiği için yanlış sayma. Bilmediğin durumda abstain=true ver. JSON dışında
-metin yazma.
+Gold/hard/easy ve alt-tür etiketlerini görmeyeceksin. Semantik relevance veya doğru cevap seçme;
+yalnız hedef morfolojik özelliği, eklerin doğallığını, ek zincirini, kapsamı ve allomorf işlevini
+değerlendir. Geçerli bir allomorfu yalnız yüzeyi değiştiği için yanlış sayma. Bilmediğin durumda
+abstain=true ver. JSON dışında metin yazma.
 """
 
 ADJUDICATOR_SYSTEM = """\
@@ -265,13 +265,26 @@ ALANLAR
 """
 
 
-def build_repair_prompt(slot: dict, previous: dict, problems: list[str]) -> str:
+def build_repair_prompt(
+    slot: dict, previous: dict, problems: list[str], repair_slots: list[str] | None = None
+) -> str:
+    repair_slots = repair_slots or []
+    strategy = (
+        "Yalnız şu candidate_slot değerlerini düzelt: " + ", ".join(repair_slots) + ". "
+        "Query, context, semantic_profile ve diğer candidate'ları değiştirme."
+        if repair_slots else
+        "Sorun family geneline yayıldığı için gerekli alanları birlikte düzelt; sağlam alanları koru."
+    )
     return f"""\
-Önceki üretim otomatik kalite kapısından geçmedi. Bütün family’yi taze ve bağımsız yaz.
-Önceki metni kopyalama. Temel SLOT ve bütün üretim kuralları geçerlidir.
+Önceki üretim otomatik kalite kapısından geçmedi. Önceki JSON üzerinde kontrollü onarım yap.
+{strategy}
+Şemanın istediği tam JSON'u yeniden döndür; temel SLOT ve bütün üretim kuralları geçerlidir.
 
 SORUNLAR
 {json.dumps(problems, ensure_ascii=False, indent=2)}
+
+ÖNCEKİ JSON
+{json.dumps(previous, ensure_ascii=False, separators=(",", ":"))}
 
 ORİJİNAL GÖREV
 {build_generation_prompt(slot)}
@@ -299,15 +312,19 @@ Aşağıdaki family’yi morfolojik hedefi ve üretim etiketlerini görmeden de�
 {json.dumps(visible, ensure_ascii=False, indent=2)}
 
 KURALLAR
-1. `answers_query`: sorguyu bütünüyle doğru yanıtlayan bütün aday kimlikleri. Kısmi aday ekleme.
-2. Her aday için supports_query, 1–5 naturalness, internally_consistent ve kısa hata boyutları ver.
-3. `supports_query=true` yalnız aday sorgudaki temel önermeyi doğruluyor, yeniden ifade ediyor
-   veya bu önerme için yeterli kanıt sağlıyorsa ver. Yalnız aynı konuda olmak yeterli değildir.
+1. `fully_relevant_candidate_ids`: yalnız sorgunun bütün bilgi ihtiyacını aynı doğruluk
+   koşullarıyla karşılayan ID'ler. Uyumlu, konuya yakın veya kısmi kanıt olanı ekleme.
+2. `unnatural_candidate_ids`: açıkça doğal olmayan Türkçe kullanan ID'ler.
+   `internally_inconsistent_candidate_ids`: kendi içinde açıkça çelişen ID'ler.
+3. Zaman, görünüş, alışkanlık, kişi, sayı, olumsuzluk, kapsam ve katılımcı rolleri doğruluk
+   koşulunun parçasıdır. Örneğin tek seferlik "dün yapmadı", "genellikle yapmaz" önermesini;
+   "yapmış olabilir" de "yaptı" önermesini karşılamaz.
 4. Aday kendi içinde çelişiyorsa (ör. rapor hem hazır hem henüz bitmemişse)
    internally_consistent=false ver. Dilbilgisel ama mantıksal çelişkili aday kabul edilmez.
 5. Uzunluk, üslup veya ayrıntı tek bir cevabı yapay biçimde ele veriyorsa
    length_or_style_artifact=true ver.
 6. Emin değilsen abstain=true ver. Confidence, kararın doğruluğuna ilişkin 0–100 puandır.
+Kısa ID listeleri ve kısa not dışında aday-bazlı açıklama üretme.
 """
 
 
@@ -321,20 +338,22 @@ def build_morphology_judge_prompt(family: dict) -> str:
         "candidates": _blind_candidates(family, "morphology"),
     }
     return f"""\
-Aşağıdaki family’yi üretim rolleri ve gold bilgisini görmeden morfolojik olarak değerlendir.
+Aşağıdaki family’yi üretim rolleri ve gold bilgisini görmeden yalnız morfolojik olarak değerlendir.
+Semantik relevance ve benzersiz-gold kararı başka bir judge'a aittir.
 
 {json.dumps(visible, ensure_ascii=False, indent=2)}
 
 KURALLAR
-1. `answers_query`: hedef biçimbilim ve önerme birlikte düşünüldüğünde sorguyu bütünüyle karşılayan
-   bütün aday kimlikleri.
-2. Her aday dilbilgisel ve doğal bir Türkçe biçim taşıyorsa morphology_ok=true ver. Negatif olması
-   morphology_ok=false demek değildir.
-3. target_interpretation şu dört değerden biri olmalı: supports_query, contradicts_query, unrelated,
-   unclear. Yalnız konu benzerliği supports_query değildir.
+1. `target_matching_candidate_ids`: hedef özelliği aynı morfolojik işlev ve kapsamla taşıyan ID'ler.
+   Bu liste semantik relevance değildir; içerik yanlış olsa da hedef morfoloji eşleşebilir.
+   Notunda hedef zinciri taşıdığını söylediğin her adayı bu listeye ekle; önerme, özne veya olay
+   farklılığı nedeniyle morfolojik eşleşmeyi dışlama.
+2. `morphologically_invalid_candidate_ids`: doğal/dilbilgisel Türkçe çekim taşımayan ID'ler.
+   Negatif veya komşu özellik kullanmak tek başına biçimbilimsel bozukluk değildir.
+3. `unclear_candidate_ids`: morfolojik statüsüne güvenle karar veremediğin ID'ler.
 4. Kapsam, kişi, sayı, iyelik, zaman/kip ve ek zinciri işlevini yüzey benzerliğinden ayrı kontrol et.
 5. Geçerli allomorfu yanlış saydıysan allomorph_treated_as_wrong=true ver.
-6. Emin değilsen abstain=true ver. Confidence, kararın doğruluğuna ilişkin 0–100 puandır.
+6. Emin değilsen abstain=true ver. Confidence, yalnız morfolojik kararın 0–100 güvenidir.
 """
 
 

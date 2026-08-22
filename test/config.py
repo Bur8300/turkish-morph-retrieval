@@ -12,11 +12,30 @@ from typing import Any
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_CONFIG = HERE / "config.json"
-_ENV = re.compile(r"^\$\{([A-Z][A-Z0-9_]*)\}$")
+DEFAULT_DOTENV = HERE.parent / ".env"
+_ENV = re.compile(r"^\$\{([A-Z][A-Z0-9_]*)(?::-(.+))?\}$")
+_ENV_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
 
 class ConfigError(ValueError):
     pass
+
+
+def _load_dotenv(path: Path = DEFAULT_DOTENV) -> None:
+    """Load simple KEY=VALUE secrets without overriding the caller's environment."""
+    if not path.is_file():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        name, value = name.strip(), value.strip()
+        if not _ENV_NAME.fullmatch(name) or not value:
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        os.environ.setdefault(name, value)
 
 
 def _resolve_env(value: Any, required: bool) -> Any:
@@ -27,8 +46,8 @@ def _resolve_env(value: Any, required: bool) -> Any:
     if isinstance(value, str):
         match = _ENV.match(value)
         if match:
-            name = match.group(1)
-            resolved = os.getenv(name)
+            name, fallback = match.groups()
+            resolved = os.getenv(name) or fallback
             if required and not resolved:
                 raise ConfigError(f"Eksik ortam değişkeni: {name}")
             return resolved or value
@@ -125,8 +144,8 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
     if set(judges) != {"semantic", "morphology", "adjudicator"}:
         raise ConfigError("judges semantic + morphology + adjudicator sözleşmesini taşımalı")
     permutations = judges["semantic"].get("permutations", [])
-    if len(permutations) != 2 or len(set(permutations)) != 2:
-        raise ConfigError("Semantic judge tam iki farklı candidate permütasyonu kullanmalı")
+    if not 1 <= len(permutations) <= 2 or len(set(permutations)) != len(permutations):
+        raise ConfigError("Semantic judge bir veya iki benzersiz candidate permütasyonu kullanmalı")
     human = generation.get("human_review", {})
     if int(human.get("reviewers_required", 0)) < 1:
         raise ConfigError("human_review.reviewers_required en az 1 olmalı")
@@ -153,10 +172,12 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
                 preferences = spec.get("provider_preferences", {})
                 if preferences.get("require_parameters") is not True:
                     raise ConfigError(f"{label} structured-output routing'i zorunlu tutmalı")
-                if preferences.get("data_collection") != "deny" or preferences.get("zdr") is not True:
+                if preferences.get("data_collection") != "deny":
                     raise ConfigError(
-                        f"{label} test verisi için data_collection=deny ve zdr=true kullanmalı"
+                        f"{label} test verisi için data_collection=deny kullanmalı"
                     )
+                if preferences.get("zdr") is not True:
+                    raise ConfigError(f"{label} test verisi için zdr=true kullanmalı")
             elif provider not in {"codex_cli", "claude_cli"}:
                 raise ConfigError(f"{label} desteklenmeyen provider kullanıyor: {provider}")
         if generation.get("require_distinct_model_families", True):
@@ -170,10 +191,12 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
             str(value).lower()
             for value in generation.get("forbidden_model_families_for_test", [])
         }
-        used = {model_family(spec["model"]) for _, spec in role_specs}
+        # Legacy train generator families may judge the independently generated test set;
+        # they must not generate its text. This is provenance overlap, not test-text leakage.
+        used = {model_family(spec["model"]) for spec in generators}
         if forbidden & used:
             raise ConfigError(
-                "Test generator/judge, legacy train model ailesinden bağımsız olmalı; "
+                "Test generator, legacy train model ailesinden bağımsız olmalı; "
                 f"yasak aile kullanıldı: {sorted(forbidden & used)}"
             )
     if int(generation.get("max_generation_attempts", 0)) < 1:
@@ -183,6 +206,7 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
 
 
 def load_config(path: str | Path | None = None, runtime: bool = False) -> dict[str, Any]:
+    _load_dotenv()
     source = Path(path) if path else DEFAULT_CONFIG
     cfg = json.loads(source.read_text(encoding="utf-8"))
     cfg = _resolve_env(deepcopy(cfg), required=runtime)

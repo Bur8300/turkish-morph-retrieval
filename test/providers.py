@@ -8,6 +8,7 @@ import os
 import random
 import re
 import shutil
+import ssl
 import subprocess
 import threading
 import time
@@ -16,6 +17,18 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+
+def _verified_ssl_context() -> ssl.SSLContext:
+    """Use certifi on Python installations whose OpenSSL CA path is empty (common on macOS)."""
+    try:
+        import certifi
+    except ImportError:
+        return ssl.create_default_context()
+    return ssl.create_default_context(cafile=certifi.where())
+
+
+_SSL_CONTEXT = _verified_ssl_context()
 
 
 class ProviderError(RuntimeError):
@@ -95,6 +108,8 @@ class OpenRouterProvider:
             "temperature": self.spec.get("temperature", 0.1),
             "max_tokens": self.spec.get("max_tokens", 5000),
             "provider_preferences": self.spec.get("provider_preferences", {}),
+            "reasoning": self.spec.get("reasoning"),
+            "plugins": self.spec.get("plugins", []),
             "pipeline": self.run_metadata,
         }
         canonical = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -128,11 +143,15 @@ class OpenRouterProvider:
                 **self.spec.get("provider_preferences", {}),
             },
         }
+        if self.spec.get("reasoning"):
+            body["reasoning"] = self.spec["reasoning"]
+        if self.spec.get("plugins"):
+            body["plugins"] = self.spec["plugins"]
         payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
         headers = {
             "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/Bur8300/turkish-morph-retrieval",
+            "HTTP-Referer": "https://github.com/TR-morph-retrieval/turkish-morph-retrieval",
             "X-Title": "Turkish Morph Retrieval Test Builder",
         }
 
@@ -141,10 +160,23 @@ class OpenRouterProvider:
             self.limiter.wait()
             req = urllib.request.Request(self.spec["base_url"], data=payload, headers=headers, method="POST")
             try:
-                with urllib.request.urlopen(req, timeout=float(self.spec.get("timeout_seconds", 180))) as response:
+                with urllib.request.urlopen(
+                    req,
+                    timeout=float(self.spec.get("timeout_seconds", 180)),
+                    context=_SSL_CONTEXT,
+                ) as response:
                     raw = json.loads(response.read().decode("utf-8"))
-                content = raw["choices"][0]["message"]["content"]
-                data = _extract_json(content)
+                choice = raw["choices"][0]
+                content = choice["message"]["content"]
+                try:
+                    data = _extract_json(content)
+                except ProviderError as exc:
+                    raise ProviderError(
+                        f"{exc}; model={raw.get('model', self.model)}, "
+                        f"provider={raw.get('provider', 'unknown')}, "
+                        f"finish_reason={choice.get('finish_reason', 'unknown')}, "
+                        f"content_chars={len(str(content or ''))}"
+                    ) from exc
                 record = {
                     "identity": identity,
                     "data": data,

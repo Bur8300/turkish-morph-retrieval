@@ -42,7 +42,6 @@ SEMANTIC_PROFILE_SCHEMA = {
             "type": "array",
             "minItems": 1,
             "maxItems": 6,
-            "uniqueItems": True,
             "items": {"type": "string", "enum": list(PARTICIPANT_ROLES)},
         },
         "polarity": {"type": "string", "enum": list(POLARITIES)},

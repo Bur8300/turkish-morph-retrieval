@@ -49,31 +49,6 @@ GENERATION_SCHEMA = {
 }
 
 
-SEMANTIC_ERROR_DIMENSIONS = [
-    "none",
-    "semantic_content_mismatch",
-    "argument_role_error",
-    "scope_error",
-    "time_or_state_error",
-    "internal_contradiction",
-    "unnatural_turkish",
-    "style_or_length_artifact",
-]
-
-MORPH_ERROR_DIMENSIONS = [
-    "none",
-    "morph_feature_mismatch",
-    "wrong_inflection",
-    "argument_role_error",
-    "scope_error",
-    "tense_or_modality_error",
-    "possessor_number_error",
-    "allomorph_function_error",
-    "semantic_content_mismatch",
-    "unclear",
-]
-
-
 SEMANTIC_JUDGE_SCHEMA = {
     "name": "blind_semantic_retrieval_judgment",
     "strict": True,
@@ -81,30 +56,14 @@ SEMANTIC_JUDGE_SCHEMA = {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "answers_query": {"type": "array", "items": {"type": "string"}},
-            "candidate_assessments": {
-                "type": "array",
-                "minItems": 11,
-                "maxItems": 11,
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "properties": {
-                        "id": {"type": "string"},
-                        "supports_query": {"type": "boolean"},
-                        "naturalness": {"type": "integer", "minimum": 1, "maximum": 5},
-                        "internally_consistent": {"type": "boolean"},
-                        "error_dimensions": {
-                            "type": "array",
-                            "items": {"type": "string", "enum": SEMANTIC_ERROR_DIMENSIONS},
-                            "uniqueItems": True,
-                        },
-                    },
-                    "required": [
-                        "id", "supports_query", "naturalness", "internally_consistent",
-                        "error_dimensions",
-                    ],
-                },
+            "fully_relevant_candidate_ids": {
+                "type": "array", "maxItems": 11, "items": {"type": "string"},
+            },
+            "unnatural_candidate_ids": {
+                "type": "array", "maxItems": 11, "items": {"type": "string"},
+            },
+            "internally_inconsistent_candidate_ids": {
+                "type": "array", "maxItems": 11, "items": {"type": "string"},
             },
             "length_or_style_artifact": {"type": "boolean"},
             "family_naturalness": {"type": "integer", "minimum": 1, "maximum": 5},
@@ -113,7 +72,8 @@ SEMANTIC_JUDGE_SCHEMA = {
             "notes": {"type": "string"},
         },
         "required": [
-            "answers_query", "candidate_assessments", "length_or_style_artifact",
+            "fully_relevant_candidate_ids", "unnatural_candidate_ids",
+            "internally_inconsistent_candidate_ids", "length_or_style_artifact",
             "family_naturalness", "confidence", "abstain", "notes",
         ],
     },
@@ -127,31 +87,14 @@ MORPHOLOGY_JUDGE_SCHEMA = {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "answers_query": {"type": "array", "items": {"type": "string"}},
-            "candidate_assessments": {
-                "type": "array",
-                "minItems": 11,
-                "maxItems": 11,
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "properties": {
-                        "id": {"type": "string"},
-                        "morphology_ok": {"type": "boolean"},
-                        "target_interpretation": {
-                            "type": "string",
-                            "enum": ["supports_query", "contradicts_query", "unrelated", "unclear"],
-                        },
-                        "error_dimensions": {
-                            "type": "array",
-                            "items": {"type": "string", "enum": MORPH_ERROR_DIMENSIONS},
-                            "uniqueItems": True,
-                        },
-                    },
-                    "required": [
-                        "id", "morphology_ok", "target_interpretation", "error_dimensions",
-                    ],
-                },
+            "target_matching_candidate_ids": {
+                "type": "array", "maxItems": 11, "items": {"type": "string"},
+            },
+            "morphologically_invalid_candidate_ids": {
+                "type": "array", "maxItems": 11, "items": {"type": "string"},
+            },
+            "unclear_candidate_ids": {
+                "type": "array", "maxItems": 11, "items": {"type": "string"},
             },
             "allomorph_treated_as_wrong": {"type": "boolean"},
             "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
@@ -159,7 +102,8 @@ MORPHOLOGY_JUDGE_SCHEMA = {
             "notes": {"type": "string"},
         },
         "required": [
-            "answers_query", "candidate_assessments", "allomorph_treated_as_wrong",
+            "target_matching_candidate_ids", "morphologically_invalid_candidate_ids",
+            "unclear_candidate_ids", "allomorph_treated_as_wrong",
             "confidence", "abstain", "notes",
         ],
     },
@@ -189,7 +133,6 @@ ADJUDICATOR_SCHEMA = {
                         "naturalness_disagreement", "low_confidence", "other",
                     ],
                 },
-                "uniqueItems": True,
             },
             "notes": {"type": "string"},
         },

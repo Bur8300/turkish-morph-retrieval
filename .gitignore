@@ -23,4 +23,4 @@ train/data_morph_v2/*copy*
 test/runs/
 
 # Local Codex preview request cache; finished preview JSON/Markdown files may be committed.
-test/previews/*/cache/
+test/runs/*/cache/

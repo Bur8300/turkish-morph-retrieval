@@ -210,6 +210,25 @@ def _process_slot(
     last_stage = "deterministic_validation"
     last_problems: list[str] = []
 
+    def repair_slots_for(problems: list[str], normalized: dict[str, Any] | None) -> list[str]:
+        if not normalized:
+            return []
+        global_markers = (
+            "family naturalness", "dataset_memory", "dataset memory", "duplicate", "tekrar",
+            "lexical overlap", "query ile gold", "candidate token uzunluk oranı",
+            "normalizasyon hatası", "candidate kapsamı",
+        )
+        if any(marker in problem for problem in problems for marker in global_markers):
+            return []
+        slots: set[str] = set()
+        for candidate in normalized.get("candidates", []):
+            candidate_id = candidate.get("id", "")
+            if candidate_id and any(candidate_id in problem for problem in problems):
+                slots.add(candidate.get("candidate_slot", ""))
+        if any("gold" in problem for problem in problems):
+            slots.add("positive_01")
+        return sorted(slot for slot in slots if slot)
+
     for refill_round in range(start_refill_round, start_refill_round + refill_count):
         # The nonce makes a replacement a fresh cached request while every balancing attribute
         # (feature, split, generator, lengths and holdout bucket) remains fixed to the slot.
@@ -219,11 +238,17 @@ def _process_slot(
         validation_problems: list[str] = []
         family = None
         for attempt in range(max_attempts):
-            prompt = (
-                build_generation_prompt(prompt_slot)
-                if attempt == 0
-                else build_repair_prompt(prompt_slot, previous or {}, validation_problems)
-            )
+            if attempt == 0 and not refill_history:
+                prompt = build_generation_prompt(prompt_slot)
+            else:
+                feedback = validation_problems if attempt else last_problems
+                normalized_feedback = family if attempt else last_family
+                prompt = build_repair_prompt(
+                    prompt_slot,
+                    previous or last_raw or {},
+                    feedback,
+                    repair_slots_for(feedback, normalized_feedback),
+                )
             response = generator.call_json(
                 GENERATOR_SYSTEM, prompt, GENERATION_SCHEMA, "generate_test_family"
             )
@@ -389,10 +414,34 @@ def current_accepted(run_id: str) -> list[dict[str, Any]]:
     ]
 
 
-def generate(run_id: str, config_path: str | None = None, limit: int | None = None, workers: int | None = None) -> dict[str, Any]:
+def generate(
+    run_id: str,
+    config_path: str | None = None,
+    limit: int | None = None,
+    workers: int | None = None,
+    generator_id: str | None = None,
+    offset: int = 0,
+) -> dict[str, Any]:
     cfg = load_config(config_path, runtime=True)
     all_slots = build_plan(cfg)
-    slots = all_slots[:limit] if limit is not None else all_slots
+    if offset < 0:
+        raise ValueError("--offset negatif olamaz")
+    if offset and limit is None:
+        raise ValueError("--offset yalnız --limit ile pilot koşularında kullanılabilir")
+    end = offset + limit if limit is not None else len(all_slots)
+    if end > len(all_slots):
+        raise ValueError("pilot aralığı 600 slotluk planı aşıyor")
+    known_generator_ids = {spec["id"] for spec in cfg["generation"]["generators"]}
+    if generator_id:
+        if limit is None:
+            raise ValueError("--generator-id yalnız --limit ile pilot koşularında kullanılabilir")
+        if generator_id not in known_generator_ids:
+            raise ValueError(f"bilinmeyen generator-id: {generator_id}")
+        all_slots = [
+            {**slot, "generator_id": generator_id} if offset <= index < end else slot
+            for index, slot in enumerate(all_slots)
+        ]
+    slots = all_slots[offset:end]
     paths = initialise_run(run_id, cfg, all_slots)
     memory = DatasetMemory(paths.memory)
     accepted_before = current_accepted(run_id)
@@ -410,14 +459,19 @@ def generate(run_id: str, config_path: str | None = None, limit: int | None = No
     metadata = {"dataset_version": cfg["version"], "prompt_version": PROMPT_VERSION}
     cli_workdir = paths.root / "cli_workdir"
     cli_workdir.mkdir(parents=True, exist_ok=True)
+    required_generator_ids = {slot["generator_id"] for slot in pending}
+    generator_specs = [
+        spec for spec in cfg["generation"]["generators"]
+        if spec["id"] in required_generator_ids
+    ]
     generators = {
         spec["id"]: make_provider(
             {**spec, "workdir": str(cli_workdir / spec["id"])},
             paths.cache / spec["id"], metadata,
         )
-        for spec in cfg["generation"]["generators"]
+        for spec in generator_specs
     }
-    for spec in cfg["generation"]["generators"]:
+    for spec in generator_specs:
         (cli_workdir / spec["id"]).mkdir(parents=True, exist_ok=True)
     judge_specs = cfg["generation"]["judges"]
     judges = {

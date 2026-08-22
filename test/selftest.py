@@ -426,26 +426,20 @@ def run() -> list[str]:
     ]) for candidate in long_family["candidates"]):
         failures.append("kritik cümle planlanan üçüncü konuma yerleşmedi")
 
-    semantic_assessments = []
-    morphology_assessments = []
+    morphology_matches = []
     for candidate in family["candidates"]:
         supports = candidate["role"] == "positive"
-        semantic_assessments.append({
-            "id": candidate["id"], "supports_query": supports, "naturalness": 5,
-            "internally_consistent": True, "error_dimensions": ["none"],
-        })
-        morphology_assessments.append({
-            "id": candidate["id"], "morphology_ok": True,
-            "target_interpretation": "supports_query" if supports else "contradicts_query",
-            "error_dimensions": ["none"],
-        })
+        if supports:
+            morphology_matches.append(candidate["id"])
     semantic_judge = {
-        "answers_query": [family["gold_id"]], "candidate_assessments": semantic_assessments,
+        "fully_relevant_candidate_ids": [family["gold_id"]],
+        "unnatural_candidate_ids": [], "internally_inconsistent_candidate_ids": [],
         "length_or_style_artifact": False, "family_naturalness": 5,
         "confidence": 95, "abstain": False, "notes": "fixture",
     }
     morphology_judge = {
-        "answers_query": [family["gold_id"]], "candidate_assessments": morphology_assessments,
+        "target_matching_candidate_ids": morphology_matches,
+        "morphologically_invalid_candidate_ids": [], "unclear_candidate_ids": [],
         "allomorph_treated_as_wrong": False, "confidence": 95, "abstain": False,
         "notes": "fixture",
     }
@@ -458,29 +452,47 @@ def run() -> list[str]:
             f"geçerli cascade judge fixture reddedildi: {semantic_problems + morphology_problems}"
         )
     bad_support = deepcopy(semantic_judge)
-    negative = next(
-        row for row in bad_support["candidate_assessments"] if not row["supports_query"]
-    )
-    negative["supports_query"] = True
+    negative = next(c["id"] for c in family["candidates"] if c["role"] != "positive")
+    bad_support["fully_relevant_candidate_ids"].append(negative)
     support_problems, _ = interpret_semantic_judges(
         family, [bad_support, deepcopy(semantic_judge)], cfg
     )
     if not any("query desteği" in problem for problem in support_problems):
         failures.append("judge false-negative/query desteği kontrolü çalışmadı")
     bad_consistency = deepcopy(semantic_judge)
-    bad_consistency["candidate_assessments"][0]["internally_consistent"] = False
+    bad_consistency["internally_inconsistent_candidate_ids"] = [family["gold_id"]]
     consistency_problems, _ = interpret_semantic_judges(
         family, [bad_consistency, deepcopy(bad_consistency)], cfg
     )
     if not any("iç tutarsız" in problem for problem in consistency_problems):
         failures.append("judge iç tutarlılık kontrolü çalışmadı")
     low_naturalness = deepcopy(semantic_judge)
-    low_naturalness["candidate_assessments"][0]["naturalness"] = 3
+    low_naturalness["unnatural_candidate_ids"] = [family["gold_id"]]
     naturalness_problems, _ = interpret_semantic_judges(
         family, [low_naturalness, deepcopy(low_naturalness)], cfg
     )
-    if not any("aday naturalness" in problem for problem in naturalness_problems):
+    if not any("doğal olmayan aday" in problem for problem in naturalness_problems):
         failures.append("candidate-level naturalness kapısı çalışmadı")
+    uncertain_semantic = deepcopy(bad_support)
+    uncertain_semantic["confidence"] = 60
+    uncertain_problems, _ = interpret_semantic_judges(family, [uncertain_semantic], cfg)
+    if uncertain_problems:
+        failures.append("düşük güvenli semantic judge veto kullandı")
+    uncertain_morphology = deepcopy(morphology_judge)
+    uncertain_morphology["confidence"] = 60
+    uncertain_morphology["unclear_candidate_ids"] = [family["gold_id"]]
+    uncertain_morphology_problems, _ = interpret_morphology_judge(
+        family, uncertain_morphology, cfg
+    )
+    if uncertain_morphology_problems:
+        failures.append("düşük güvenli morphology judge veto kullandı")
+    advisory_morphology = deepcopy(morphology_judge)
+    advisory_morphology["unclear_candidate_ids"] = [family["gold_id"]]
+    advisory_morphology_problems, _ = interpret_morphology_judge(
+        family, advisory_morphology, cfg
+    )
+    if advisory_morphology_problems:
+        failures.append("morphology belirsizliği veto kullandı")
 
     def response(data, number):
         return SimpleNamespace(
@@ -507,7 +519,7 @@ def run() -> list[str]:
             self.calls += 1
             verdict = deepcopy(semantic_judge)
             if self.calls <= self.rejected_calls:
-                verdict["answers_query"] = []
+                verdict["fully_relevant_candidate_ids"] = []
             return response(verdict, self.calls)
 
     class MorphologyJudge:

@@ -26,7 +26,7 @@ def judge_calibration_report(run_id: str) -> dict[str, Any]:
     semantic_unique_gold = 0
     semantic_confidences = []
     order_stable = 0
-    morphology_unique_gold = 0
+    morphology_gold_target_match = 0
     morphology_confidences = []
     candidate_naturalness_pass = 0
     for family in families.values():
@@ -45,8 +45,8 @@ def judge_calibration_report(run_id: str) -> dict[str, Any]:
             int(semantic.get("candidate_naturalness_min", 0)) >= 4
         )
         morphology = judging.get("morphology", {})
-        morphology_unique_gold += int(
-            set(morphology.get("answers_query", [])) == {family.get("gold_id")}
+        morphology_gold_target_match += int(
+            morphology.get("gold_target_status") == "matches_target"
         )
         if isinstance(morphology.get("confidence"), int):
             morphology_confidences.append(morphology["confidence"])
@@ -86,7 +86,7 @@ def judge_calibration_report(run_id: str) -> dict[str, Any]:
         "semantic_order_stability_rate": order_stable / denominator,
         "semantic_confidence_mean": mean(semantic_confidences) if semantic_confidences else None,
         "candidate_naturalness_gate_rate": candidate_naturalness_pass / denominator,
-        "morphology_unique_gold_rate": morphology_unique_gold / denominator,
+        "morphology_gold_target_match_rate": morphology_gold_target_match / denominator,
         "morphology_confidence_mean": mean(morphology_confidences) if morphology_confidences else None,
         "review_escalation_rate": len(by_slot) / denominator,
         "pending_human_review": max(0, len(families) - len(by_slot)),
