@@ -82,9 +82,9 @@ yüksek güvenli açık judge hatası varsa aynı slot için otomatik refill
 600 kabul edilmiş family → kör insan final review → freeze
 ```
 
-Deterministic QC, dataset-memory ihlali, semantic judge'ın en az 85 güvenle ikinci-gold/relevance
-hatası bulması veya bir judge'ın en az 90 güvenle diğer somut aday hatasını bulması aynı sabit slotta
-onarım üretir. Genel puan, belirsizlik,
+Deterministic QC, dataset-memory ihlali veya bir judge'ın en az 85 güvenle somut semantic ya da
+morphology aday hatası bulması aynı sabit slotta onarım üretir. Güveni 85'in altında kalan karar,
+genel puan, belirsizlik,
 düşük güven ve abstain yalnız QC notudur. İnsan incelemesi üretim döngüsünde değildir: 600 otomatik kabul edilmiş
 family tamamlandıktan sonra, freeze öncesinde yapılır. İnsan redleri ilgili slotu yeniden açar.
 Düşük güven, abstain veya morphology `unclear` taşıdığı hâlde otomatik kabul edilen family'ler
