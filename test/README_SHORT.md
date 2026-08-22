@@ -41,11 +41,12 @@ edit script ve kimlikler Python tarafından eklenir.
 
 Semantic judge hedef özelliği görmeden açık ikinci-gold, tutarlılık ve doğallık hatalarını kontrol
 eder. Morphology judge yalnız hedef özellik, bozuk çekim ve allomorfa bakar. Yalnız güveni en az
-85 olan semantic veya morphology somut aday hatası aynı slotu onartır; güveni 85'in altında kalan
-karar, belirsizlik ve abstain QC notudur. Human review üretim
+85 olan semantic veya morphology somut aday hatası aynı slotu onartır. Somut uyarıyla birleşen
+85-altı güven, `abstain`/`unclear` veya uyarı olmasa bile 60-altı güven human-review önceliğidir.
+Temiz 60–84 kararı yalnız QC notudur. Human review üretim
 sırasında değil, 600 kabul edilmiş family tamamlandıktan
 sonra freeze öncesinde uygulanır; insanın reddettiği slotlar yeniden üretilir.
-Düşük güven, abstain veya morphology belirsizliği taşıyan kabul edilmiş family'ler
+Bu öncelik koşullarını taşıyan kabul edilmiş family'ler
 `human_review_priority=true` ile işaretlenir ve final-review manifestinde önce gösterilir.
 
 Pilot provenance: `v36` Codex CLI / `gpt-5.6-sol`; `v37` deneysel Google /

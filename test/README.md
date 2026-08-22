@@ -83,11 +83,11 @@ yüksek güvenli açık judge hatası varsa aynı slot için otomatik refill
 ```
 
 Deterministic QC, dataset-memory ihlali veya bir judge'ın en az 85 güvenle somut semantic ya da
-morphology aday hatası bulması aynı sabit slotta onarım üretir. Güveni 85'in altında kalan karar,
-genel puan, belirsizlik,
-düşük güven ve abstain yalnız QC notudur. İnsan incelemesi üretim döngüsünde değildir: 600 otomatik kabul edilmiş
+morphology aday hatası bulması aynı sabit slotta onarım üretir. Somut uyarıyla birleşen 85-altı
+güven, `abstain`/`unclear` veya uyarı olmasa bile 60-altı güven human-review önceliğidir. Temiz
+60–84 kararı yalnız QC notudur. İnsan incelemesi üretim döngüsünde değildir: 600 otomatik kabul edilmiş
 family tamamlandıktan sonra, freeze öncesinde yapılır. İnsan redleri ilgili slotu yeniden açar.
-Düşük güven, abstain veya morphology `unclear` taşıdığı hâlde otomatik kabul edilen family'ler
+Bu öncelik koşullarını taşıdığı hâlde otomatik kabul edilen family'ler
 `qc.human_review_priority=true` ve dahili neden listesiyle kaydedilir. Review manifestinde bunlar
 önce sıralanır; etiket reviewer kararını veya körlüğünü değiştirmez.
 

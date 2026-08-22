@@ -84,7 +84,8 @@
     "candidate_naturalness_min": 4,
     "semantic_relevance_confidence_min": 85,
     "semantic_quality_confidence_min": 85,
-    "morphology_judge_confidence_min": 85
+    "morphology_judge_confidence_min": 85,
+    "human_review_confidence_floor": 60
   },
   "generation": {
     "max_generation_attempts": 2,

@@ -364,10 +364,21 @@ def _process_slot(
         }
         priority_reasons: list[str] = []
         semantic_quality_floor = int(cfg["quality"]["semantic_quality_confidence_min"])
+        review_confidence_floor = int(cfg["quality"]["human_review_confidence_floor"])
         for index, semantic_pass in enumerate(semantic_metadata.get("passes", []), start=1):
             confidence = semantic_pass.get("confidence", 0)
-            if not isinstance(confidence, int) or confidence < semantic_quality_floor:
-                priority_reasons.append(f"semantic_{index}:low_confidence:{confidence}")
+            semantic_finding = bool(
+                semantic_pass.get("support_mismatches")
+                or semantic_pass.get("unnatural_candidate_ids")
+                or semantic_pass.get("internally_inconsistent_candidates")
+                or semantic_pass.get("length_or_style_artifact")
+                or int(semantic_pass.get("family_naturalness", 0))
+                < int(cfg["quality"]["judge_naturalness_min"])
+            )
+            if not isinstance(confidence, int) or confidence < review_confidence_floor:
+                priority_reasons.append(f"semantic_{index}:very_low_confidence:{confidence}")
+            elif confidence < semantic_quality_floor and semantic_finding:
+                priority_reasons.append(f"semantic_{index}:low_confidence_with_finding:{confidence}")
             if semantic_pass.get("abstain"):
                 priority_reasons.append(f"semantic_{index}:abstain")
             if semantic_pass.get("support_mismatches") and not semantic_pass.get(
@@ -382,8 +393,21 @@ def _process_slot(
 
         morphology_floor = int(cfg["quality"]["morphology_judge_confidence_min"])
         morphology_confidence = morphology_metadata.get("confidence", 0)
-        if not isinstance(morphology_confidence, int) or morphology_confidence < morphology_floor:
-            priority_reasons.append(f"morphology:low_confidence:{morphology_confidence}")
+        morphology_finding = bool(
+            morphology_metadata.get("morphology_failures")
+            or morphology_metadata.get("unclear_candidate_ids")
+            or morphology_metadata.get("gold_target_status") != "matches_target"
+            or morphology_metadata.get("allomorph_treated_as_wrong")
+        )
+        if (
+            not isinstance(morphology_confidence, int)
+            or morphology_confidence < review_confidence_floor
+        ):
+            priority_reasons.append(f"morphology:very_low_confidence:{morphology_confidence}")
+        elif morphology_confidence < morphology_floor and morphology_finding:
+            priority_reasons.append(
+                f"morphology:low_confidence_with_finding:{morphology_confidence}"
+            )
         if morphology_metadata.get("abstain"):
             priority_reasons.append("morphology:abstain")
         if morphology_metadata.get("unclear_candidate_ids"):

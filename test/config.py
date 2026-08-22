@@ -134,7 +134,7 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
         raise ConfigError("Her family modu için lexical gate tanımlanmalı")
     for name in (
         "semantic_relevance_confidence_min", "semantic_quality_confidence_min",
-        "morphology_judge_confidence_min",
+        "morphology_judge_confidence_min", "human_review_confidence_floor",
     ):
         if not 0 <= int(quality[name]) <= 100:
             raise ConfigError(f"{name} 0–100 arasında olmalı")

@@ -563,6 +563,33 @@ def run() -> list[str]:
     ):
         failures.append("human_review_priority nedeni kaydedilmedi")
 
+    class FixedSemanticJudge:
+        def __init__(self, verdict):
+            self.verdict = verdict
+
+        def call_json(self, *_args):
+            return response(self.verdict, 202)
+
+    clean_mid_confidence = deepcopy(semantic_judge)
+    clean_mid_confidence["confidence"] = 80
+    status, clean_mid = _process_slot(
+        slot, cfg, {"generator_a": RefillGenerator()},
+        {"semantic": FixedSemanticJudge(clean_mid_confidence), "morphology": MorphologyJudge()},
+        start_refill_round=9,
+    )
+    if status != "accepted" or clean_mid.get("qc", {}).get("human_review_priority"):
+        failures.append("temiz 60–84 semantic kararı gereksiz human-review priority aldı")
+
+    advisory_mid_confidence = deepcopy(clean_mid_confidence)
+    advisory_mid_confidence["unnatural_candidate_ids"] = [family["gold_id"]]
+    status, advisory_mid = _process_slot(
+        slot, cfg, {"generator_a": RefillGenerator()},
+        {"semantic": FixedSemanticJudge(advisory_mid_confidence), "morphology": MorphologyJudge()},
+        start_refill_round=10,
+    )
+    if status != "accepted" or not advisory_mid.get("qc", {}).get("human_review_priority"):
+        failures.append("uyarılı 60–84 semantic kararı human-review priority almadı")
+
     collision_items = [
         {
             "family_id": "collision_a", "semantic_frame_id": "frame_collision_a",
