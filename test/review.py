@@ -37,12 +37,19 @@ def unresolved_reviews(run_id: str) -> list[dict[str, Any]]:
         current_accepted(run_id), cfg,
         {"development": cfg["targets"]["development"], "sealed_test": cfg["targets"]["sealed_test"]},
     )
-    return [
+    records = [
         {"slot_id": family["slot_id"], "family": family,
          "review_kind": "final_freeze", "reviewers_required": cfg["generation"]["human_review"]["reviewers_required"]}
         for family in selected
         if family.get("qc", {}).get("human_review", {}).get("status") != "pass"
     ]
+    return sorted(
+        records,
+        key=lambda record: (
+            not bool(record["family"].get("qc", {}).get("human_review_priority")),
+            record["slot_id"],
+        ),
+    )
 
 
 def export_human_review(run_id: str) -> dict[str, Any]:
@@ -57,6 +64,9 @@ def export_human_review(run_id: str) -> dict[str, Any]:
             "family_id": family["family_id"],
             "review_kind": record["review_kind"],
             "reviewers_required": record["reviewers_required"],
+            "human_review_priority": bool(
+                family.get("qc", {}).get("human_review_priority")
+            ),
             "query": family["query"],
             "candidates": _blind_candidates(family, "human_review"),
         }
@@ -73,7 +83,12 @@ def export_human_review(run_id: str) -> dict[str, Any]:
         "created_at": datetime.now(timezone.utc).isoformat(),
         "instructions": (
             "Önce semantic_items target_feature bilgisi görülmeden doldurulmalı; sonra "
-            "morphology_items incelenmeli. Reviewer gold/role/subtype görmez."
+            "morphology_items incelenmeli. Öncelikli family'ler listenin başındadır; bu etiket "
+            "kararı değil yalnız inceleme sırasını belirler. Reviewer gold/role/subtype görmez."
+        ),
+        "priority_count": sum(
+            bool(record["family"].get("qc", {}).get("human_review_priority"))
+            for record in records
         ),
         "decision_schema": {
             "slot_id": "string",
@@ -89,7 +104,12 @@ def export_human_review(run_id: str) -> dict[str, Any]:
     }
     output = paths.root / "human_review_manifest.json"
     _write_json(output, manifest)
-    return {"run_id": run_id, "pending": len(records), "manifest": str(output)}
+    return {
+        "run_id": run_id,
+        "pending": len(records),
+        "priority": manifest["priority_count"],
+        "manifest": str(output),
+    }
 
 
 def _load_decisions(path: str | Path) -> list[dict[str, Any]]:

@@ -45,6 +45,8 @@ eder. Morphology judge yalnız hedef özellik, bozuk çekim ve allomorfa bakar. 
 onartır; genel puan, belirsizlik ve abstain QC notudur. Human review üretim
 sırasında değil, 600 kabul edilmiş family tamamlandıktan
 sonra freeze öncesinde uygulanır; insanın reddettiği slotlar yeniden üretilir.
+Düşük güven, abstain veya morphology belirsizliği taşıyan kabul edilmiş family'ler
+`human_review_priority=true` ile işaretlenir ve final-review manifestinde önce gösterilir.
 
 Pilot provenance: `v36` Codex CLI / `gpt-5.6-sol`; `v37` deneysel Google /
 `gemini-2.5-flash` üretimidir. İkisinde de independent judge çalışmadığından paper sonucu olarak

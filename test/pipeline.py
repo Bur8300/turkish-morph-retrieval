@@ -362,6 +362,39 @@ def _process_slot(
             "deterministic": "pass",
             "judging": judging_metadata,
         }
+        priority_reasons: list[str] = []
+        semantic_quality_floor = int(cfg["quality"]["semantic_quality_confidence_min"])
+        for index, semantic_pass in enumerate(semantic_metadata.get("passes", []), start=1):
+            confidence = semantic_pass.get("confidence", 0)
+            if not isinstance(confidence, int) or confidence < semantic_quality_floor:
+                priority_reasons.append(f"semantic_{index}:low_confidence:{confidence}")
+            if semantic_pass.get("abstain"):
+                priority_reasons.append(f"semantic_{index}:abstain")
+            if semantic_pass.get("support_mismatches") and not semantic_pass.get(
+                "relevance_authoritative", False
+            ):
+                priority_reasons.append(f"semantic_{index}:advisory_relevance_mismatch")
+            if (
+                semantic_pass.get("unnatural_candidate_ids")
+                or semantic_pass.get("internally_inconsistent_candidates")
+            ) and not semantic_pass.get("quality_authoritative", False):
+                priority_reasons.append(f"semantic_{index}:advisory_quality_finding")
+
+        morphology_floor = int(cfg["quality"]["morphology_judge_confidence_min"])
+        morphology_confidence = morphology_metadata.get("confidence", 0)
+        if not isinstance(morphology_confidence, int) or morphology_confidence < morphology_floor:
+            priority_reasons.append(f"morphology:low_confidence:{morphology_confidence}")
+        if morphology_metadata.get("abstain"):
+            priority_reasons.append("morphology:abstain")
+        if morphology_metadata.get("unclear_candidate_ids"):
+            priority_reasons.append("morphology:unclear_candidates")
+        if (
+            morphology_metadata.get("gold_target_status") != "matches_target"
+            and not morphology_metadata.get("authoritative", False)
+        ):
+            priority_reasons.append("morphology:gold_not_confirmed_advisory")
+        family["qc"]["human_review_priority"] = bool(priority_reasons)
+        family["qc"]["human_review_priority_reasons"] = sorted(set(priority_reasons))
         family["qc"]["quality_score"] = round(quality_score(family), 5)
         family["memory_tags"] = family_memory_tags(family)
 

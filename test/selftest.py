@@ -542,6 +542,26 @@ def run() -> list[str]:
     )
     if status != "accepted" or generator.calls != 2 or refilled["provenance"]["refill_round"] != 5:
         failures.append("judge reddinden sonra taze refill çalışmadı")
+    low_confidence_semantic = deepcopy(semantic_judge)
+    low_confidence_semantic["confidence"] = 60
+    low_confidence_semantic["abstain"] = True
+
+    class LowConfidenceSemanticJudge:
+        def call_json(self, *_args):
+            return response(low_confidence_semantic, 201)
+
+    status, prioritized = _process_slot(
+        slot, cfg, {"generator_a": RefillGenerator()},
+        {"semantic": LowConfidenceSemanticJudge(), "morphology": MorphologyJudge()},
+        start_refill_round=8,
+    )
+    if status != "accepted" or not prioritized.get("qc", {}).get("human_review_priority"):
+        failures.append("düşük güvenli kabul human_review_priority almadı")
+    if not any(
+        "semantic_1:abstain" == reason
+        for reason in prioritized.get("qc", {}).get("human_review_priority_reasons", [])
+    ):
+        failures.append("human_review_priority nedeni kaydedilmedi")
 
     collision_items = [
         {
@@ -591,6 +611,9 @@ def run() -> list[str]:
 
 def _check_human_review_roundtrip(cfg, slot, family) -> list[str]:
     failures = []
+    family = deepcopy(family)
+    family.setdefault("qc", {})["human_review_priority"] = True
+    family["qc"]["human_review_priority_reasons"] = ["semantic_1:abstain"]
     with TemporaryDirectory() as temporary:
         root = Path(temporary)
         paths = SimpleNamespace(
@@ -623,6 +646,12 @@ def _check_human_review_roundtrip(cfg, slot, family) -> list[str]:
             manifest = json.loads(Path(exported["manifest"]).read_text(encoding="utf-8"))
             if any("target_feature" in row for row in manifest["semantic_items"]):
                 failures.append("human semantic review manifesti target_feature sızdırıyor")
+            if exported.get("priority") != 1 or manifest.get("priority_count") != 1:
+                failures.append("human review priority sayacı çalışmadı")
+            if not manifest["semantic_items"][0].get("human_review_priority"):
+                failures.append("human review priority etiketi manifeste taşınmadı")
+            if "human_review_priority_reasons" in manifest["semantic_items"][0]:
+                failures.append("human review priority nedeni kör manifeste sızdı")
             applied = apply_human_reviews("fixture_review", decisions)
         with patch("test.judge_report.paths_for", return_value=paths):
             calibration = judge_calibration_report("fixture_review")

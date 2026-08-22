@@ -87,6 +87,9 @@ hatası bulması veya bir judge'ın en az 90 güvenle diğer somut aday hatasın
 onarım üretir. Genel puan, belirsizlik,
 düşük güven ve abstain yalnız QC notudur. İnsan incelemesi üretim döngüsünde değildir: 600 otomatik kabul edilmiş
 family tamamlandıktan sonra, freeze öncesinde yapılır. İnsan redleri ilgili slotu yeniden açar.
+Düşük güven, abstain veya morphology `unclear` taşıdığı hâlde otomatik kabul edilen family'ler
+`qc.human_review_priority=true` ve dahili neden listesiyle kaydedilir. Review manifestinde bunlar
+önce sıralanır; etiket reviewer kararını veya körlüğünü değiştirmez.
 
 Codex ve Claude generator'ları kayıtlı CLI abonelik oturumlarını kullanır; OpenRouter API key yalnız
 semantic ve morphology judge çağrılarında kullanılır. Dört rol farklı model ailesinden olmalıdır.

@@ -29,7 +29,11 @@ def judge_calibration_report(run_id: str) -> dict[str, Any]:
     morphology_gold_target_match = 0
     morphology_confidences = []
     candidate_naturalness_pass = 0
+    human_review_priority_count = 0
     for family in families.values():
+        human_review_priority_count += int(
+            bool(family.get("qc", {}).get("human_review_priority"))
+        )
         judging = family.get("qc", {}).get("judging", {})
         semantic = judging.get("semantic", {})
         passes = semantic.get("passes", [])
@@ -88,6 +92,8 @@ def judge_calibration_report(run_id: str) -> dict[str, Any]:
         "candidate_naturalness_gate_rate": candidate_naturalness_pass / denominator,
         "morphology_gold_target_match_rate": morphology_gold_target_match / denominator,
         "morphology_confidence_mean": mean(morphology_confidences) if morphology_confidences else None,
+        "human_review_priority_count": human_review_priority_count,
+        "human_review_priority_rate": human_review_priority_count / denominator,
         "review_escalation_rate": len(by_slot) / denominator,
         "pending_human_review": max(0, len(families) - len(by_slot)),
         "human_reviewed_slots": len(by_slot),
