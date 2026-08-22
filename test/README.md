@@ -397,6 +397,11 @@ Eski iki pilot set, sade dosya yapısı için `data/deneme_verisi_40.json` için
 İlk 20 family Codex CLI / `gpt-5.6-sol`, sonraki 20 family `gemini-2.5-flash` provenance'ı taşır.
 Bağımsız judge çalıştırılmamış bu veri yalnız notebook denemesidir; final benchmark değildir.
 
+`data/paid_pilot_verisi_10.json`, Sol generator + DeepSeek semantic judge + GLM morphology judge
+hattından kabul edilen 10 family'yi tek dosyada tutar. Her family kendi model/request/prompt
+provenance'ını taşır. Pilot farklı judge iyileştirme aşamalarından geçtiği ve henüz insan kontrolü
+görmediği için paper testine otomatik eklenmez; sistem smoke testi ve nitel inceleme içindir.
+
 ## Ana dosyalar
 
 | Dosya | Görev |

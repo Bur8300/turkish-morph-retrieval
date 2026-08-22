@@ -49,6 +49,9 @@ Pilot provenance: `v36` Codex CLI / `gpt-5.6-sol`; `v37` deneysel Google /
 `gemini-2.5-flash` üretimidir. İkisinde de independent judge çalışmadığından paper sonucu olarak
 raporlanmaz.
 
+`data/paid_pilot_verisi_10.json`, Sol + DeepSeek + GLM hattından kabul edilmiş 10-family smoke
+pilotudur. Provenance içerir ancak henüz insan-reviewed final benchmark verisi değildir.
+
 Qrels family oluşturulurken hazırdır:
 
 ```text
