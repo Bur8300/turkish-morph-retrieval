@@ -132,7 +132,10 @@ def validate_config(cfg: dict[str, Any], runtime: bool = False) -> None:
         raise ConfigError("Query–gold lexical bandları high/medium/low olmalı")
     if set(quality["family_mode_lexical_gates"]) != set(cfg["family_mode_distribution"]):
         raise ConfigError("Her family modu için lexical gate tanımlanmalı")
-    for name in ("semantic_judge_confidence_min", "morphology_judge_confidence_min"):
+    for name in (
+        "semantic_relevance_confidence_min", "semantic_quality_confidence_min",
+        "morphology_judge_confidence_min",
+    ):
         if not 0 <= int(quality[name]) <= 100:
             raise ConfigError(f"{name} 0–100 arasında olmalı")
     for name in ("judge_naturalness_min", "candidate_naturalness_min"):

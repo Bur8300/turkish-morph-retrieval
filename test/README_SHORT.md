@@ -41,7 +41,8 @@ edit script ve kimlikler Python tarafından eklenir.
 
 Semantic judge hedef özelliği görmeden açık ikinci-gold, tutarlılık ve doğallık hatalarını kontrol
 eder. Morphology judge yalnız hedef özellik, bozuk çekim ve allomorfa bakar. Yalnız güveni en az
-90 olan somut aday-ID hatası aynı slotu onartır; genel puan, belirsizlik ve abstain QC notudur. Human review üretim
+85 olan ikinci-gold/relevance hatası veya güveni en az 90 olan diğer somut aday hatası aynı slotu
+onartır; genel puan, belirsizlik ve abstain QC notudur. Human review üretim
 sırasında değil, 600 kabul edilmiş family tamamlandıktan
 sonra freeze öncesinde uygulanır; insanın reddettiği slotlar yeniden üretilir.
 
@@ -49,7 +50,7 @@ Pilot provenance: `v36` Codex CLI / `gpt-5.6-sol`; `v37` deneysel Google /
 `gemini-2.5-flash` üretimidir. İkisinde de independent judge çalışmadığından paper sonucu olarak
 raporlanmaz.
 
-`data/paid_pilot_verisi_10.json`, Sol + DeepSeek + GLM hattından kabul edilmiş 10-family smoke
+`data/paid_pilot_verisi_15.json`, Sol + DeepSeek + GLM hattından kabul edilmiş 15-family smoke
 pilotudur. Provenance içerir ancak henüz insan-reviewed final benchmark verisi değildir.
 
 Qrels family oluşturulurken hazırdır:

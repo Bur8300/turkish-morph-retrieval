@@ -534,7 +534,8 @@ def interpret_semantic_judges(
     """Interpret one or more feature-blind semantic passes."""
     problems: list[str] = []
     candidates = {candidate["id"]: candidate for candidate in family["candidates"]}
-    confidence_floor = int(cfg["quality"]["semantic_judge_confidence_min"])
+    relevance_floor = int(cfg["quality"]["semantic_relevance_confidence_min"])
+    quality_floor = int(cfg["quality"]["semantic_quality_confidence_min"])
     summaries = []
     decision_signatures = []
 
@@ -555,15 +556,20 @@ def interpret_semantic_judges(
         ]
         family_naturalness = verdict.get("family_naturalness", 0)
         confidence = verdict.get("confidence", 0)
-        authoritative = (
-            isinstance(confidence, int) and confidence >= confidence_floor
+        relevance_authoritative = (
+            isinstance(confidence, int) and confidence >= relevance_floor
             and not verdict.get("abstain")
         )
-        if authoritative:
+        quality_authoritative = (
+            isinstance(confidence, int) and confidence >= quality_floor
+            and not verdict.get("abstain")
+        )
+        if relevance_authoritative:
             if unknown_ids:
                 problems.append(f"{label} bilinmeyen candidate ID verdi: {unknown_ids}")
             if support_mismatches:
                 problems.append(f"{label} query desteği uyuşmazlığı: {support_mismatches}")
+        if quality_authoritative:
             if inconsistent:
                 problems.append(f"{label} iç tutarsız aday buldu: {inconsistent}")
             if unnatural:
@@ -582,7 +588,9 @@ def interpret_semantic_judges(
             "unnatural_candidate_ids": unnatural,
             "internally_inconsistent_candidates": inconsistent,
             "length_or_style_artifact": bool(verdict.get("length_or_style_artifact")),
-            "authoritative": authoritative,
+            "authoritative": relevance_authoritative or quality_authoritative,
+            "relevance_authoritative": relevance_authoritative,
+            "quality_authoritative": quality_authoritative,
             "notes": verdict.get("notes", ""),
         })
 

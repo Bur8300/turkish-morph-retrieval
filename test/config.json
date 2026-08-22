@@ -82,7 +82,8 @@
     "freeze_tie_aware_bm25_recall_at_1_max": 0.30,
     "judge_naturalness_min": 4,
     "candidate_naturalness_min": 4,
-    "semantic_judge_confidence_min": 90,
+    "semantic_relevance_confidence_min": 85,
+    "semantic_quality_confidence_min": 90,
     "morphology_judge_confidence_min": 90
   },
   "generation": {

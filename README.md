@@ -7,7 +7,7 @@ araştırma projesi. Repo artık veri yaşam döngüsünü iki bağımsız parç
 |---|---|
 | [`train/`](train/) | Eski Gemini train/dev generator'ı, model-selection araçları ve v2.0–v2.2 JSON geçmişi. Bu bölüm korunmuş legacy sistemdir. |
 | [`test/`](test/) | 100 development + 500 final test; iki generator, bağımsız LLM judge, otomatik QC/qrels/freeze. |
-| [`test/data/paid_pilot_verisi_10.json`](test/data/paid_pilot_verisi_10.json) | Sol + DeepSeek + GLM hattından kabul edilen 10-family ücretli smoke pilotu; insan-reviewed final veri değildir. |
+| [`test/data/paid_pilot_verisi_15.json`](test/data/paid_pilot_verisi_15.json) | Sol + DeepSeek + GLM hattından kabul edilen 15-family ücretli smoke pilotu; insan-reviewed final veri değildir. |
 | [`test/notebooks/morph_baseline_eval_deneme40_colab.ipynb`](test/notebooks/morph_baseline_eval_deneme40_colab.ipynb) | Tek dosyadaki 40-family deneme verisi: Recall@1, 11/440 aday gold sırası ve temel metrikler. |
 | [`test/notebooks/morph_baseline_eval_600_colab.ipynb`](test/notebooks/morph_baseline_eval_600_colab.ipynb) | 100 development + 500 final için eksiksiz paper değerlendirmesi. |
 

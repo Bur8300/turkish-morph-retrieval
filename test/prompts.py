@@ -9,7 +9,7 @@ import hashlib
 import json
 import random
 
-PROMPT_VERSION = "test-prompts-3.8.2-feedback-specialized-judges"
+PROMPT_VERSION = "test-prompts-3.8.3-limited-local-repair"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.

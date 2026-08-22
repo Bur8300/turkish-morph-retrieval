@@ -82,8 +82,9 @@ yüksek güvenli açık judge hatası varsa aynı slot için otomatik refill
 600 kabul edilmiş family → kör insan final review → freeze
 ```
 
-Deterministic QC, dataset-memory ihlali veya bir judge'ın kendi uzmanlık alanında en az 90 güvenle
-açık ve somut aday-ID hatası bulması aynı sabit slotta onarım üretir. Genel puan, belirsizlik,
+Deterministic QC, dataset-memory ihlali, semantic judge'ın en az 85 güvenle ikinci-gold/relevance
+hatası bulması veya bir judge'ın en az 90 güvenle diğer somut aday hatasını bulması aynı sabit slotta
+onarım üretir. Genel puan, belirsizlik,
 düşük güven ve abstain yalnız QC notudur. İnsan incelemesi üretim döngüsünde değildir: 600 otomatik kabul edilmiş
 family tamamlandıktan sonra, freeze öncesinde yapılır. İnsan redleri ilgili slotu yeniden açar.
 
@@ -397,8 +398,8 @@ Eski iki pilot set, sade dosya yapısı için `data/deneme_verisi_40.json` için
 İlk 20 family Codex CLI / `gpt-5.6-sol`, sonraki 20 family `gemini-2.5-flash` provenance'ı taşır.
 Bağımsız judge çalıştırılmamış bu veri yalnız notebook denemesidir; final benchmark değildir.
 
-`data/paid_pilot_verisi_10.json`, Sol generator + DeepSeek semantic judge + GLM morphology judge
-hattından kabul edilen 10 family'yi tek dosyada tutar. Her family kendi model/request/prompt
+`data/paid_pilot_verisi_15.json`, Sol generator + DeepSeek semantic judge + GLM morphology judge
+hattından kabul edilen 15 family'yi tek dosyada tutar. Her family kendi model/request/prompt
 provenance'ını taşır. Pilot farklı judge iyileştirme aşamalarından geçtiği ve henüz insan kontrolü
 görmediği için paper testine otomatik eklenmez; sistem smoke testi ve nitel inceleme içindir.
 
