@@ -407,6 +407,10 @@ tutar. Her family kendi model/request/prompt provenance'ını taşır. Pilot far
 aşamalarından geçtiği ve henüz planlanan nihai insan kontrolünü görmediği için paper testine
 otomatik eklenmez; sistem smoke testi ve nitel inceleme içindir.
 
+`data/deneme_verisi_60.json`, eski 40-family preview ile bu güncel 20-family pilotu birleştirir.
+Kaynak metadata'sı korunur; birleşik dosya yalnız hızlı encoder karşılaştırması içindir ve paper
+benchmark'ı olarak raporlanmaz.
+
 ## Ana dosyalar
 
 | Dosya | Görev |
@@ -425,7 +429,9 @@ otomatik eklenmez; sistem smoke testi ve nitel inceleme içindir.
 | `morphology.py` | Opsiyonel Stanza audit'i |
 | `evaluation.py` | Metrikler, baseline, ablation ve istatistik |
 | `data/deneme_verisi_40.json` | Eski iki pilotun provenance koruyan tek deneme dosyası |
-| `notebooks/morph_baseline_eval_deneme40_colab.ipynb` | Tek dosyayla 40-family hızlı test |
+| `data/paid_pilot_verisi_20.json` | Güncel cascade-judged ve editoryal kontrollü smoke pilotu |
+| `data/deneme_verisi_60.json` | Eski 40 + güncel 20 birleşik encoder deneme seti |
+| `notebooks/morph_baseline_eval_deneme60_colab.ipynb` | Tek dosyayla 60-family / 660-belge hızlı test |
 | `notebooks/morph_baseline_eval_600_colab.ipynb` | 100 dev + 500 final paper değerlendirmesi |
 
 Freeze çıktıları:

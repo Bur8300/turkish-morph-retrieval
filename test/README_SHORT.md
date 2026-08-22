@@ -57,6 +57,10 @@ raporlanmaz.
 editoryal kontrolden geçirilmiş 20-family smoke pilotudur. Provenance içerir ancak henüz planlanan
 nihai insan değerlendirmesinden geçmiş benchmark verisi değildir.
 
+`data/deneme_verisi_60.json`, eski 40-family preview ile bu son 20-family pilotun birleşimidir.
+`notebooks/morph_baseline_eval_deneme60_colab.ipynb` bu 60 query × 11 adaylık deneme setini
+kontrollü ve 660-belge full-corpus retrieval biçiminde değerlendirir.
+
 Qrels family oluşturulurken hazırdır:
 
 ```text
