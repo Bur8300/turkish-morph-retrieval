@@ -301,12 +301,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 10,
-      "query_gold_token_sequence_ratio": 0.4,
-      "query_gold_word_jaccard": 0.4375,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 1
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -347,7 +342,7 @@
               },
               "cost_details": {
                 "upstream_inference_cost": 0.00026902,
-                "upstream_inference_prompt_cost": 0.00009928,
+                "upstream_inference_prompt_cost": 9.928e-05,
                 "upstream_inference_completions_cost": 0.00016974
               },
               "completion_tokens_details": {
@@ -635,7 +630,12 @@
           "notes": "Target feature NEG.AOR (geniş zaman + olumsuzluk). Candidates c07 and c05 contain 'seçmez' (aorist + negative), which is morphologically correct for the target feature. However, c05 changes the subject's choice context (otobüs instead of tren) and does not answer the query. c07 contradicts the query by stating Deniz does not choose train, whereas the query says Deniz never prefers train. No candidate fully answers the query with the correct scope and semantics. All candidates are morphologically well-formed Turkish."
         }
       },
-      "quality_score": 9.95486
+      "quality_score": 9.95486,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -950,12 +950,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 10,
-      "query_gold_token_sequence_ratio": 0.48,
-      "query_gold_word_jaccard": 0.666667,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 8
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -1251,7 +1246,12 @@
           "notes": "Tüm adaylar morfolojik açıdan doğal ve dilbilgisel olarak kabul edilebilir. 'gidip' eki tüm olumlu adaylarda CVB.AND (-ip) ulacı olarak doğru biçimde kullanılmıştır. c09 ve c07 planlama/gelecek zaman ifadeleri sorguyla çelişmektedir; c08 ise 'gitmeden' ile -ip ulacını içermeyip eylemi inkâr ettiği için çelişmektedir. c01, c02, c10, c05, c06, c04 hedef özelliğin semantik kapsamını taşımamaktadır (unrelated). c03 ve c11 hem morfolojik hem de önerme düzeyinde sorguyu desteklemektedir."
         }
       },
-      "quality_score": 10.0675
+      "quality_score": 10.0675,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -1571,12 +1571,7 @@
         "word_overlap": 1.0,
         "character_3gram": 0.0,
         "bm25": 1.0
-      },
-      "query_gold_token_edits": 5,
-      "query_gold_token_sequence_ratio": 0.666667,
-      "query_gold_word_jaccard": 0.615385,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 8
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -1910,7 +1905,12 @@
           "notes": "Hedef özellik ALLO.ACC (belirtme hâli allomorfları) ve objective=allomorph_invariance. Sorguda 'uzmanı görmesini' ifadesinde 'uzmanı' kelimesi -I allomorfuyla belirtme halinde çekimlenmiştir. Adayların hepsinde belirtme hâli allomorfları (-I, -nI vb.) morfolojik olarak doğru kullanılmıştır. answers_query için c09 ve c02 seçilmiştir çünkü bu iki aday hem 'dahiliye hekimi'ni (uzmanı) hem de 'görmesini' eylemini koruyarak belirtme hâli allomorflarını hedef özellikle uyumlu biçimde taşımaktadır. c09'da 'hekimini' (-ni) ve c02'de 'hekimini' (-ni) allomorfları geçerlidir; aradaki tek fark 'bugün' vs 'yarın' zamansal ifadesidir ki bu allomorph_invariance açısından ilgili değildir. Diğer adaylar ya farklı eylem/kapsam içeriyor ya da belirtme hâli hedefini farklı bir yapıda sunuyor."
         }
       },
-      "quality_score": 9.14083
+      "quality_score": 9.14083,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -2221,12 +2221,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 8,
-      "query_gold_token_sequence_ratio": 0.421053,
-      "query_gold_word_jaccard": 0.357143,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 8
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -2539,7 +2534,12 @@
           "notes": "Hedef özellik NEG.ABIL (-ebil + -mA negatif). c06, sorgudaki 'beslenemediğini' ifadesini hem morfolojik yapı hem de kapsam açısından birebir karşılamaktadır. c05 ve c09 negatif/yetersizlik eki içerir ancak sırasıyla yanlış argüman (sıvı gıda) ve yanlış ek (-mA negatif ama -ebil yok) nedeniyle sorguyu çelişmektedir. c02 olumlu abilitif kullanır. c08 gereklilik (-mAlI) kullanır, yetersizlik değildir. c11 negatif abilitif içerir ancak cümlenin kapsamı (yalanlama) sorguyu çelişmektedir. Diğer adaylar hedef morfemi içermez."
         }
       },
-      "quality_score": 10.20735
+      "quality_score": 10.20735,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -2847,12 +2847,7 @@
         "word_overlap": 0.25,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 11,
-      "query_gold_token_sequence_ratio": 0.48,
-      "query_gold_word_jaccard": 0.388889,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 7
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -3182,7 +3177,12 @@
           "notes": "c02: 'durdurmamıştı' negatif eki -mA- morfolojik olarak kusursuzdur; 'hâlde' ile birlikte anlam query ile çelişmektedir. c05: '-dUr-' evidential mPAST yerine sadece -mIş (non-finite bağclause'da) kullanılmış, PLUPRF hedefiyle uyumsuz. c10: '-mIş olabilirdi' olasılık+geçmiş; kanıtsal geçmiş+geçmiş kapsamı taşımaz. c04 ve c08: -Iyordu (HABPAST/CONT) kullanılmış, PLUPRF (-mIştI) değil. c06 ve c11: -mIştI eki doğru PLUPRF morfolojisi; c11 'alıcı banka' varyantı morfolojik açıdan da doğal."
         }
       },
-      "quality_score": 9.69917
+      "quality_score": 9.69917,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -3498,12 +3498,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 11,
-      "query_gold_token_sequence_ratio": 0.166667,
-      "query_gold_word_jaccard": 0.142857,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 1
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -3753,7 +3748,12 @@
           "notes": "Hedef özellik NMLZ.DIK (adlaştırma + iyelik): -(d)Iğ-+iyelik eki zinciriyle kurulan ad cümlecikleri. c08: 'aktardığını' (aktar-dığ-ı-n-ı), c09: 'yenildiğini' (yeni-len-diğ-i-n-i), c05: 'aktarıldığını' (aktar-ıl-dığ-ı-n-ı), c03: 'ertelendiğini' (ertele-n-diğ-i-n-i), c10: 'tamamladığını' (tamamla-dığ-ı-n-ı), c11: 'sonuçlandığını' (sonuçlan-dığ-ı-n-ı), c02: 'aktarıldığını' (aktar-ıl-dığ-ı-n-ı) — tümü -(d)Iğ- adlaştırma + 3. tekil iyelik + belirtme durumu zinciri taşıyor, kapsam ve kişi bakımından hedefle uyumlu. c07: 'aktarmış olabileceğini' (aktar-mış ol-abil-eceğ-i-n-i) NMLZ.ECEK zinciri, c04/c01: 'aktaracağını' (aktar-acağını) NMLZ.ECEK, c06: 'incelediğini' (incele-diğ-i-n-i) NMLZ.DIK taşıyor ancak 3. tekil şahıs eylemi adlaştırıldığı için özne 'restorasyon ekibi' değil 'restorasyon ekibinin' olmalıydı; cümlede 'restorasyon ekibinin ... incelediğini' şeklinde özne iyelik ekiyle belirtilmiş, bu nedenle zincir biçimbilimsel olarak uyumlu görünüyor — ancak 'kayıtlarının ... uyumluluğunu' nesnesi 3. çoğul iyelik gerektirirken eylem 3. tekil iyelik almış, bu bir uyumsuzluk oluşturuyor. c06'yı morphologically_invalid'e almadım çünkü -(d)Iğ- zinciri kendisi doğal; uyumsuzluk sintaktik kapsam düzeyinde ve güven eşiği belirsiz. c06 için unclear yerine target_matching dışında bıraktım."
         }
       },
-      "quality_score": 10.1281
+      "quality_score": 10.1281,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -4058,12 +4058,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 4,
-      "query_gold_token_sequence_ratio": 0.666667,
-      "query_gold_word_jaccard": 0.5,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 0
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -4104,7 +4099,7 @@
               },
               "cost_details": {
                 "upstream_inference_cost": 0.00027106,
-                "upstream_inference_prompt_cost": 0.0000988,
+                "upstream_inference_prompt_cost": 9.88e-05,
                 "upstream_inference_completions_cost": 0.00017226
               },
               "completion_tokens_details": {
@@ -4295,7 +4290,12 @@
           "notes": "Hedef özellik NEG.AOR (geniş zaman + olumsuzluk). 'geciktirmeyen' = geciktir-me-yen: fiil köküne olumsuzluk eki -me + geniş zaman sıfat-fiil eki -yen. Bu ek zinciri NEG.AOR işlevini taşır. c02, c10, c01, c07 adayları bu morfolojik yapıyı içerir. c08 'geciktirmemesi' NEG.AOR taşır ancak sıfat-fiil değil isim-fiil + gereklilik yapısında, kapsamı farklı. c05 'geciktirmeyecek' NEG.FUT, c11 'geciktiren' pozitif AOR sıfat-fiil, c03 pozitif, c09/c04/c06 hedef yapıyı taşımıyor. Tüm adaylar dilbilgisel olarak doğal Türkçe."
         }
       },
-      "quality_score": 9.71636
+      "quality_score": 9.71636,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -4380,7 +4380,7 @@
     },
     "template_id": "event_report",
     "critical_lemma": "değil",
-    "critical_word_query": "Derya'ya ait değil",
+    "critical_word_query": "Derya'ya ait olmadığını",
     "critical_word_positive": "değilmiş",
     "feature_delta": "kimin bilgisi, kaynağı ve kutupluluğu",
     "edit_script": {
@@ -4391,7 +4391,7 @@
       "changed_feature": "",
       "invariants": []
     },
-    "query": "Apartman girişindeki siyah şemsiye Derya'ya ait değil; bunu komşulardan duyduk. Söz konusu şemsiye girişteki siyahtı.",
+    "query": "Apartman girişindeki siyah şemsiyenin Derya'ya ait olmadığını komşulardan duyduk. Bahsettikleri eşya, girişte duran siyah şemsiyeydi.",
     "context_sentences": [],
     "candidates": [
       {
@@ -4581,30 +4581,25 @@
       }
     },
     "lexical_audit": {
-      "gold_word_overlap": 0.545455,
-      "hard_word_overlap_median": 0.454545,
-      "gold_hard_median_gap": 0.090909,
-      "hards_at_or_above_gold": 3,
+      "gold_word_overlap": 0.5,
+      "hard_word_overlap_median": 0.45,
+      "gold_hard_median_gap": 0.05,
+      "hards_at_or_above_gold": 4,
       "hard_query_content_recalls": [
         0.875,
-        0.875,
+        0.75,
         0.875,
         0.75,
-        1.0,
         0.875,
-        0.75,
-        1.0
+        0.875,
+        0.625,
+        0.875
       ],
       "tie_aware_gold_top_probability": {
-        "word_overlap": 0.5,
-        "character_3gram": 1.0,
+        "word_overlap": 0.0,
+        "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 11,
-      "query_gold_token_sequence_ratio": 0.434783,
-      "query_gold_word_jaccard": 0.352941,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 8
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -4646,7 +4641,7 @@
               "cost_details": {
                 "upstream_inference_cost": 0.00015986,
                 "upstream_inference_prompt_cost": 0.00011216,
-                "upstream_inference_completions_cost": 0.0000477
+                "upstream_inference_completions_cost": 4.77e-05
               },
               "completion_tokens_details": {
                 "reasoning_tokens": 0,
@@ -4734,476 +4729,12 @@
           "notes": "Hedef özellik EVID.POSS.NEG: kanıtsallık (-mIş) + iyelik (3. tekil iyelik) + olumsuzluk (değil). c02, c03 ve c08 adayları 'Derya'nın/Ece'nin değilmiş' yapısını taşır: 'değil' negatif kopya + '-miş' kanıtsallık eki, 3. tekil iyelik 'Derya'nın/Ece'nin' tamlamada kodlanır. Ek zinciri ve kapsam doğru. c01 olumsuzluk yok (yalnız -miş). c04 olumsuzluk ihtimal (-yabil-) ile değişmiş, kapsamı farklı. c06 'değilmiş' var ama konum/mekân olumsuzluğu, iyelik olumsuzluğu değil. c09 'şemsiye değilmiş' tür/ödev olumsuzluğu, iyelik değil. c05, c07, c10, c11 hedef morfolojik zinciri taşımıyor. Tüm adaylar dilbilgisel olarak doğal Türkçe."
         }
       },
-      "quality_score": 9.31582
-    }
-  },
-  {
-    "family_id": "family_raw_00011_4767595180",
-    "slot_id": "raw_00011_4767595180",
-    "target_split": "sealed_test",
-    "generalization_bucket": "standard",
-    "generalization_tags": [
-      "standard",
-      "domain_shift"
-    ],
-    "objective": "morpheme_sensitivity",
-    "macro_phenomenon": "tense_mood_aspect_evidentiality",
-    "target_feature": "OPT",
-    "target_feature_label": "istek kipi",
-    "surface_forms": [
-      "-a",
-      "-e"
-    ],
-    "layer": "single",
-    "domain": "ecommerce",
-    "register": "formal_record",
-    "query_sentence_count": 1,
-    "passage_sentence_count": 2,
-    "critical_sentence_position": 1,
-    "family_mode": "natural_retrieval",
-    "query_expression": "morph_explicit",
-    "query_gold_lexical_band": "medium",
-    "hard_profile": [
-      {
-        "slot": "hard_01",
-        "subtype": "controlled_morph_negative",
-        "focus": "hedef morfolojik anlam yanlış, doğal farklı anlatım"
-      },
-      {
-        "slot": "hard_02",
-        "subtype": "related_feature_negative",
-        "focus": "komşu morfolojik özellik yanlış"
-      },
-      {
-        "slot": "hard_03",
-        "subtype": "same_morph_wrong_content",
-        "focus": "morfoloji benzer, önerme içeriği yanlış"
-      },
-      {
-        "slot": "hard_04",
-        "subtype": "state_participant_time_trap",
-        "focus": "durum, katılımcı veya zaman yanlış"
-      },
-      {
-        "slot": "hard_05",
-        "subtype": "close_paraphrase_wrong_meaning",
-        "focus": "yakın anlam alanı, temel önerme yanlış"
-      },
-      {
-        "slot": "hard_06",
-        "subtype": "lexical_retrieval_trap",
-        "focus": "query sözcükleri çekici, fakat belge irrelevant"
-      },
-      {
-        "slot": "hard_07",
-        "subtype": "semantic_retrieval_hard",
-        "focus": "doğal ve konuya yakın, fakat bilgi ihtiyacını karşılamıyor"
-      },
-      {
-        "slot": "hard_08",
-        "subtype": "morph_distractor",
-        "focus": "hedef biçim yanlış olay veya sözcüğe bağlı"
+      "quality_score": 9.91923,
+      "editorial_audit": {
+        "status": "modified_pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
       }
-    ],
-    "strict_minimal_pair": false,
-    "generator_id": "generator_a",
-    "semantic_frame_id": "frame_00011",
-    "semantic_profile": {
-      "narrative_tag": "e_ticaret_iade_talimati",
-      "event_type": "iade_tutari_aktarim_istegi",
-      "participant_roles": [
-        "agent",
-        "theme",
-        "goal"
-      ],
-      "polarity": "affirmative",
-      "temporal_frame": "past",
-      "scope_target": "embedded_clause"
-    },
-    "template_id": "relative_clause",
-    "critical_lemma": "aktarılmak",
-    "critical_word_query": "aktarıla",
-    "critical_word_positive": "aktarıla",
-    "feature_delta": "dilek/istek ↔ gerçekleşmiş olay",
-    "edit_script": {
-      "applies": false,
-      "positive_form": "",
-      "minimal_negative_form": "",
-      "operation": "",
-      "changed_feature": "",
-      "invariants": []
-    },
-    "query": "İade talebini onaylayan yetkili, 750 liralık tutar müşterinin kayıtlı kartına aktarıla şeklinde işlem notu oluşturdu.",
-    "context_sentences": [
-      "Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı."
-    ],
-    "candidates": [
-      {
-        "candidate_slot": "positive_01",
-        "critical_sentence": "İşlemi değerlendiren görevli, işlem notuna müşterinin kayıtlı kartına 750 liralık iade bedeli aktarıla hükmünü ekledi.",
-        "critical_word": "aktarıla",
-        "role": "positive",
-        "subtype": "equivalence_positive",
-        "morph_relation": "target_preserved",
-        "text": "İşlemi değerlendiren görevli, işlem notuna müşterinin kayıtlı kartına 750 liralık iade bedeli aktarıla hükmünü ekledi. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c01",
-        "relevance": 1
-      },
-      {
-        "candidate_slot": "easy_01",
-        "critical_sentence": "Aynı başvuruyu inceleyen görevli, müşterinin teslimat adresindeki eksik daire numarasını sipariş kaydında güncelledi.",
-        "critical_word": "güncelledi",
-        "role": "easy_negative",
-        "subtype": "easy_negative",
-        "morph_relation": "same_domain_off_intent",
-        "text": "Aynı başvuruyu inceleyen görevli, müşterinin teslimat adresindeki eksik daire numarasını sipariş kaydında güncelledi. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c02",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "hard_06",
-        "critical_sentence": "İade talebini onaylayan yetkili, 750 liralık tutar müşterinin kayıtlı kartına aktarıla metnini işlem notu şablonundan sildi.",
-        "critical_word": "aktarıla",
-        "role": "hard_negative",
-        "subtype": "lexical_retrieval_trap",
-        "morph_relation": "target_preserved",
-        "text": "İade talebini onaylayan yetkili, 750 liralık tutar müşterinin kayıtlı kartına aktarıla metnini işlem notu şablonundan sildi. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c03",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "hard_03",
-        "critical_sentence": "İşlemi değerlendiren görevli, 750 liralık iade bedeli müşterinin banka hesabına aktarıla hükmünü işlem notuna ekledi.",
-        "critical_word": "aktarıla",
-        "role": "hard_negative",
-        "subtype": "same_morph_wrong_content",
-        "morph_relation": "same_feature_wrong_content",
-        "text": "İşlemi değerlendiren görevli, 750 liralık iade bedeli müşterinin banka hesabına aktarıla hükmünü işlem notuna ekledi. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c04",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "hard_08",
-        "critical_sentence": "Talebi inceleyen yetkili, kampanya indirimi müşterinin sonraki siparişine uygulana biçiminde ayrı bir işlem notu yazdı.",
-        "critical_word": "uygulana",
-        "role": "hard_negative",
-        "subtype": "morph_distractor",
-        "morph_relation": "target_preserved",
-        "text": "Talebi inceleyen yetkili, kampanya indirimi müşterinin sonraki siparişine uygulana biçiminde ayrı bir işlem notu yazdı. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c05",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "hard_02",
-        "critical_sentence": "İade talebini onaylayan yetkili, 750 liralık tutar müşterinin kayıtlı kartına aktarılmalı şeklinde işlem notu oluşturdu.",
-        "critical_word": "aktarılmalı",
-        "role": "hard_negative",
-        "subtype": "related_feature_negative",
-        "morph_relation": "feature_changed",
-        "text": "İade talebini onaylayan yetkili, 750 liralık tutar müşterinin kayıtlı kartına aktarılmalı şeklinde işlem notu oluşturdu. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c06",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "hard_04",
-        "critical_sentence": "Talebi inceleyen yetkili, 750 liralık iade bedeli satıcının kayıtlı kartına aktarıla şeklinde kayıt açtı.",
-        "critical_word": "aktarıla",
-        "role": "hard_negative",
-        "subtype": "state_participant_time_trap",
-        "morph_relation": "target_preserved",
-        "text": "Talebi inceleyen yetkili, 750 liralık iade bedeli satıcının kayıtlı kartına aktarıla şeklinde kayıt açtı. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c07",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "hard_05",
-        "critical_sentence": "Yetkili, 750 liralık iade bedeli müşterinin kayıtlı kartına aktarıla kaydını iptal edip tutarı mağaza kredisine çevirdi.",
-        "critical_word": "aktarıla",
-        "role": "hard_negative",
-        "subtype": "close_paraphrase_wrong_meaning",
-        "morph_relation": "target_preserved",
-        "text": "Yetkili, 750 liralık iade bedeli müşterinin kayıtlı kartına aktarıla kaydını iptal edip tutarı mağaza kredisine çevirdi. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c08",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "hard_07",
-        "critical_sentence": "İade talebini değerlendiren yetkili, müşterinin kayıtlı kart bilgilerini ve 750 liralık tutarı işlem notunda doğruladı.",
-        "critical_word": "doğruladı",
-        "role": "hard_negative",
-        "subtype": "semantic_retrieval_hard",
-        "morph_relation": "target_preserved",
-        "text": "İade talebini değerlendiren yetkili, müşterinin kayıtlı kart bilgilerini ve 750 liralık tutarı işlem notunda doğruladı. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c09",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "easy_02",
-        "critical_sentence": "İade dosyasını kontrol eden yetkili, müşterinin kurumsal faturasında yer alan vergi numarasını düzeltti.",
-        "critical_word": "düzeltti",
-        "role": "easy_negative",
-        "subtype": "easy_negative",
-        "morph_relation": "same_domain_off_intent",
-        "text": "İade dosyasını kontrol eden yetkili, müşterinin kurumsal faturasında yer alan vergi numarasını düzeltti. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c10",
-        "relevance": 0
-      },
-      {
-        "candidate_slot": "hard_01",
-        "critical_sentence": "İade talebini onaylayan yetkili, 750 liralık tutar müşterinin kayıtlı kartına aktarıldı şeklinde işlem notu oluşturdu.",
-        "critical_word": "aktarıldı",
-        "role": "hard_negative",
-        "subtype": "controlled_morph_negative",
-        "morph_relation": "feature_changed",
-        "text": "İade talebini onaylayan yetkili, 750 liralık tutar müşterinin kayıtlı kartına aktarıldı şeklinde işlem notu oluşturdu. Kayıt, destek biriminin aylık işlem dökümünde aynı başvuru numarasıyla yer aldı.",
-        "id": "family_raw_00011_4767595180_c11",
-        "relevance": 0
-      }
-    ],
-    "gold_id": "family_raw_00011_4767595180_c01",
-    "qrels": {
-      "family_raw_00011_4767595180_c01": 1,
-      "family_raw_00011_4767595180_c02": 0,
-      "family_raw_00011_4767595180_c03": 0,
-      "family_raw_00011_4767595180_c04": 0,
-      "family_raw_00011_4767595180_c05": 0,
-      "family_raw_00011_4767595180_c06": 0,
-      "family_raw_00011_4767595180_c07": 0,
-      "family_raw_00011_4767595180_c08": 0,
-      "family_raw_00011_4767595180_c09": 0,
-      "family_raw_00011_4767595180_c10": 0,
-      "family_raw_00011_4767595180_c11": 0
-    },
-    "source_type": "llm_generated_cascade_judged",
-    "memory_tags": {
-      "morphology": {
-        "phenomenon": "OPT",
-        "macro": "tense_mood_aspect_evidentiality",
-        "objective": "morpheme_sensitivity",
-        "layer": "single",
-        "feature_components": [
-          "OPT"
-        ],
-        "surface_forms": [
-          "-a",
-          "-e"
-        ],
-        "critical_lemma": "aktarılmak",
-        "contrast_delta": "dilek/istek ↔ gerçekleşmiş olay"
-      },
-      "semantics": {
-        "frame_id": "frame_00011",
-        "narrative_tag": "e_ticaret_iade_talimati",
-        "event_type": "iade_tutari_aktarim_istegi",
-        "participant_roles": [
-          "agent",
-          "theme",
-          "goal"
-        ],
-        "polarity": "affirmative",
-        "temporal_frame": "past",
-        "scope_target": "embedded_clause"
-      },
-      "generalization": {
-        "split": "sealed_test",
-        "bucket": "standard",
-        "tags": [
-          "standard",
-          "domain_shift"
-        ],
-        "domain": "ecommerce",
-        "register": "formal_record",
-        "template_id": "relative_clause",
-        "family_mode": "natural_retrieval"
-      },
-      "controls": {
-        "delta": "dilek/istek ↔ gerçekleşmiş olay",
-        "invariants": []
-      },
-      "provenance": {
-        "generator_id": "generator_a",
-        "source_type": "llm_generated_pending_cascade_judge"
-      }
-    },
-    "lexical_audit": {
-      "gold_word_overlap": 0.533333,
-      "hard_word_overlap_median": 0.533333,
-      "gold_hard_median_gap": 0.0,
-      "hards_at_or_above_gold": 6,
-      "hard_query_content_recalls": [
-        0.857143,
-        0.357143,
-        0.357143,
-        1.0,
-        0.571429,
-        0.571429,
-        0.571429,
-        1.0
-      ],
-      "tie_aware_gold_top_probability": {
-        "word_overlap": 0.0,
-        "character_3gram": 0.0,
-        "bm25": 0.0
-      },
-      "query_gold_token_edits": 14,
-      "query_gold_token_sequence_ratio": 0.266667,
-      "query_gold_word_jaccard": 0.363636,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 3
-    },
-    "provenance": {
-      "generator_id": "generator_a",
-      "refill_round": 1,
-      "rejected_replacements": [
-        {
-          "refill_round": 0,
-          "stage": "cascade_judges",
-          "problems": [
-            "semantic_1 family naturalness düşük: 1",
-            "semantic_1 iç tutarsız aday buldu: ['family_raw_00011_4767595180_c11']"
-          ],
-          "adjudicator": null
-        }
-      ],
-      "generator_attempts": [
-        {
-          "provider": "codex_cli",
-          "model": "gpt-5.6-sol",
-          "request_hash": "4ae3d53a05f7ca1ceacdbe03fefcbbd3278a07a0d7dd8bd2d1f57fd90bf81698",
-          "cache_hit": false,
-          "usage": {
-            "wall_seconds": 83.762,
-            "cli_stdout_tail": "ord\":\"aktarıla\"},{\"candidate_slot\":\"hard_06\",\"critical_sentence\":\"İade talebini onaylayan yetkili, 750 liralık tutar müşterinin kayıtlı kartına aktarıla metnini işlem notu şablonundan sildi.\",\"critical_word\":\"aktarıla\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"İade talebini değerlendiren yetkili, müşterinin kayıtlı kart bilgilerini ve 750 liralık tutarı işlem notunda doğruladı.\",\"critical_word\":\"doğruladı\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Talebi inceleyen yetkili, kampanya indirimi müşterinin sonraki siparişine uygulana biçiminde ayrı bir işlem notu yazdı.\",\"critical_word\":\"uygulana\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Aynı başvuruyu inceleyen görevli, müşterinin teslimat adresindeki eksik daire numarasını sipariş kaydında güncelledi.\",\"critical_word\":\"güncelledi\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"İade dosyasını kontrol eden yetkili, müşterinin kurumsal faturasında yer alan vergi numarasını düzeltti.\",\"critical_word\":\"düzeltti\"}]}\n"
-          },
-          "actual_model": "gpt-5.6-sol",
-          "route_provider": "codex_cli"
-        }
-      ],
-      "judges": {
-        "semantic": [
-          {
-            "provider": "openrouter",
-            "model": "deepseek/deepseek-v4-flash-0731",
-            "request_hash": "b45c31496acbb87ec6bdfdf859f142ace3ede4444f0afca86b473f09f82a8692",
-            "cache_hit": false,
-            "usage": {
-              "prompt_tokens": 1875,
-              "completion_tokens": 497,
-              "total_tokens": 2372,
-              "cost": 0.00023946,
-              "is_byok": false,
-              "prompt_tokens_details": {
-                "cached_tokens": 0,
-                "cache_write_tokens": 0,
-                "audio_tokens": 0,
-                "video_tokens": 0
-              },
-              "cost_details": {
-                "upstream_inference_cost": 0.00023946,
-                "upstream_inference_prompt_cost": 0.00015,
-                "upstream_inference_completions_cost": 0.00008946
-              },
-              "completion_tokens_details": {
-                "reasoning_tokens": 0,
-                "image_tokens": 0,
-                "audio_tokens": 0
-              }
-            },
-            "actual_model": "deepseek/deepseek-v4-flash-0731",
-            "route_provider": "DeepInfra"
-          }
-        ],
-        "morphology": {
-          "provider": "openrouter",
-          "model": "z-ai/glm-5.2",
-          "request_hash": "d4f3d27efc0baafc061abce715e7fe1aba4ff1e549a5138c54a8e1fe9cc1456c",
-          "cache_hit": false,
-          "usage": {
-            "prompt_tokens": 1586,
-            "completion_tokens": 361,
-            "total_tokens": 1947,
-            "cost": 0.00358992,
-            "is_byok": false,
-            "prompt_tokens_details": {
-              "cached_tokens": 192,
-              "cache_write_tokens": 0,
-              "audio_tokens": 0,
-              "video_tokens": 0
-            },
-            "cost_details": {
-              "upstream_inference_cost": 0.00358992,
-              "upstream_inference_prompt_cost": 0.00200152,
-              "upstream_inference_completions_cost": 0.0015884
-            },
-            "completion_tokens_details": {
-              "reasoning_tokens": 0,
-              "image_tokens": 0,
-              "audio_tokens": 0
-            }
-          },
-          "actual_model": "z-ai/glm-5.2",
-          "route_provider": "Parasail"
-        }
-      },
-      "prompt_version": "test-prompts-3.8.2-feedback-specialized-judges"
-    },
-    "qc": {
-      "deterministic": "pass",
-      "judging": {
-        "semantic": {
-          "order_stable": true,
-          "passes": [
-            {
-              "answers_query": [
-                "family_raw_00011_4767595180_c06"
-              ],
-              "confidence": 60,
-              "abstain": false,
-              "family_naturalness": 1,
-              "candidate_naturalness_min": 1,
-              "support_mismatches": [
-                "family_raw_00011_4767595180_c01",
-                "family_raw_00011_4767595180_c06"
-              ],
-              "unnatural_candidate_ids": [
-                "family_raw_00011_4767595180_c06",
-                "family_raw_00011_4767595180_c07",
-                "family_raw_00011_4767595180_c03",
-                "family_raw_00011_4767595180_c04",
-                "family_raw_00011_4767595180_c05",
-                "family_raw_00011_4767595180_c08"
-              ],
-              "internally_inconsistent_candidates": [],
-              "length_or_style_artifact": false,
-              "authoritative": false,
-              "notes": "Sorgu, iade tutarının müşterinin kartına aktarılması gerektiğini belirten bir işlem notu oluşturulduğunu söylüyor. c06 birebir karşılıyor. c11 'aktarıldı' ile işlemin yapıldığını bildiriyor, sorgudaki 'aktarıla' (yapılması gereken) koşuluyla örtüşmüyor. c01 ve c09 da 'aktarıla' içeriyor ancak c01 'hükmünü ekledi' ve c09 'doğruladı' ifadeleri sorgudaki 'işlem notu oluşturdu' eylemiyle aynı doğruluk koşulunu sağlamıyor. c07, c03, c04, c05, c08 ise farklı eylemler veya farklı hedefler içeriyor. c02 ve c10 tamamen farklı konular. Doğal olmayan Türkçe: 'aktarıla' ve 'uygulana' gibi eksik fiil formları, 'hükmünü ekledi' ifadesi ve 'kaydını iptal edip' gibi yapılar açıkça dilbilgisel değil."
-            }
-          ],
-          "family_naturalness": 1,
-          "candidate_naturalness_min": 1,
-          "confidence_min": 60
-        },
-        "morphology": {
-          "confidence": 95,
-          "abstain": false,
-          "authoritative": true,
-          "morphology_failures": [],
-          "unclear_candidate_ids": [],
-          "gold_target_status": "matches_target",
-          "target_matching_candidate_ids": [
-            "family_raw_00011_4767595180_c01",
-            "family_raw_00011_4767595180_c02",
-            "family_raw_00011_4767595180_c03",
-            "family_raw_00011_4767595180_c04",
-            "family_raw_00011_4767595180_c05",
-            "family_raw_00011_4767595180_c07",
-            "family_raw_00011_4767595180_c08"
-          ],
-          "allomorph_treated_as_wrong": false,
-          "notes": "Hedef morfolojik özellik OPT (istek kipi) olup query'deki 'aktarıla' formu, aktar- fiil köküne +I optatif ekiyle çekimlenmiş 3. tekil kişi optatif formudur. c01, c02, c03, c04, c07, c08 adaylarında 'aktarıla' ve c05'te 'uygulana' aynı morfolojik yapıyı (fiil kökü + optatif eki, 3. tekil kişi) taşımaktadır. c06 'aktarılmalı' (zorunluluk/gereklilik kipi=Necessitative), c11 'aktarıldı' (geçmiş zaman=Past), c09 ve c10'da ise optatif çekim bulunmamaktadır; bu nedenle bu adaylar hedef morfolojik özelliği taşımaz."
-        }
-      },
-      "quality_score": 6.21389
     }
   },
   {
@@ -5516,12 +5047,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 10,
-      "query_gold_token_sequence_ratio": 0.434783,
-      "query_gold_word_jaccard": 0.4375,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 6
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -5575,7 +5101,7 @@
               "cost_details": {
                 "upstream_inference_cost": 0.00016068,
                 "upstream_inference_prompt_cost": 0.00011208,
-                "upstream_inference_completions_cost": 0.0000486
+                "upstream_inference_completions_cost": 4.86e-05
               },
               "completion_tokens_details": {
                 "reasoning_tokens": 0,
@@ -5669,7 +5195,12 @@
           "notes": "Hedef özellik ALLO.LOC (bulunma hâli allomorfları) için adaylar incelendi. 'Arabada' ve 'araçta' formları sırasıyla -DA allomorflarının (araba+da, araç+ta) doğal yüzey gerçekleşmeleridir; ünsüz uyumu nedeniyle farklı yüzeylere sahip olsalar da aynı morfolojik işlevi (bulunma hâli) taşır ve allomorph_invariance kapsamında eşdeğerdir. c11, c04, c07, c03, c08, c09, c01 ve c10 adayları 'araçta' veya 'arabada' formuyla hedef allomorfu içerir. c05 adayında 'arabada' bulunma hâli allomorfu mevcuttur. c06 ve c02 adaylarında ise bulunma hâli allomorfu (ALLO.LOC) içeren bir isim çekimi yoktur; bu nedenle target_matching listesine eklenmediler. Tüm adaylar doğal ve dilbilgisel Türkçe çekimler taşımaktadır; morfolojik olarak geçersiz veya belirsiz aday bulunmamaktadır."
         }
       },
-      "quality_score": 10.21705
+      "quality_score": 10.21705,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -5875,12 +5406,12 @@
       },
       {
         "candidate_slot": "hard_02",
-        "critical_sentence": "Tutanak, değişen sevkiyat tarihini Deniz Akın'ın değil, bizim bilmediğimizi ve bu nedenle teslim planımızı güncellemediğimizi ortaya koydu.",
-        "critical_word": "bilmediğimizi",
+        "critical_sentence": "Tutanak, değişen sevkiyat tarihini Deniz Akın'ın değil, planlama ekibinin bilmediğini ve bu nedenle teslim planını güncellemediğini ortaya koydu.",
+        "critical_word": "bilmediğini",
         "role": "hard_negative",
         "subtype": "same_lemma_wrong_inflection",
         "morph_relation": "wrong_inflection",
-        "text": "Lojistik birimi, haftalık sevkiyat değerlendirmesine ilişkin tutanağı insan kaynakları birimine iletti. İnceleme kapsamında teslim planındaki işlem geçmişi ile ekip içi yazışmalar karşılaştırıldı. Tutanak, değişen sevkiyat tarihini Deniz Akın'ın değil, bizim bilmediğimizi ve bu nedenle teslim planımızı güncellemediğimizi ortaya koydu.",
+        "text": "Lojistik birimi, haftalık sevkiyat değerlendirmesine ilişkin tutanağı insan kaynakları birimine iletti. İnceleme kapsamında teslim planındaki işlem geçmişi ile ekip içi yazışmalar karşılaştırıldı. Tutanak, değişen sevkiyat tarihini Deniz Akın'ın değil, planlama ekibinin bilmediğini ve bu nedenle teslim planını güncellemediğini ortaya koydu.",
         "id": "family_raw_00017_1eb46fbe43_c10",
         "relevance": 0
       },
@@ -5967,7 +5498,7 @@
       "gold_word_overlap": 0.6,
       "hard_word_overlap_median": 0.6,
       "gold_hard_median_gap": 0.0,
-      "hards_at_or_above_gold": 5,
+      "hards_at_or_above_gold": 6,
       "hard_query_content_recalls": [
         0.75,
         0.75,
@@ -5979,15 +5510,10 @@
         0.583333
       ],
       "tie_aware_gold_top_probability": {
-        "word_overlap": 0.166667,
+        "word_overlap": 0.142857,
         "character_3gram": 0.0,
         "bm25": 0.25
-      },
-      "query_gold_token_edits": 10,
-      "query_gold_token_sequence_ratio": 0.580645,
-      "query_gold_word_jaccard": 0.409091,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 6
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -6038,7 +5564,7 @@
               "cost_details": {
                 "upstream_inference_cost": 0.00025326,
                 "upstream_inference_prompt_cost": 0.00019296,
-                "upstream_inference_completions_cost": 0.0000603
+                "upstream_inference_completions_cost": 6.03e-05
               },
               "completion_tokens_details": {
                 "reasoning_tokens": 0,
@@ -6128,7 +5654,12 @@
           "notes": "Hedef özellik EVID.POSS.NEG: kanıtsallık + iyelik + olumsuzluk. Türkçede bu, -(V)diğ-+POSS+-mA- yapısında gerçekleşir. Örnek: 'değiştiğinden haberdar olmadığı' → değiş-tik-POSS-mA-dı-POSS zinciri veya 'bilmediğini' → bil-me-dik-POSS. c05: 'bilmediğini' = bil-mA-dI-k-POSS (negatif+possessive), 'güncellemediğini' = güncelle-mA-dI-k-POSS — hedef zincir tam karşılanıyor. c11: aynı morfolojik zincir ('bilmediğini', 'güncellemediğini'), farklı özne (Mert Er) — morfolojik eşleşme korunur. c08: 'bilmediğini' ve 'güncellemediğini' aynı zinciri taşır; 'yükleme adresini' yerine 'sevkiyat tarihini' farklılığı morfolojik eşleşmeyi etkilemez. c04: 'bilmeyebileceğini' = bil-mA-yAbil-... ve 'güncellememiş olabileceğini' = güncelle-mA-mIş ol-... — olumsuzluk var ama kanıtsallık/iyelik zinciri farklı (olabilirlik katmanı eklenmiş), kapsamı farklı. c06: 'bildiğini' = olumlu, NEG yok. c01: 'bildiği hâlde' = olumlu. c03: 'ortaya koymadı' = ana fiil negatif, ama hedef 'bilmediğini' kısmında zincir var; ancak 'ortaya koymadı' son cümle eyleminin olumsuzlaşması belgelemenin yokluğunu ifade eder — 'bilmediğini' hedef zinciri taşır. c03'ü de target_matching'e eklemeliydim. Düzeltme: c03 de hedef morfolojik zinciri ('bilmediğini', 'güncellemediğini') içerir. c10: 'bilmediğimizi', 'güncellemediğimizi' = 1. çoğul iyelik, kişi farklı. c07: 'bilmemesi', 'güncellememesi' = -mA-POSS (isim-fiil), kanıtsallık (EVID) katmanı yok. c09, c02: hedef zincir yok. Sonuç: c05, c11, c08, c03 hedef EVID.POSS.NEG zincirini taşır."
         }
       },
-      "quality_score": 6.02837
+      "quality_score": 6.09881,
+      "editorial_audit": {
+        "status": "modified_pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -6275,12 +5806,12 @@
       },
       {
         "candidate_slot": "hard_02",
-        "critical_sentence": "Bakanlık, fırtına nedeniyle iptal edilen feribot seferinin yeniden düzenlenmesini limanda geceleyen yolcuların talep ettiğini duyurdu.",
-        "critical_word": "düzenlenmesini",
+        "critical_sentence": "Bakanlık, fırtına nedeniyle iptal edilen feribot seferinin yeniden düzenleneceğine limanda geceleyen yolcuların inanmadığını duyurdu.",
+        "critical_word": "düzenleneceğine",
         "role": "hard_negative",
         "subtype": "same_lemma_wrong_inflection",
         "morph_relation": "wrong_inflection",
-        "text": "Liman işletmesi, terminaldeki bekleme salonlarının gece boyunca açık tutulduğunu bildirdi. Bakanlık, fırtına nedeniyle iptal edilen feribot seferinin yeniden düzenlenmesini limanda geceleyen yolcuların talep ettiğini duyurdu.",
+        "text": "Liman işletmesi, terminaldeki bekleme salonlarının gece boyunca açık tutulduğunu bildirdi. Bakanlık, fırtına nedeniyle iptal edilen feribot seferinin yeniden düzenleneceğine limanda geceleyen yolcuların inanmadığını duyurdu.",
         "id": "family_raw_00018_284d4e0a9f_c05",
         "relevance": 0
       },
@@ -6434,12 +5965,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 13,
-      "query_gold_token_sequence_ratio": 0.3125,
-      "query_gold_word_jaccard": 0.230769,
-      "query_gold_lexical_band_ok": false,
-      "content_preserving_hards": 3
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -6493,7 +6019,7 @@
               "cost_details": {
                 "upstream_inference_cost": 0.0002265,
                 "upstream_inference_prompt_cost": 0.00016152,
-                "upstream_inference_completions_cost": 0.00006498
+                "upstream_inference_completions_cost": 6.498e-05
               },
               "completion_tokens_details": {
                 "reasoning_tokens": 0,
@@ -6587,7 +6113,12 @@
           "notes": "Hedef özellik NMLZ.CASE.CNTR: 'yeniden düzenlenme' fiilinden adlaştırma (-mA) + yönelme hâl eki -(n)A ile karşı-olgusal (counterfactual) tamlayan/zarf tümleci oluşturulması. Hedef zincir: [fiil kökü+düzenlen-me]+(s)A → 'yeniden düzenlenmesine'. Bu zincir c06, c03, c04, c08, c11 ve c05'te birebir mevcuttur. c11 ve c05'te 'yakındığını/talep ettiğini' fiilleri olumsuz/olumsuz komşu olay belirtse de morfolojik hedef zincir aynı kapsamda korunur; bu semantik bir fark olup biçimbilimsel geçersizlik değildir. c07'de 'düzenleneceğine' eki -(y)AcAk+-(n)A ile gelecek zaman adlaştırmasıdır; hedef -(mA) adlaştırmasıyla aynı işlevi görse de ek zinciri farklıdır (NMLZ.TENSE.CNTR kategorisine daha yakındır), bu yüzden target_matching listesine eklenmedi. c10'da 'yeniden düzenlenme önerisini' tamlama var ancak -(n)A yönelme eki yok; kapsamı farklı. c01 ve c02'de hedef ek zinciri ya farklı olayda ya da yok. c09'da ise hedef morfolojik zincir bulunmamaktadır."
         }
       },
-      "quality_score": 5.9856
+      "quality_score": 5.9856,
+      "editorial_audit": {
+        "status": "modified_pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -6900,12 +6431,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 9,
-      "query_gold_token_sequence_ratio": 0.2,
-      "query_gold_word_jaccard": 0.176471,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 0
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -6947,7 +6473,7 @@
               "cost_details": {
                 "upstream_inference_cost": 0.0001754,
                 "upstream_inference_prompt_cost": 0.00013256,
-                "upstream_inference_completions_cost": 0.00004284
+                "upstream_inference_completions_cost": 4.284e-05
               },
               "completion_tokens_details": {
                 "reasoning_tokens": 0,
@@ -7040,7 +6566,12 @@
           "notes": "Hedef özellik NMLZ.DIK: -(I)K/-(y)AcAK gibi adlaştırma eki + 3. tekil iyelik -(s)I(n) zinciri. c05 'kapatılmadığını' = kapat-ıl-ma-DIK-çA (olumsuzluk+adlaştırma+şart; -mA-DIK-çA birleşik ekin parçası olarak -DIK içerir, 3. tekil iyelik yok ama -DIK adlaştırması mevcut). c09 'kapatılacağı' = kapat-ıl-yAcAK-sI (-(y)AcAK adlaştırma + 3. tekil iyelik, NMLZ zinciri ama -DIK değil). c11 'kapatıldığı' = kapat-ıl-DIK-sI (tam hedef zincir). c01 'kapatılmış olabileceğini' = kapat-ıl-mIş ol-abil-DIK-nI (-(I)K adlaştırma + 3. çoğul iyelik -nI). c07 'kapatıldığını' = kapat-ıl-DIK-nI (-(I)K + 3. çoğul iyelik). c06 'kapatıldığını' = kapat-ıl-DIK-nI. c02 'kapatıldığını' = kapat-ıl-DIK-nI. c04 'kapatıldığını' = kapat-ıl-DIK-nI. c10 'kapanacağını' = kapan-yAcAK-nI (-(y)AcAK adlaştırma, -DIK değil). c03 'geciktiği' = gecik-DIK-sI (tam hedef zincir). c08 'azaldığı' = azal-DIK-sI (tam hedef zincir). Tüm adaylar morfolojik olarak doğal Türkçe; hedef -DIK/-(I)K adlaştırma+iyelik zinciri c11, c01, c07, c06, c02, c04, c03, c08'de mevcut. c05 -DIK içerir fakat -DIK-çA birleşik formda, iyelik yok; marjinal olarak eklendi. c09 ve c10 -(y)AcAK adlaştırması kullanır, -DIK değil, bu yüzden dahil edilmedi."
         }
       },
-      "quality_score": 6.07761
+      "quality_score": 6.07761,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -7351,12 +6882,7 @@
         "word_overlap": 0.0,
         "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 16,
-      "query_gold_token_sequence_ratio": 0.129032,
-      "query_gold_word_jaccard": 0.107143,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 4
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -7398,7 +6924,7 @@
               "cost_details": {
                 "upstream_inference_cost": 0.000174,
                 "upstream_inference_prompt_cost": 0.00012576,
-                "upstream_inference_completions_cost": 0.00004824
+                "upstream_inference_completions_cost": 4.824e-05
               },
               "completion_tokens_details": {
                 "reasoning_tokens": 0,
@@ -7489,7 +7015,12 @@
           "notes": "Hedef özellik PRS.PROG (-Iyor). c02, c06, c05, c01, c03'te 'taranıyorken' eylemi -Iyor+ken zincirini taşıyor; c10'da 'sürüyorken' aynı -Iyor+ken zincirini içeriyor. Tümü 3. tekil şahıs şimdiki zaman kapsamında, morfolojik işlev ve ek zinciri uyumlu. c04 (-ken ama geniş zaman 'seçerken'), c08 (-ken ama 'düzeltirken'), c09 (-ken ama 'deniyorken' farklı özne/olay, yine de -Iyor+ken taşıyor; eklendi), c07 ('başlanacakken' gelecek zaman+ken), c11 ('tamamlandıktan sonra' geçmiş zaman+sonra) adayları hedef PRS.PROG morfolojisini taşımıyor. c09'un -Iyor+ken içermesi nedeniyle listeye dahil edildi."
         }
       },
-      "quality_score": 6.04804
+      "quality_score": 6.04804,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   },
   {
@@ -7576,14 +7107,14 @@
       "scope_target": "predicate"
     },
     "template_id": "reported_speech",
-    "critical_lemma": "yenilemek",
+    "critical_lemma": "değiştirmek",
     "critical_word_query": "değiştirmek",
-    "critical_word_positive": "yenilemek",
+    "critical_word_positive": "değiştirmek",
     "feature_delta": "eylemin kendisi ↔ gerçekleşmiş olay",
     "edit_script": {
       "applies": true,
-      "positive_form": "yenilemek",
-      "minimal_negative_form": "yenilediği",
+      "positive_form": "değiştirmek",
+      "minimal_negative_form": "değiştirdiği",
       "operation": "yalnız NMLZ.MEK biçimini değiştir",
       "changed_feature": "NMLZ.MEK",
       "invariants": [
@@ -7597,12 +7128,12 @@
     "candidates": [
       {
         "candidate_slot": "hard_03",
-        "critical_sentence": "Mağazanın tersine lojistik kaydını kusurlu ürünü tedarikçiye yeniletmek için oluşturduğu bildirildi.",
-        "critical_word": "yeniletmek",
+        "critical_sentence": "Satıcı, kusurlu ürünü onarmak için iade gönderisi kaydı açtığını bildirdi.",
+        "critical_word": "onarmak",
         "role": "hard_negative",
         "subtype": "related_feature_negative",
         "morph_relation": "feature_changed",
-        "text": "Mağazanın tersine lojistik kaydını kusurlu ürünü tedarikçiye yeniletmek için oluşturduğu bildirildi.",
+        "text": "Satıcı, kusurlu ürünü onarmak için iade gönderisi kaydı açtığını bildirdi.",
         "id": "family_raw_00022_e6a9911c00_c01",
         "relevance": 0
       },
@@ -7619,100 +7150,100 @@
       },
       {
         "candidate_slot": "hard_07",
-        "critical_sentence": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilememek için oluşturduğu bildirildi.",
-        "critical_word": "yenilememek",
+        "critical_sentence": "Satıcı, kusurlu ürünü değiştirmemek için iade gönderisi kaydı açtığını bildirdi.",
+        "critical_word": "değiştirmemek",
         "role": "hard_negative",
         "subtype": "scope_attachment_trap",
         "morph_relation": "scope_changed",
-        "text": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilememek için oluşturduğu bildirildi.",
+        "text": "Satıcı, kusurlu ürünü değiştirmemek için iade gönderisi kaydı açtığını bildirdi.",
         "id": "family_raw_00022_e6a9911c00_c03",
         "relevance": 0
       },
       {
         "candidate_slot": "positive_01",
-        "critical_sentence": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilemek için oluşturduğu bildirildi.",
-        "critical_word": "yenilemek",
+        "critical_sentence": "Mağazanın kusurlu ürünü değiştirmek için iade gönderisi kaydı oluşturduğu bildirildi.",
+        "critical_word": "değiştirmek",
         "role": "positive",
         "subtype": "equivalence_positive",
         "morph_relation": "target_preserved",
-        "text": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilemek için oluşturduğu bildirildi.",
+        "text": "Mağazanın kusurlu ürünü değiştirmek için iade gönderisi kaydı oluşturduğu bildirildi.",
         "id": "family_raw_00022_e6a9911c00_c04",
         "relevance": 1
       },
       {
         "candidate_slot": "hard_08",
-        "critical_sentence": "Mağazanın kusurlu ürünü denetleyip müşteriyi bilgilendirmek için tersine lojistik kaydını oluşturduğu bildirildi.",
+        "critical_sentence": "Mağazanın müşteriyi bilgilendirmek için kusurlu ürüne iade gönderisi kaydı oluşturduğu bildirildi.",
         "critical_word": "bilgilendirmek",
         "role": "hard_negative",
         "subtype": "morph_distractor",
         "morph_relation": "target_preserved",
-        "text": "Mağazanın kusurlu ürünü denetleyip müşteriyi bilgilendirmek için tersine lojistik kaydını oluşturduğu bildirildi.",
+        "text": "Mağazanın müşteriyi bilgilendirmek için kusurlu ürüne iade gönderisi kaydı oluşturduğu bildirildi.",
         "id": "family_raw_00022_e6a9911c00_c05",
         "relevance": 0
       },
       {
         "candidate_slot": "hard_02",
-        "critical_sentence": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilemekten vazgeçtiği için oluşturduğu bildirildi.",
-        "critical_word": "yenilemekten",
+        "critical_sentence": "Mağazanın kusurlu ürünü değiştirmekten vazgeçtiği hâlde iade gönderisi kaydı oluşturduğu bildirildi.",
+        "critical_word": "değiştirmekten",
         "role": "hard_negative",
         "subtype": "same_lemma_wrong_inflection",
         "morph_relation": "wrong_inflection",
-        "text": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilemekten vazgeçtiği için oluşturduğu bildirildi.",
+        "text": "Mağazanın kusurlu ürünü değiştirmekten vazgeçtiği hâlde iade gönderisi kaydı oluşturduğu bildirildi.",
         "id": "family_raw_00022_e6a9911c00_c06",
         "relevance": 0
       },
       {
         "candidate_slot": "hard_05",
-        "critical_sentence": "Müşterinin tersine lojistik kaydını kusurlu ürünü yenilemek için oluşturduğu mağaza tarafından bildirildi.",
-        "critical_word": "Müşterinin",
+        "critical_sentence": "Mağaza, kusurlu ürünü değiştirmek için iade gönderisi kaydını müşterinin oluşturduğunu bildirdi.",
+        "critical_word": "müşterinin",
         "role": "hard_negative",
         "subtype": "state_participant_time_trap",
         "morph_relation": "target_preserved",
-        "text": "Müşterinin tersine lojistik kaydını kusurlu ürünü yenilemek için oluşturduğu mağaza tarafından bildirildi.",
+        "text": "Mağaza, kusurlu ürünü değiştirmek için iade gönderisi kaydını müşterinin oluşturduğunu bildirdi.",
         "id": "family_raw_00022_e6a9911c00_c07",
         "relevance": 0
       },
       {
         "candidate_slot": "hard_06",
-        "critical_sentence": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilemek için oluşturmayı reddettiği bildirildi.",
+        "critical_sentence": "Mağazanın kusurlu ürünü değiştirmek için iade gönderisi kaydı oluşturmayı reddettiği bildirildi.",
         "critical_word": "reddettiği",
         "role": "hard_negative",
         "subtype": "close_paraphrase_wrong_meaning",
         "morph_relation": "target_preserved",
-        "text": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilemek için oluşturmayı reddettiği bildirildi.",
+        "text": "Mağazanın kusurlu ürünü değiştirmek için iade gönderisi kaydı oluşturmayı reddettiği bildirildi.",
         "id": "family_raw_00022_e6a9911c00_c08",
         "relevance": 0
       },
       {
         "candidate_slot": "hard_04",
-        "critical_sentence": "Mağazanın tersine lojistik kaydını başka siparişteki ürünü yenilemek için oluşturduğu bildirildi.",
-        "critical_word": "yenilemek",
+        "critical_sentence": "Satıcı, başka müşterinin kusurlu ürününü değiştirmek için iade gönderisi kaydı açtığını bildirdi.",
+        "critical_word": "değiştirmek",
         "role": "hard_negative",
         "subtype": "same_morph_wrong_content",
         "morph_relation": "same_feature_wrong_content",
-        "text": "Mağazanın tersine lojistik kaydını başka siparişteki ürünü yenilemek için oluşturduğu bildirildi.",
+        "text": "Satıcı, başka müşterinin kusurlu ürününü değiştirmek için iade gönderisi kaydı açtığını bildirdi.",
         "id": "family_raw_00022_e6a9911c00_c09",
         "relevance": 0
       },
       {
         "candidate_slot": "hard_01",
-        "critical_sentence": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilediği için oluşturduğu bildirildi.",
-        "critical_word": "yenilediği",
+        "critical_sentence": "Mağazanın kusurlu ürünü değiştirdiği için iade gönderisi kaydı oluşturduğu bildirildi.",
+        "critical_word": "değiştirdiği",
         "role": "hard_negative",
         "subtype": "minimal_morph_negative",
         "morph_relation": "feature_changed",
-        "text": "Mağazanın tersine lojistik kaydını kusurlu ürünü yenilediği için oluşturduğu bildirildi.",
+        "text": "Mağazanın kusurlu ürünü değiştirdiği için iade gönderisi kaydı oluşturduğu bildirildi.",
         "id": "family_raw_00022_e6a9911c00_c10",
         "relevance": 0
       },
       {
         "candidate_slot": "easy_01",
-        "critical_sentence": "Mağaza, aynı tersine lojistik kaydı kapsamında müşteriye kupon tanımlanmadığını bildirdi.",
-        "critical_word": "tanımlanmadığını",
+        "critical_sentence": "Mağaza, iade gönderisinin takip numarasını müşteriye e-postayla iletti.",
+        "critical_word": "iletti",
         "role": "easy_negative",
         "subtype": "easy_negative",
         "morph_relation": "same_domain_off_intent",
-        "text": "Mağaza, aynı tersine lojistik kaydı kapsamında müşteriye kupon tanımlanmadığını bildirdi.",
+        "text": "Mağaza, iade gönderisinin takip numarasını müşteriye e-postayla iletti.",
         "id": "family_raw_00022_e6a9911c00_c11",
         "relevance": 0
       }
@@ -7746,7 +7277,7 @@
           "-mak",
           "-mek"
         ],
-        "critical_lemma": "yenilemek",
+        "critical_lemma": "değiştirmek",
         "contrast_delta": "eylemin kendisi ↔ gerçekleşmiş olay"
       },
       "semantics": {
@@ -7788,30 +7319,25 @@
       }
     },
     "lexical_audit": {
-      "gold_word_overlap": 0.3,
-      "hard_word_overlap_median": 0.3,
+      "gold_word_overlap": 0.7,
+      "hard_word_overlap_median": 0.7,
       "gold_hard_median_gap": 0.0,
-      "hards_at_or_above_gold": 7,
+      "hards_at_or_above_gold": 5,
       "hard_query_content_recalls": [
-        0.444444,
-        0.444444,
-        0.444444,
-        0.444444,
-        0.444444,
-        0.444444,
-        0.333333,
-        0.444444
+        0.888889,
+        1.0,
+        0.555556,
+        0.777778,
+        0.777778,
+        0.777778,
+        1.0,
+        0.777778
       ],
       "tie_aware_gold_top_probability": {
-        "word_overlap": 0.125,
-        "character_3gram": 1.0,
+        "word_overlap": 0.0,
+        "character_3gram": 0.0,
         "bm25": 0.0
-      },
-      "query_gold_token_edits": 10,
-      "query_gold_token_sequence_ratio": 0.3,
-      "query_gold_word_jaccard": 0.176471,
-      "query_gold_lexical_band_ok": true,
-      "content_preserving_hards": 0
+      }
     },
     "provenance": {
       "generator_id": "generator_a",
@@ -7853,7 +7379,7 @@
               "cost_details": {
                 "upstream_inference_cost": 0.00016816,
                 "upstream_inference_prompt_cost": 0.00011344,
-                "upstream_inference_completions_cost": 0.00005472
+                "upstream_inference_completions_cost": 5.472e-05
               },
               "completion_tokens_details": {
                 "reasoning_tokens": 0,
@@ -7948,7 +7474,2843 @@
           "notes": "Hedef morfolojik özellik NMLZ.MEK, yani fiil kök/gövdesine -mek adlaştırma ekinin eklenmesidir. Adaylar incelendiğinde: c06 'yenilemekten' (yenile-mek-ten), c08 'oluşturmayı' (oluştur-mak-ı), c04 'yenilemek' (yenile-mek), c07 'yenilemek' (yenile-mek), c09 'yenilemek' (yenile-mek), c05 'bilgilendirmek' (bilgilendir-mek), c01 'yeniletmek' (yenilet-mek), c03 'yenilememek' (yenile-me-mek) biçimlerinde hedef -mek/-mak adlaştırma eki açıkça ve doğal biçimde yer almaktadır. c10 'yenilediği' ve c02 'alındığını' adaylarında -mek adlaştırması bulunmamaktadır; c11'de de hedef ek yoktur. c06 ve c08'de -mek eki sonrası -ten ve -yı/yi gibi ilave ekler bulunsa da temel adlaştırma işlevi korunmaktadır; bu adaylar hedef morfolojik özelliği taşımaktadır. c03'te olumsuzluk eki (-me) ile -mek adlaştırmasının birleşimi (yenile-me-mek) morfolojik olarak tamamen geçerlidir. Tüm adaylar dilbilgisel olarak doğal Türkçe çekim taşımaktadır; morphologically_invalid_candidate_ids boş bırakılmıştır."
         }
       },
-      "quality_score": 5.67917
+      "quality_score": 5.92917,
+      "editorial_audit": {
+        "status": "modified_pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
+    }
+  },
+  {
+    "family_id": "family_raw_00024_287c9d5c74",
+    "slot_id": "raw_00024_287c9d5c74",
+    "target_split": "sealed_test",
+    "generalization_bucket": "template_holdout",
+    "generalization_tags": [
+      "template_holdout"
+    ],
+    "objective": "morpheme_sensitivity",
+    "macro_phenomenon": "case_location_direction",
+    "target_feature": "LOC",
+    "target_feature_label": "bulunma hâli",
+    "surface_forms": [
+      "-da",
+      "-de",
+      "-ta",
+      "-te"
+    ],
+    "layer": "single",
+    "domain": "news",
+    "register": "conversational",
+    "query_sentence_count": 2,
+    "passage_sentence_count": 2,
+    "critical_sentence_position": 2,
+    "family_mode": "controlled_diverse",
+    "query_expression": "semantic_paraphrase",
+    "query_gold_lexical_band": "low",
+    "hard_profile": [
+      {
+        "slot": "hard_01",
+        "subtype": "controlled_morph_negative",
+        "focus": "aynı olay ve hedef karşıtlık, farklı doğal sözdizimi"
+      },
+      {
+        "slot": "hard_02",
+        "subtype": "same_lemma_wrong_inflection",
+        "focus": "aynı kritik lemma, yanlış çekim"
+      },
+      {
+        "slot": "hard_03",
+        "subtype": "related_feature_negative",
+        "focus": "hedefe komşu ikinci morfolojik özellik yanlış"
+      },
+      {
+        "slot": "hard_04",
+        "subtype": "same_morph_wrong_content",
+        "focus": "hedef morfoloji doğru, önerme içeriği yanlış"
+      },
+      {
+        "slot": "hard_05",
+        "subtype": "state_participant_time_trap",
+        "focus": "durum, katılımcı, kişi veya zaman yanlış"
+      },
+      {
+        "slot": "hard_06",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "focus": "yakın paraphrase, temel önerme yanlış"
+      },
+      {
+        "slot": "hard_07",
+        "subtype": "argument_role_reversal",
+        "focus": "katılımcı veya sahiplik rolleri ters"
+      },
+      {
+        "slot": "hard_08",
+        "subtype": "morph_distractor",
+        "focus": "hedef biçim yanlış olay veya sözcüğe bağlı"
+      }
+    ],
+    "strict_minimal_pair": false,
+    "generator_id": "generator_a",
+    "semantic_frame_id": "frame_00024",
+    "semantic_profile": {
+      "narrative_tag": "sendika_salon_bulusmasi",
+      "event_type": "gorusme_ve_basin_aciklamasi",
+      "participant_roles": [
+        "agent",
+        "location",
+        "beneficiary"
+      ],
+      "polarity": "affirmative",
+      "temporal_frame": "past",
+      "scope_target": "argument"
+    },
+    "template_id": "coordinated_events",
+    "critical_lemma": "salon",
+    "critical_word_query": "salonun içinde",
+    "critical_word_positive": "salonda",
+    "feature_delta": "bir yerde bulunma ↔ bir yerden ayrılma",
+    "edit_script": {
+      "applies": false,
+      "positive_form": "",
+      "minimal_negative_form": "",
+      "operation": "",
+      "changed_feature": "",
+      "invariants": []
+    },
+    "query": "Sendika heyeti görüşme için salonun içinde buluştu, sonrasında bina girişinde basına açıklama yaptı. Haberde, buluşma yeri olarak bu kapalı alanın seçildiği özellikle belirtildi.",
+    "context_sentences": [
+      "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı."
+    ],
+    "candidates": [
+      {
+        "candidate_slot": "hard_04",
+        "critical_sentence": "Önce yan salonda bir araya gelen sendika temsilcileri, ardından girişte gazetecilere açıklamada bulundu.",
+        "critical_word": "salonda",
+        "role": "hard_negative",
+        "subtype": "same_morph_wrong_content",
+        "morph_relation": "same_feature_wrong_content",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Önce yan salonda bir araya gelen sendika temsilcileri, ardından girişte gazetecilere açıklamada bulundu.",
+        "id": "family_raw_00024_287c9d5c74_c01",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_05",
+        "critical_sentence": "Önce salonda bir araya gelen işveren heyeti, ardından girişte gazetecilere açıklamada bulundu.",
+        "critical_word": "salonda",
+        "role": "hard_negative",
+        "subtype": "state_participant_time_trap",
+        "morph_relation": "target_preserved",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Önce salonda bir araya gelen işveren heyeti, ardından girişte gazetecilere açıklamada bulundu.",
+        "id": "family_raw_00024_287c9d5c74_c02",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "easy_01",
+        "critical_sentence": "Sendika temsilcileri yeni sözleşme taslağını üyelere gönderdi ve oylama takvimini ayrıca duyurdu.",
+        "critical_word": "taslağını",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Sendika temsilcileri yeni sözleşme taslağını üyelere gönderdi ve oylama takvimini ayrıca duyurdu.",
+        "id": "family_raw_00024_287c9d5c74_c03",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "positive_01",
+        "critical_sentence": "Önce salonda bir araya gelen sendika temsilcileri, ardından girişte gazetecilere açıklamada bulundu.",
+        "critical_word": "salonda",
+        "role": "positive",
+        "subtype": "equivalence_positive",
+        "morph_relation": "target_preserved",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Önce salonda bir araya gelen sendika temsilcileri, ardından girişte gazetecilere açıklamada bulundu.",
+        "id": "family_raw_00024_287c9d5c74_c04",
+        "relevance": 1
+      },
+      {
+        "candidate_slot": "hard_01",
+        "critical_sentence": "Salondan ayrılan sendika temsilcileri, kısa süre sonra girişte gazetecilere açıklamada bulundu.",
+        "critical_word": "salondan",
+        "role": "hard_negative",
+        "subtype": "controlled_morph_negative",
+        "morph_relation": "feature_changed",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Salondan ayrılan sendika temsilcileri, kısa süre sonra girişte gazetecilere açıklamada bulundu.",
+        "id": "family_raw_00024_287c9d5c74_c05",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_08",
+        "critical_sentence": "Sendika temsilcileri bina girişinde gazetecilere açıklama yaparken salonda toplantı hazırlıkları sürüyordu.",
+        "critical_word": "salonda",
+        "role": "hard_negative",
+        "subtype": "morph_distractor",
+        "morph_relation": "target_preserved",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Sendika temsilcileri bina girişinde gazetecilere açıklama yaparken salonda toplantı hazırlıkları sürüyordu.",
+        "id": "family_raw_00024_287c9d5c74_c06",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "easy_02",
+        "critical_sentence": "Bina yönetimi görüşme öncesinde ses sistemini yeniledi ve güvenlik görevlilerinin vardiyasını değiştirdi.",
+        "critical_word": "vardiyasını",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Bina yönetimi görüşme öncesinde ses sistemini yeniledi ve güvenlik görevlilerinin vardiyasını değiştirdi.",
+        "id": "family_raw_00024_287c9d5c74_c07",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_03",
+        "critical_sentence": "Sendika temsilcileri salonlarda gruplar hâlinde buluştu, ardından girişte gazetecilere açıklamada bulundu.",
+        "critical_word": "salonlarda",
+        "role": "hard_negative",
+        "subtype": "related_feature_negative",
+        "morph_relation": "feature_changed",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Sendika temsilcileri salonlarda gruplar hâlinde buluştu, ardından girişte gazetecilere açıklamada bulundu.",
+        "id": "family_raw_00024_287c9d5c74_c08",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_02",
+        "critical_sentence": "Sendika temsilcileri önce salona yöneldi, ardından girişte gazetecilere açıklamada bulundu.",
+        "critical_word": "salona",
+        "role": "hard_negative",
+        "subtype": "same_lemma_wrong_inflection",
+        "morph_relation": "wrong_inflection",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Sendika temsilcileri önce salona yöneldi, ardından girişte gazetecilere açıklamada bulundu.",
+        "id": "family_raw_00024_287c9d5c74_c09",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_07",
+        "critical_sentence": "Önce salonda sendika temsilcileriyle buluşan gazeteciler, ardından girişte onlara açıklamada bulundu.",
+        "critical_word": "salonda",
+        "role": "hard_negative",
+        "subtype": "argument_role_reversal",
+        "morph_relation": "target_preserved",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Önce salonda sendika temsilcileriyle buluşan gazeteciler, ardından girişte onlara açıklamada bulundu.",
+        "id": "family_raw_00024_287c9d5c74_c10",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_06",
+        "critical_sentence": "Sendika temsilcileri salonda bir araya gelmedi, ancak girişte gazetecilere açıklamada bulundu.",
+        "critical_word": "salonda",
+        "role": "hard_negative",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "morph_relation": "target_preserved",
+        "text": "Tarafların gündemindeki başlıklar akşam bülteninde ayrıntılı biçimde aktarıldı. Sendika temsilcileri salonda bir araya gelmedi, ancak girişte gazetecilere açıklamada bulundu.",
+        "id": "family_raw_00024_287c9d5c74_c11",
+        "relevance": 0
+      }
+    ],
+    "gold_id": "family_raw_00024_287c9d5c74_c04",
+    "qrels": {
+      "family_raw_00024_287c9d5c74_c01": 0,
+      "family_raw_00024_287c9d5c74_c02": 0,
+      "family_raw_00024_287c9d5c74_c03": 0,
+      "family_raw_00024_287c9d5c74_c04": 1,
+      "family_raw_00024_287c9d5c74_c05": 0,
+      "family_raw_00024_287c9d5c74_c06": 0,
+      "family_raw_00024_287c9d5c74_c07": 0,
+      "family_raw_00024_287c9d5c74_c08": 0,
+      "family_raw_00024_287c9d5c74_c09": 0,
+      "family_raw_00024_287c9d5c74_c10": 0,
+      "family_raw_00024_287c9d5c74_c11": 0
+    },
+    "source_type": "llm_generated_cascade_judged",
+    "memory_tags": {
+      "morphology": {
+        "phenomenon": "LOC",
+        "macro": "case_location_direction",
+        "objective": "morpheme_sensitivity",
+        "layer": "single",
+        "feature_components": [
+          "LOC"
+        ],
+        "surface_forms": [
+          "-da",
+          "-de",
+          "-ta",
+          "-te"
+        ],
+        "critical_lemma": "salon",
+        "contrast_delta": "bir yerde bulunma ↔ bir yerden ayrılma"
+      },
+      "semantics": {
+        "frame_id": "frame_00024",
+        "narrative_tag": "sendika_salon_bulusmasi",
+        "event_type": "gorusme_ve_basin_aciklamasi",
+        "participant_roles": [
+          "agent",
+          "location",
+          "beneficiary"
+        ],
+        "polarity": "affirmative",
+        "temporal_frame": "past",
+        "scope_target": "argument"
+      },
+      "generalization": {
+        "split": "sealed_test",
+        "bucket": "template_holdout",
+        "tags": [
+          "template_holdout"
+        ],
+        "domain": "news",
+        "register": "conversational",
+        "template_id": "coordinated_events",
+        "family_mode": "controlled_diverse"
+      },
+      "controls": {
+        "delta": "bir yerde bulunma ↔ bir yerden ayrılma",
+        "invariants": []
+      },
+      "provenance": {
+        "generator_id": "generator_a",
+        "source_type": "llm_generated_pending_cascade_judge"
+      }
+    },
+    "lexical_audit": {
+      "gold_word_overlap": 0.076923,
+      "hard_word_overlap_median": 0.076923,
+      "gold_hard_median_gap": 0.0,
+      "hards_at_or_above_gold": 8,
+      "hard_query_content_recalls": [
+        0.333333,
+        0.333333,
+        0.333333,
+        0.416667,
+        0.416667,
+        0.333333,
+        0.416667,
+        0.333333
+      ],
+      "tie_aware_gold_top_probability": {
+        "word_overlap": 0.0,
+        "character_3gram": 0.0,
+        "bm25": 0.0
+      },
+      "query_gold_token_edits": 13,
+      "query_gold_token_sequence_ratio": 0.08,
+      "query_gold_word_jaccard": 0.041667,
+      "query_gold_lexical_band_ok": true,
+      "content_preserving_hards": 0
+    },
+    "provenance": {
+      "generator_id": "generator_a",
+      "refill_round": 0,
+      "rejected_replacements": [],
+      "generator_attempts": [
+        {
+          "provider": "codex_cli",
+          "model": "gpt-5.6-sol",
+          "request_hash": "0abb162851980b00aab127db42fe8545e668442b66bc6111e06908395cf0b25f",
+          "cache_hit": false,
+          "usage": {
+            "wall_seconds": 117.11,
+            "cli_stdout_tail": "len işveren heyeti, ardından girişte gazetecilere açıklamada bulundu.\",\"critical_word\":\"salonda\"},{\"candidate_slot\":\"hard_06\",\"critical_sentence\":\"Sendika temsilcileri salonda bir araya gelmedi, ancak girişte gazetecilere açıklamada bulundu.\",\"critical_word\":\"salonda\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"Önce salonda sendika temsilcileriyle buluşan gazeteciler, ardından girişte onlara açıklamada bulundu.\",\"critical_word\":\"salonda\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Sendika temsilcileri bina girişinde gazetecilere açıklama yaparken salonda toplantı hazırlıkları sürüyordu.\",\"critical_word\":\"salonda\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Sendika temsilcileri yeni sözleşme taslağını üyelere gönderdi ve oylama takvimini ayrıca duyurdu.\",\"critical_word\":\"taslağını\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"Bina yönetimi görüşme öncesinde ses sistemini yeniledi ve güvenlik görevlilerinin vardiyasını değiştirdi.\",\"critical_word\":\"vardiyasını\"}]}\n"
+          },
+          "actual_model": "gpt-5.6-sol",
+          "route_provider": "codex_cli"
+        }
+      ],
+      "judges": {
+        "semantic": [
+          {
+            "provider": "openrouter",
+            "model": "deepseek/deepseek-v4-flash-0731",
+            "request_hash": "02f0dc2e0636a0b3f214b0934f3c117eef59f249bb1a5d9d919e0549f76c9117",
+            "cache_hit": false,
+            "usage": {
+              "prompt_tokens": 1841,
+              "completion_tokens": 299,
+              "total_tokens": 2140,
+              "cost": 0.0002011,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0002011,
+                "upstream_inference_prompt_cost": 0.00014728,
+                "upstream_inference_completions_cost": 5.382e-05
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            },
+            "actual_model": "deepseek/deepseek-v4-flash-0731",
+            "route_provider": "DeepInfra"
+          }
+        ],
+        "morphology": {
+          "provider": "openrouter",
+          "model": "z-ai/glm-5.2",
+          "request_hash": "03d6b623d5d2869306404390829051b003cebec0302373e777b659172470e82c",
+          "cache_hit": false,
+          "usage": {
+            "prompt_tokens": 1656,
+            "completion_tokens": 541,
+            "total_tokens": 2197,
+            "cost": 0.0046988,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0046988,
+              "upstream_inference_prompt_cost": 0.0023184,
+              "upstream_inference_completions_cost": 0.0023804
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "actual_model": "z-ai/glm-5.2",
+          "route_provider": "Parasail"
+        }
+      },
+      "prompt_version": "test-prompts-3.8.3-limited-local-repair"
+    },
+    "qc": {
+      "deterministic": "pass",
+      "judging": {
+        "semantic": {
+          "order_stable": true,
+          "passes": [
+            {
+              "answers_query": [
+                "family_raw_00024_287c9d5c74_c04"
+              ],
+              "confidence": 80,
+              "abstain": false,
+              "family_naturalness": 1,
+              "candidate_naturalness_min": 5,
+              "support_mismatches": [],
+              "unnatural_candidate_ids": [],
+              "internally_inconsistent_candidates": [],
+              "length_or_style_artifact": false,
+              "authoritative": false,
+              "relevance_authoritative": false,
+              "quality_authoritative": false,
+              "notes": "Sorgu, sendika heyetinin görüşme için salonun içinde buluştuğunu ve sonrasında bina girişinde basına açıklama yaptığını belirtiyor. c04, 'Önce salonda bir araya gelen sendika temsilcileri, ardından girişte gazetecilere açıklamada bulundu' ifadesiyle bu bilgiyi birebir karşılıyor. Diğer adaylar ya özne/rol farkı (c02, c10), yer farkı (c01, c08), olumsuzluk (c11) ya da buluşma yerini netleştirmeme (c05, c09) nedeniyle tam uyumlu değil. c03 ve c07 ise buluşma ve açıklama olayını içermiyor."
+            }
+          ],
+          "family_naturalness": 1,
+          "candidate_naturalness_min": 5,
+          "confidence_min": 80
+        },
+        "morphology": {
+          "confidence": 95,
+          "abstain": false,
+          "authoritative": true,
+          "morphology_failures": [],
+          "unclear_candidate_ids": [],
+          "gold_target_status": "matches_target",
+          "target_matching_candidate_ids": [
+            "family_raw_00024_287c9d5c74_c01",
+            "family_raw_00024_287c9d5c74_c02",
+            "family_raw_00024_287c9d5c74_c04",
+            "family_raw_00024_287c9d5c74_c06",
+            "family_raw_00024_287c9d5c74_c08",
+            "family_raw_00024_287c9d5c74_c09",
+            "family_raw_00024_287c9d5c74_c11"
+          ],
+          "allomorph_treated_as_wrong": false,
+          "notes": "Hedef morfolojik özellik LOC bulunma hâli eki (-dA) tekil, üçüncü kişi, iyeliksiz. Adaylar incelendiğinde: c01, c02, c04 'salonda' ve 'girişte' biçimlerini taşıyor; c06 'girişte' ve 'salonda' içeriyor; c08 'salonlarda' (çoğul LOC) ve 'girişte' içeriyor; c09 'salona' (yönelme -DA değil) ve 'girişte' içeriyor; c11 'salonda' ve 'girişte' içeriyor. c09'da 'salona' yönelme hâli (-DA) olduğundan LOC target ile eşleşmez, ancak 'girişte' LOC taşıdığı için listede tutuldu. c05 'salondan' ayrılma hâli (-DAn) taşıyor, hedef LOC değil; c10 'salonda' ve 'girişte' taşıyor ancak özne farklı—morfolojik eşleşme mevcut. c03 ve c07'de LOC eki bulunmuyor. c10 listeye eklenmedi çünkü 'salonda' ve 'girişte' morfolojik olarak LOC taşıyor—düzeltme: c10 da eklenmelidir. Kapsam: tüm LOC biçimler tekil/iyeliksiz, allomorflar (d/t ünsüz uyumu) geçerli. Biçimbilimsel bozukluk yok."
+        }
+      },
+      "human_review_priority": true,
+      "human_review_priority_reasons": [
+        "semantic_1:low_confidence_with_finding:80"
+      ],
+      "quality_score": 6.30714,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
+    }
+  },
+  {
+    "family_id": "family_raw_00025_6e154237bc",
+    "slot_id": "raw_00025_6e154237bc",
+    "target_split": "sealed_test",
+    "generalization_bucket": "template_holdout",
+    "generalization_tags": [
+      "template_holdout"
+    ],
+    "objective": "allomorph_invariance",
+    "macro_phenomenon": "derivation_nonfinite_allomorphy",
+    "target_feature": "ALLO.LOC",
+    "target_feature_label": "bulunma hâli allomorfları",
+    "surface_forms": [
+      "-da",
+      "-de",
+      "-ta",
+      "-te"
+    ],
+    "layer": "single",
+    "domain": "ecommerce",
+    "register": "formal_record",
+    "query_sentence_count": 1,
+    "passage_sentence_count": 2,
+    "critical_sentence_position": 1,
+    "family_mode": "natural_retrieval",
+    "query_expression": "morph_explicit",
+    "query_gold_lexical_band": "high",
+    "hard_profile": [
+      {
+        "slot": "hard_01",
+        "subtype": "controlled_morph_negative",
+        "focus": "hedef morfolojik anlam yanlış, doğal farklı anlatım"
+      },
+      {
+        "slot": "hard_02",
+        "subtype": "related_feature_negative",
+        "focus": "komşu morfolojik özellik yanlış"
+      },
+      {
+        "slot": "hard_03",
+        "subtype": "same_morph_wrong_content",
+        "focus": "morfoloji benzer, önerme içeriği yanlış"
+      },
+      {
+        "slot": "hard_04",
+        "subtype": "state_participant_time_trap",
+        "focus": "durum, katılımcı veya zaman yanlış"
+      },
+      {
+        "slot": "hard_05",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "focus": "yakın anlam alanı, temel önerme yanlış"
+      },
+      {
+        "slot": "hard_06",
+        "subtype": "lexical_retrieval_trap",
+        "focus": "query sözcükleri çekici, fakat belge irrelevant"
+      },
+      {
+        "slot": "hard_07",
+        "subtype": "semantic_retrieval_hard",
+        "focus": "doğal ve konuya yakın, fakat bilgi ihtiyacını karşılamıyor"
+      },
+      {
+        "slot": "hard_08",
+        "subtype": "morph_distractor",
+        "focus": "hedef biçim yanlış olay veya sözcüğe bağlı"
+      }
+    ],
+    "strict_minimal_pair": false,
+    "generator_id": "generator_a",
+    "semantic_frame_id": "frame_00025",
+    "semantic_profile": {
+      "narrative_tag": "siparis_indirimi_uygulama_yeri",
+      "event_type": "kampanya_indirimi_uygulamasi",
+      "participant_roles": [
+        "theme",
+        "location"
+      ],
+      "polarity": "mixed",
+      "temporal_frame": "past",
+      "scope_target": "argument"
+    },
+    "template_id": "contrastive_statement",
+    "critical_lemma": "sepet",
+    "critical_word_query": "sepette",
+    "critical_word_positive": "sepetinde",
+    "feature_delta": "aynı bulunma işlevi, farklı uyum/ötümsüzleşme",
+    "edit_script": {
+      "applies": false,
+      "positive_form": "",
+      "minimal_negative_form": "",
+      "operation": "",
+      "changed_feature": "",
+      "invariants": []
+    },
+    "query": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı ürün sayfasında değil, ödeme öncesinde sepette uygulanmıştır.",
+    "context_sentences": [
+      "Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir."
+    ],
+    "candidates": [
+      {
+        "candidate_slot": "easy_02",
+        "critical_sentence": "Bu siparişteki ürün, ödeme tamamlanana kadar depodaki stoktan müşteri adına ayrılmıştır.",
+        "critical_word": "stoktan",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Bu siparişteki ürün, ödeme tamamlanana kadar depodaki stoktan müşteri adına ayrılmıştır. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c01",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_05",
+        "critical_sentence": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı ürün sayfasında uygulanmış, ödeme öncesinde sepette uygulanmamıştır.",
+        "critical_word": "uygulanmamıştır",
+        "role": "hard_negative",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "morph_relation": "target_preserved",
+        "text": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı ürün sayfasında uygulanmış, ödeme öncesinde sepette uygulanmamıştır. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c02",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_04",
+        "critical_sentence": "Kayıtlara göre bu siparişe ait kampanya indirimi değil, başka siparişin indirimi ödeme öncesinde sepette uygulanmıştır.",
+        "critical_word": "sepette",
+        "role": "hard_negative",
+        "subtype": "state_participant_time_trap",
+        "morph_relation": "target_preserved",
+        "text": "Kayıtlara göre bu siparişe ait kampanya indirimi değil, başka siparişin indirimi ödeme öncesinde sepette uygulanmıştır. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c03",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_03",
+        "critical_sentence": "Kayıtlara göre bu siparişe ait kampanya indirimi yerine kargo indirimi, ürün sayfasında değil ödeme öncesinde sepette uygulanmıştır.",
+        "critical_word": "sepette",
+        "role": "hard_negative",
+        "subtype": "same_morph_wrong_content",
+        "morph_relation": "same_feature_wrong_content",
+        "text": "Kayıtlara göre bu siparişe ait kampanya indirimi yerine kargo indirimi, ürün sayfasında değil ödeme öncesinde sepette uygulanmıştır. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c04",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_06",
+        "critical_sentence": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı, ürün sayfasında ve ödeme öncesinde sepette yalnızca bilgilendirme amacıyla gösterilmiştir.",
+        "critical_word": "gösterilmiştir",
+        "role": "hard_negative",
+        "subtype": "lexical_retrieval_trap",
+        "morph_relation": "target_preserved",
+        "text": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı, ürün sayfasında ve ödeme öncesinde sepette yalnızca bilgilendirme amacıyla gösterilmiştir. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c05",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_02",
+        "critical_sentence": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı ürün sayfasında değil, ödeme öncesinde sepette uygulanacaktır.",
+        "critical_word": "uygulanacaktır",
+        "role": "hard_negative",
+        "subtype": "related_feature_negative",
+        "morph_relation": "feature_changed",
+        "text": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı ürün sayfasında değil, ödeme öncesinde sepette uygulanacaktır. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c06",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "easy_01",
+        "critical_sentence": "Bu siparişe ait elektronik fatura, kampanya indirimi satırını içerecek biçimde müşteri hesabına gönderilmiştir.",
+        "critical_word": "fatura",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Bu siparişe ait elektronik fatura, kampanya indirimi satırını içerecek biçimde müşteri hesabına gönderilmiştir. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c07",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_07",
+        "critical_sentence": "Denetim kaydı, bu siparişe ait kampanya indiriminin ürün sayfası ile ödeme öncesi sepet arasında karşılaştırıldığını belirtmektedir.",
+        "critical_word": "karşılaştırıldığını",
+        "role": "hard_negative",
+        "subtype": "semantic_retrieval_hard",
+        "morph_relation": "target_preserved",
+        "text": "Denetim kaydı, bu siparişe ait kampanya indiriminin ürün sayfası ile ödeme öncesi sepet arasında karşılaştırıldığını belirtmektedir. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c08",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_01",
+        "critical_sentence": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı ürün sayfasında uygulanmış, ödeme öncesinde sepetten kaldırılmıştır.",
+        "critical_word": "sepetten",
+        "role": "hard_negative",
+        "subtype": "controlled_morph_negative",
+        "morph_relation": "feature_changed",
+        "text": "Kayıtlara göre bu siparişe ait kampanya indirimi tutarı ürün sayfasında uygulanmış, ödeme öncesinde sepetten kaldırılmıştır. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c09",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "positive_01",
+        "critical_sentence": "Ürün sayfasında değil ödeme öncesinde alışveriş sepetinde uygulanan tutarın, kayıtlara göre bu siparişe ait kampanya indirimi olduğu doğrulanmıştır.",
+        "critical_word": "sepetinde",
+        "role": "positive",
+        "subtype": "equivalence_positive",
+        "morph_relation": "allomorph_equivalent",
+        "text": "Ürün sayfasında değil ödeme öncesinde alışveriş sepetinde uygulanan tutarın, kayıtlara göre bu siparişe ait kampanya indirimi olduğu doğrulanmıştır. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c10",
+        "relevance": 1
+      },
+      {
+        "candidate_slot": "hard_08",
+        "critical_sentence": "Kayıtlara göre bu siparişe ait ürün adedi sepette güncellenmiş, kampanya indirimi tutarı ürün sayfasında bırakılmıştır.",
+        "critical_word": "sepette",
+        "role": "hard_negative",
+        "subtype": "morph_distractor",
+        "morph_relation": "target_preserved",
+        "text": "Kayıtlara göre bu siparişe ait ürün adedi sepette güncellenmiş, kampanya indirimi tutarı ürün sayfasında bırakılmıştır. Sipariş kaydı, denetim ekibinin rutin incelemesi için işlem numarasıyla arşivlenmiştir.",
+        "id": "family_raw_00025_6e154237bc_c11",
+        "relevance": 0
+      }
+    ],
+    "gold_id": "family_raw_00025_6e154237bc_c10",
+    "qrels": {
+      "family_raw_00025_6e154237bc_c01": 0,
+      "family_raw_00025_6e154237bc_c02": 0,
+      "family_raw_00025_6e154237bc_c03": 0,
+      "family_raw_00025_6e154237bc_c04": 0,
+      "family_raw_00025_6e154237bc_c05": 0,
+      "family_raw_00025_6e154237bc_c06": 0,
+      "family_raw_00025_6e154237bc_c07": 0,
+      "family_raw_00025_6e154237bc_c08": 0,
+      "family_raw_00025_6e154237bc_c09": 0,
+      "family_raw_00025_6e154237bc_c10": 1,
+      "family_raw_00025_6e154237bc_c11": 0
+    },
+    "source_type": "llm_generated_cascade_judged",
+    "memory_tags": {
+      "morphology": {
+        "phenomenon": "ALLO.LOC",
+        "macro": "derivation_nonfinite_allomorphy",
+        "objective": "allomorph_invariance",
+        "layer": "single",
+        "feature_components": [
+          "ALLO",
+          "LOC"
+        ],
+        "surface_forms": [
+          "-da",
+          "-de",
+          "-ta",
+          "-te"
+        ],
+        "critical_lemma": "sepet",
+        "contrast_delta": "aynı bulunma işlevi, farklı uyum/ötümsüzleşme"
+      },
+      "semantics": {
+        "frame_id": "frame_00025",
+        "narrative_tag": "siparis_indirimi_uygulama_yeri",
+        "event_type": "kampanya_indirimi_uygulamasi",
+        "participant_roles": [
+          "theme",
+          "location"
+        ],
+        "polarity": "mixed",
+        "temporal_frame": "past",
+        "scope_target": "argument"
+      },
+      "generalization": {
+        "split": "sealed_test",
+        "bucket": "template_holdout",
+        "tags": [
+          "template_holdout"
+        ],
+        "domain": "ecommerce",
+        "register": "formal_record",
+        "template_id": "contrastive_statement",
+        "family_mode": "natural_retrieval"
+      },
+      "controls": {
+        "delta": "aynı bulunma işlevi, farklı uyum/ötümsüzleşme",
+        "invariants": []
+      },
+      "provenance": {
+        "generator_id": "generator_a",
+        "source_type": "llm_generated_pending_cascade_judge"
+      }
+    },
+    "lexical_audit": {
+      "gold_word_overlap": 0.8,
+      "hard_word_overlap_median": 0.833333,
+      "gold_hard_median_gap": 0.033333,
+      "hards_at_or_above_gold": 6,
+      "hard_query_content_recalls": [
+        0.923077,
+        0.769231,
+        0.923077,
+        0.846154,
+        1.0,
+        0.615385,
+        0.923077,
+        0.692308
+      ],
+      "tie_aware_gold_top_probability": {
+        "word_overlap": 0.0,
+        "character_3gram": 0.0,
+        "bm25": 0.0
+      },
+      "query_gold_token_edits": 17,
+      "query_gold_token_sequence_ratio": 0.424242,
+      "query_gold_word_jaccard": 0.571429,
+      "query_gold_lexical_band_ok": true,
+      "content_preserving_hards": 8
+    },
+    "provenance": {
+      "generator_id": "generator_a",
+      "refill_round": 0,
+      "rejected_replacements": [],
+      "generator_attempts": [
+        {
+          "provider": "codex_cli",
+          "model": "gpt-5.6-sol",
+          "request_hash": "75159f3a1001c2b1ae15178ec6331f2f161f1e08ef746d37c578e404219bb9af",
+          "cache_hit": false,
+          "usage": {
+            "wall_seconds": 95.848,
+            "cli_stdout_tail": "date_slot\":\"hard_06\",\"critical_sentence\":\"Kayıtlara göre bu siparişe ait kampanya indirimi tutarı, ürün sayfasında ve ödeme öncesinde sepette yalnızca bilgilendirme amacıyla gösterilmiştir.\",\"critical_word\":\"gösterilmiştir\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"Denetim kaydı, bu siparişe ait kampanya indiriminin ürün sayfası ile ödeme öncesi sepet arasında karşılaştırıldığını belirtmektedir.\",\"critical_word\":\"karşılaştırıldığını\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Kayıtlara göre bu siparişe ait ürün adedi sepette güncellenmiş, kampanya indirimi tutarı ürün sayfasında bırakılmıştır.\",\"critical_word\":\"sepette\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Bu siparişe ait elektronik fatura, kampanya indirimi satırını içerecek biçimde müşteri hesabına gönderilmiştir.\",\"critical_word\":\"fatura\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"Bu siparişteki ürün, ödeme tamamlanana kadar depodaki stoktan müşteri adına ayrılmıştır.\",\"critical_word\":\"stoktan\"}]}\n"
+          },
+          "actual_model": "gpt-5.6-sol",
+          "route_provider": "codex_cli"
+        }
+      ],
+      "judges": {
+        "semantic": [
+          {
+            "provider": "openrouter",
+            "model": "deepseek/deepseek-v4-flash-0731",
+            "request_hash": "788f7b890202978e9b63b068b6c2bb7367b4bdd2fab84ecd78c4e9b652973c32",
+            "cache_hit": false,
+            "usage": {
+              "prompt_tokens": 1905,
+              "completion_tokens": 306,
+              "total_tokens": 2211,
+              "cost": 0.00020748,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00020748,
+                "upstream_inference_prompt_cost": 0.0001524,
+                "upstream_inference_completions_cost": 5.508e-05
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            },
+            "actual_model": "deepseek/deepseek-v4-flash-0731",
+            "route_provider": "DeepInfra"
+          }
+        ],
+        "morphology": {
+          "provider": "openrouter",
+          "model": "z-ai/glm-5.2",
+          "request_hash": "5215e37058c1a3f2aeee8199e30800865e290afaac17d1c05fe86be605be2592",
+          "cache_hit": false,
+          "usage": {
+            "prompt_tokens": 1676,
+            "completion_tokens": 498,
+            "total_tokens": 2174,
+            "cost": 0.0045376,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0045376,
+              "upstream_inference_prompt_cost": 0.0023464,
+              "upstream_inference_completions_cost": 0.0021912
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "actual_model": "z-ai/glm-5.2",
+          "route_provider": "Parasail"
+        }
+      },
+      "prompt_version": "test-prompts-3.8.3-limited-local-repair"
+    },
+    "qc": {
+      "deterministic": "pass",
+      "judging": {
+        "semantic": {
+          "order_stable": true,
+          "passes": [
+            {
+              "answers_query": [
+                "family_raw_00025_6e154237bc_c10"
+              ],
+              "confidence": 80,
+              "abstain": false,
+              "family_naturalness": 1,
+              "candidate_naturalness_min": 5,
+              "support_mismatches": [],
+              "unnatural_candidate_ids": [],
+              "internally_inconsistent_candidates": [],
+              "length_or_style_artifact": false,
+              "authoritative": false,
+              "relevance_authoritative": false,
+              "quality_authoritative": false,
+              "notes": "Sorgu, kampanya indiriminin ürün sayfasında değil ödeme öncesinde sepette uygulandığını belirtiyor. c10 bu bilgiyi doğrudan ve doğru şekilde karşılıyor. c06 'uygulanacaktır' gelecek zaman ifadesiyle sorgudaki geçmiş/bitmiş uygulamayı karşılamıyor; c02 ve c09 tersini söylüyor; c03, c04 farklı indirim türü/sipariş bildiriyor; c05 yalnızca bilgilendirme amacıyla gösterildiğini söyleyerek sorguyla çelişiyor; c01, c07, c08, c11 sorgunun ana iddiasını karşılamıyor. Doğal olmayan veya iç çelişkili aday görmedim."
+            }
+          ],
+          "family_naturalness": 1,
+          "candidate_naturalness_min": 5,
+          "confidence_min": 80
+        },
+        "morphology": {
+          "confidence": 88,
+          "abstain": false,
+          "authoritative": true,
+          "morphology_failures": [],
+          "unclear_candidate_ids": [],
+          "gold_target_status": "matches_target",
+          "target_matching_candidate_ids": [
+            "family_raw_00025_6e154237bc_c02",
+            "family_raw_00025_6e154237bc_c04",
+            "family_raw_00025_6e154237bc_c06",
+            "family_raw_00025_6e154237bc_c10"
+          ],
+          "allomorph_treated_as_wrong": false,
+          "notes": "Hedef özellik ALLO.LOC (bulunma hâli allomorfları) olup, hedef morfolojik zincir 'sayfa-da' ve 'sepet-te' ekleridir. Sorgu cümlesinde 'ürün sayfasında değil, ödeme öncesinde sepette uygulanmıştır' ifadesi bu bulunma hâli allomorflarını (sayfası+nda, sepet+te) aynı morfolojik işlev ve kapsamla taşımaktadır. c02: 'sayfasında ... sepette uygulanmamıştır' — olumsuz zaman/kip değişikliği morfolojik yapıyı bozmaz, hedef ekler korunmuştur. c04: 'sayfasında değil ... sepette uygulanmıştır' — hedef ek zinciri birebir korunmuştur. c06: 'sayfasında değil ... sepette uygulanacaktır' — zaman/kip değişikliği morfolojik LOC allomorflarını etkilemez. c10: 'sayfasında ... sepetinde uygulanan' — 'sepetinde' iyelik+LOC bileşik yapısıdır; 'sepet+te' ile aynı LOC işlevini taşır, allomorf varyantı geçerlidir. c01, c03, c05, c07, c08, c09, c11 adayları hedef 'sayfasında ... sepette' ikili LOC zincirini birlikte taşımamaktadır (farklı LOC ekleri içerse de hedef kapsamı karşılamaz). Tüm adaylar dilbilgisel olarak doğal Türkçe çekimler içermektedir; morfolojik olarak geçersiz aday yoktur."
+        }
+      },
+      "human_review_priority": true,
+      "human_review_priority_reasons": [
+        "semantic_1:low_confidence_with_finding:80"
+      ],
+      "quality_score": 5.97167,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
+    }
+  },
+  {
+    "family_id": "family_raw_00027_0338129066",
+    "slot_id": "raw_00027_0338129066",
+    "target_split": "sealed_test",
+    "generalization_bucket": "standard",
+    "generalization_tags": [
+      "standard"
+    ],
+    "objective": "composition",
+    "macro_phenomenon": "suffix_chain_composition",
+    "target_feature": "PL.POSS.CASE",
+    "target_feature_label": "çoğul + iyelik + hâl",
+    "surface_forms": [],
+    "layer": "chain",
+    "domain": "health",
+    "register": "news_report",
+    "query_sentence_count": 1,
+    "passage_sentence_count": 4,
+    "critical_sentence_position": 2,
+    "family_mode": "natural_retrieval",
+    "query_expression": "semantic_paraphrase",
+    "query_gold_lexical_band": "low",
+    "hard_profile": [
+      {
+        "slot": "hard_01",
+        "subtype": "controlled_morph_negative",
+        "focus": "hedef morfolojik anlam yanlış, doğal farklı anlatım"
+      },
+      {
+        "slot": "hard_02",
+        "subtype": "related_feature_negative",
+        "focus": "komşu morfolojik özellik yanlış"
+      },
+      {
+        "slot": "hard_03",
+        "subtype": "same_morph_wrong_content",
+        "focus": "morfoloji benzer, önerme içeriği yanlış"
+      },
+      {
+        "slot": "hard_04",
+        "subtype": "state_participant_time_trap",
+        "focus": "durum, katılımcı veya zaman yanlış"
+      },
+      {
+        "slot": "hard_05",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "focus": "yakın anlam alanı, temel önerme yanlış"
+      },
+      {
+        "slot": "hard_06",
+        "subtype": "lexical_retrieval_trap",
+        "focus": "query sözcükleri çekici, fakat belge irrelevant"
+      },
+      {
+        "slot": "hard_07",
+        "subtype": "semantic_retrieval_hard",
+        "focus": "doğal ve konuya yakın, fakat bilgi ihtiyacını karşılamıyor"
+      },
+      {
+        "slot": "hard_08",
+        "subtype": "morph_distractor",
+        "focus": "hedef biçim yanlış olay veya sözcüğe bağlı"
+      }
+    ],
+    "strict_minimal_pair": false,
+    "generator_id": "generator_a",
+    "semantic_frame_id": "frame_00027",
+    "semantic_profile": {
+      "narrative_tag": "ziyaret_kaynakli_enfeksiyon",
+      "event_type": "hastane_ici_bulas",
+      "participant_roles": [
+        "causer",
+        "patient",
+        "source",
+        "goal",
+        "location"
+      ],
+      "polarity": "affirmative",
+      "temporal_frame": "past",
+      "scope_target": "predicate"
+    },
+    "template_id": "causal_explanation",
+    "critical_lemma": "oda",
+    "critical_word_query": "birden fazla hastaya ait odaların içinde",
+    "critical_word_positive": "odalarında",
+    "feature_delta": "kaç tane, kimin ve yön/konum birlikte",
+    "edit_script": {
+      "applies": false,
+      "positive_form": "",
+      "minimal_negative_form": "",
+      "operation": "",
+      "changed_feature": "",
+      "invariants": []
+    },
+    "query": "Servis çalışanlarına bulaşan enfeksiyonun, birden fazla hastaya ait odaların içinde gerçekleştirilen uzun ziyaretlerden kaynaklandığı belirlendi.",
+    "context_sentences": [
+      "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı.",
+      "Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi.",
+      "Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı."
+    ],
+    "candidates": [
+      {
+        "candidate_slot": "easy_02",
+        "critical_sentence": "Başhekimlik, servis çalışanlarının aşı randevularını yeni dozların teslimatındaki gecikme nedeniyle gelecek haftaya erteledi.",
+        "critical_word": "randevularını",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. Başhekimlik, servis çalışanlarının aşı randevularını yeni dozların teslimatındaki gecikme nedeniyle gelecek haftaya erteledi. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c01",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_04",
+        "critical_sentence": "Uzmanlar, hastaların odalarında uzayan ziyaretlerin ileride servis personeline enfeksiyon bulaştırabileceği uyarısında bulundu.",
+        "critical_word": "odalarında",
+        "role": "hard_negative",
+        "subtype": "state_participant_time_trap",
+        "morph_relation": "target_preserved",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. Uzmanlar, hastaların odalarında uzayan ziyaretlerin ileride servis personeline enfeksiyon bulaştırabileceği uyarısında bulundu. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c02",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "positive_01",
+        "critical_sentence": "İnceleme, hastaların odalarında gereğinden fazla kalan ziyaretçiler yüzünden enfeksiyonun servis personeline geçtiğini ortaya koydu.",
+        "critical_word": "odalarında",
+        "role": "positive",
+        "subtype": "equivalence_positive",
+        "morph_relation": "target_preserved",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. İnceleme, hastaların odalarında gereğinden fazla kalan ziyaretçiler yüzünden enfeksiyonun servis personeline geçtiğini ortaya koydu. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c03",
+        "relevance": 1
+      },
+      {
+        "candidate_slot": "hard_03",
+        "critical_sentence": "İnceleme, hastaların odalarında yayılan enfeksiyonun uzun ziyaretlerden değil, arızalı havalandırma sisteminden kaynaklandığını gösterdi.",
+        "critical_word": "odalarında",
+        "role": "hard_negative",
+        "subtype": "same_morph_wrong_content",
+        "morph_relation": "same_feature_wrong_content",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. İnceleme, hastaların odalarında yayılan enfeksiyonun uzun ziyaretlerden değil, arızalı havalandırma sisteminden kaynaklandığını gösterdi. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c04",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_07",
+        "critical_sentence": "Araştırma ekibi, hastaların odalarında uzayan ziyaretleri olası bulaş etkenleri arasında değerlendirdi ancak enfeksiyonun kaynağına ilişkin bir sonuca ulaşmadı.",
+        "critical_word": "odalarında",
+        "role": "hard_negative",
+        "subtype": "semantic_retrieval_hard",
+        "morph_relation": "target_preserved",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. Araştırma ekibi, hastaların odalarında uzayan ziyaretleri olası bulaş etkenleri arasında değerlendirdi ancak enfeksiyonun kaynağına ilişkin bir sonuca ulaşmadı. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c05",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_02",
+        "critical_sentence": "İnceleme, hastaların odalarına yönelen kalabalık ziyaretçi grupları nedeniyle enfeksiyonun servis personeline geçtiğini ortaya koydu.",
+        "critical_word": "odalarına",
+        "role": "hard_negative",
+        "subtype": "related_feature_negative",
+        "morph_relation": "feature_changed",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. İnceleme, hastaların odalarına yönelen kalabalık ziyaretçi grupları nedeniyle enfeksiyonun servis personeline geçtiğini ortaya koydu. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c06",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_06",
+        "critical_sentence": "Servis çalışanlarının taşıdığı enfeksiyonun, birden fazla hastaya ait odaların içinde yapılan uzun ziyaretler sırasında hastalara bulaştığı belirlendi.",
+        "critical_word": "odaların",
+        "role": "hard_negative",
+        "subtype": "lexical_retrieval_trap",
+        "morph_relation": "target_preserved",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. Servis çalışanlarının taşıdığı enfeksiyonun, birden fazla hastaya ait odaların içinde yapılan uzun ziyaretler sırasında hastalara bulaştığı belirlendi. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c07",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "easy_01",
+        "critical_sentence": "Hastane, acil servis koridorlarındaki yoğunluğu azaltmak amacıyla hasta odalarına yönelik ziyaret saatlerini kısalttı.",
+        "critical_word": "odalarına",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. Hastane, acil servis koridorlarındaki yoğunluğu azaltmak amacıyla hasta odalarına yönelik ziyaret saatlerini kısalttı. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c08",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_08",
+        "critical_sentence": "Enfeksiyon laboratuvardaki numune işlemleriyle ilişkilendirilirken hastaların odalarında yalnızca ek temizlik önlemleri uygulandı.",
+        "critical_word": "odalarında",
+        "role": "hard_negative",
+        "subtype": "morph_distractor",
+        "morph_relation": "target_preserved",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. Enfeksiyon laboratuvardaki numune işlemleriyle ilişkilendirilirken hastaların odalarında yalnızca ek temizlik önlemleri uygulandı. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c09",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_05",
+        "critical_sentence": "Raporda, hastaların odalarında yapılan uzun ziyaretlerin bulaşa yol açmadığı, enfeksiyonun ortak dinlenme alanında yayıldığı belirtildi.",
+        "critical_word": "odalarında",
+        "role": "hard_negative",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "morph_relation": "target_preserved",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. Raporda, hastaların odalarında yapılan uzun ziyaretlerin bulaşa yol açmadığı, enfeksiyonun ortak dinlenme alanında yayıldığı belirtildi. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c10",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_01",
+        "critical_sentence": "İnceleme, bir hastanın odasındaki uzun ziyaretler yüzünden enfeksiyonun servis personeline geçtiğini ortaya koydu.",
+        "critical_word": "odasındaki",
+        "role": "hard_negative",
+        "subtype": "controlled_morph_negative",
+        "morph_relation": "feature_changed",
+        "text": "Hastane yönetimi, personelde art arda görülen vakaların ardından iç denetim başlattı. İnceleme, bir hastanın odasındaki uzun ziyaretler yüzünden enfeksiyonun servis personeline geçtiğini ortaya koydu. Ekip, kamera görüntüleriyle vardiya çizelgelerini birlikte inceledi. Başhekimlik, alınacak yeni önlemlerin rapor tamamlandıktan sonra duyurulacağını açıkladı.",
+        "id": "family_raw_00027_0338129066_c11",
+        "relevance": 0
+      }
+    ],
+    "gold_id": "family_raw_00027_0338129066_c03",
+    "qrels": {
+      "family_raw_00027_0338129066_c01": 0,
+      "family_raw_00027_0338129066_c02": 0,
+      "family_raw_00027_0338129066_c03": 1,
+      "family_raw_00027_0338129066_c04": 0,
+      "family_raw_00027_0338129066_c05": 0,
+      "family_raw_00027_0338129066_c06": 0,
+      "family_raw_00027_0338129066_c07": 0,
+      "family_raw_00027_0338129066_c08": 0,
+      "family_raw_00027_0338129066_c09": 0,
+      "family_raw_00027_0338129066_c10": 0,
+      "family_raw_00027_0338129066_c11": 0
+    },
+    "source_type": "llm_generated_cascade_judged",
+    "memory_tags": {
+      "morphology": {
+        "phenomenon": "PL.POSS.CASE",
+        "macro": "suffix_chain_composition",
+        "objective": "composition",
+        "layer": "chain",
+        "feature_components": [
+          "PL",
+          "POSS",
+          "CASE"
+        ],
+        "surface_forms": [],
+        "critical_lemma": "oda",
+        "contrast_delta": "kaç tane, kimin ve yön/konum birlikte"
+      },
+      "semantics": {
+        "frame_id": "frame_00027",
+        "narrative_tag": "ziyaret_kaynakli_enfeksiyon",
+        "event_type": "hastane_ici_bulas",
+        "participant_roles": [
+          "causer",
+          "patient",
+          "source",
+          "goal",
+          "location"
+        ],
+        "polarity": "affirmative",
+        "temporal_frame": "past",
+        "scope_target": "predicate"
+      },
+      "generalization": {
+        "split": "sealed_test",
+        "bucket": "standard",
+        "tags": [
+          "standard"
+        ],
+        "domain": "health",
+        "register": "news_report",
+        "template_id": "causal_explanation",
+        "family_mode": "natural_retrieval"
+      },
+      "controls": {
+        "delta": "kaç tane, kimin ve yön/konum birlikte",
+        "invariants": []
+      },
+      "provenance": {
+        "generator_id": "generator_a",
+        "source_type": "llm_generated_pending_cascade_judge"
+      }
+    },
+    "lexical_audit": {
+      "gold_word_overlap": 0.2,
+      "hard_word_overlap_median": 0.133333,
+      "gold_hard_median_gap": 0.066667,
+      "hards_at_or_above_gold": 3,
+      "hard_query_content_recalls": [
+        0.428571,
+        0.428571,
+        0.428571,
+        0.357143,
+        0.857143,
+        0.214286,
+        0.5,
+        0.357143
+      ],
+      "tie_aware_gold_top_probability": {
+        "word_overlap": 0.0,
+        "character_3gram": 0.0,
+        "bm25": 0.0
+      },
+      "query_gold_token_edits": 14,
+      "query_gold_token_sequence_ratio": 0.068966,
+      "query_gold_word_jaccard": 0.115385,
+      "query_gold_lexical_band_ok": true,
+      "content_preserving_hards": 1
+    },
+    "provenance": {
+      "generator_id": "generator_a",
+      "refill_round": 0,
+      "rejected_replacements": [],
+      "generator_attempts": [
+        {
+          "provider": "codex_cli",
+          "model": "gpt-5.6-sol",
+          "request_hash": "79d6810e814206beb0eb8957b22591d371e075cab4745906733a1ffa403163ea",
+          "cache_hit": false,
+          "usage": {
+            "wall_seconds": 58.352,
+            "cli_stdout_tail": "n, birden fazla hastaya ait odaların içinde yapılan uzun ziyaretler sırasında hastalara bulaştığı belirlendi.\",\"critical_word\":\"odaların\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"Araştırma ekibi, hastaların odalarında uzayan ziyaretleri olası bulaş etkenleri arasında değerlendirdi ancak enfeksiyonun kaynağına ilişkin bir sonuca ulaşmadı.\",\"critical_word\":\"odalarında\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Enfeksiyon laboratuvardaki numune işlemleriyle ilişkilendirilirken hastaların odalarında yalnızca ek temizlik önlemleri uygulandı.\",\"critical_word\":\"odalarında\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Hastane, acil servis koridorlarındaki yoğunluğu azaltmak amacıyla hasta odalarına yönelik ziyaret saatlerini kısalttı.\",\"critical_word\":\"odalarına\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"Başhekimlik, servis çalışanlarının aşı randevularını yeni dozların teslimatındaki gecikme nedeniyle gelecek haftaya erteledi.\",\"critical_word\":\"randevularını\"}]}\n"
+          },
+          "actual_model": "gpt-5.6-sol",
+          "route_provider": "codex_cli"
+        }
+      ],
+      "judges": {
+        "semantic": [
+          {
+            "provider": "openrouter",
+            "model": "deepseek/deepseek-v4-flash-0731",
+            "request_hash": "2cdd9f4c30519483f65688fa8de48f5f337bdf11f745009b53f571ec78683122",
+            "cache_hit": false,
+            "usage": {
+              "prompt_tokens": 2611,
+              "completion_tokens": 245,
+              "total_tokens": 2856,
+              "cost": 0.00025298,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00025298,
+                "upstream_inference_prompt_cost": 0.00020888,
+                "upstream_inference_completions_cost": 4.41e-05
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            },
+            "actual_model": "deepseek/deepseek-v4-flash-0731",
+            "route_provider": "DeepInfra"
+          }
+        ],
+        "morphology": {
+          "provider": "openrouter",
+          "model": "z-ai/glm-5.2",
+          "request_hash": "9fdcc1ff7463d8ad9cd8dc188a660da108196cfe386297ff89b7ce2f9a997ef3",
+          "cache_hit": false,
+          "usage": {
+            "prompt_tokens": 2246,
+            "completion_tokens": 498,
+            "total_tokens": 2744,
+            "cost": 0.00511672,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 192,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00511672,
+              "upstream_inference_prompt_cost": 0.00292552,
+              "upstream_inference_completions_cost": 0.0021912
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "actual_model": "z-ai/glm-5.2",
+          "route_provider": "Together"
+        }
+      },
+      "prompt_version": "test-prompts-3.8.3-limited-local-repair"
+    },
+    "qc": {
+      "deterministic": "pass",
+      "judging": {
+        "semantic": {
+          "order_stable": true,
+          "passes": [
+            {
+              "answers_query": [
+                "family_raw_00027_0338129066_c03",
+                "family_raw_00027_0338129066_c11"
+              ],
+              "confidence": 80,
+              "abstain": false,
+              "family_naturalness": 5,
+              "candidate_naturalness_min": 5,
+              "support_mismatches": [
+                "family_raw_00027_0338129066_c11"
+              ],
+              "unnatural_candidate_ids": [],
+              "internally_inconsistent_candidates": [],
+              "length_or_style_artifact": false,
+              "authoritative": false,
+              "relevance_authoritative": false,
+              "quality_authoritative": false,
+              "notes": "Sorgu, enfeksiyonun birden fazla hastaya ait odalardaki uzun ziyaretlerden servis çalışanlarına bulaştığını belirtiyor. c03 ve c11 bu bilgiyi birebir karşılıyor. c07 bulaş yönünü tersine çeviriyor (çalışandan hastaya), c10 ve c04 uzun ziyaretleri reddediyor, c05 sonuçsuz, c02 gelecek uyarısı, c01 ve c08 farklı konu, c09 farklı kaynak."
+            }
+          ],
+          "family_naturalness": 5,
+          "candidate_naturalness_min": 5,
+          "confidence_min": 80
+        },
+        "morphology": {
+          "confidence": 88,
+          "abstain": false,
+          "authoritative": true,
+          "morphology_failures": [],
+          "unclear_candidate_ids": [],
+          "gold_target_status": "matches_target",
+          "target_matching_candidate_ids": [
+            "family_raw_00027_0338129066_c03",
+            "family_raw_00027_0338129066_c02",
+            "family_raw_00027_0338129066_c06",
+            "family_raw_00027_0338129066_c10",
+            "family_raw_00027_0338129066_c07",
+            "family_raw_00027_0338129066_c04"
+          ],
+          "allomorph_treated_as_wrong": false,
+          "notes": "Hedef özellik PL.POSS.CASE (çoğul + iyelik + hâl) olarak 'hastaların odalarında' zincirinde gerçekleşmektedir: hasta-lar-ın oda-lar-ın-da. 'Hastaların' = çoğul + 3. tekil iyelik + -ın (genitive); 'odalarında' = çoğul + 3. tekil iyelik + -da (locative). Bu zincir c03, c02, c06, c10, c07, c04 adaylarında birebir aynı morfolojik yapı ve ek zinciriyle görünmektedir. c11'de 'bir hastanın odasındaki' yapısı tekil iyelik içerdiğinden hedefle eşleşmez. c05'te 'hastaların odalarında' geçse de 'odalarında' locative hâlde olup genitive+locative zinciri farklı bir kapsamdadır; ancak morfolojik olarak PL.POSS.CASE taşıdığı için eklenebilir—düzeltme: c05 de 'hastaların odalarında' ile PL.POSS.CASE taşımaktadır, listeye eklenmelidir. c08, c09, c01 adaylarında bu zincir bulunmamaktadır. Tüm adayların Türkçe çekimleri doğaldır; biçimbilimsel olarak geçersiz olan yoktur. c05'in eksik kalması bir gözden kaçmadır; kapsamı aynıdır."
+        }
+      },
+      "human_review_priority": true,
+      "human_review_priority_reasons": [
+        "semantic_1:advisory_relevance_mismatch",
+        "semantic_1:low_confidence_with_finding:80"
+      ],
+      "quality_score": 9.8675,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
+    }
+  },
+  {
+    "family_id": "family_raw_00026_b37c50f20d",
+    "slot_id": "raw_00026_b37c50f20d",
+    "target_split": "sealed_test",
+    "generalization_bucket": "composition_holdout",
+    "generalization_tags": [
+      "composition_holdout",
+      "domain_shift"
+    ],
+    "objective": "composition",
+    "macro_phenomenon": "suffix_chain_composition",
+    "target_feature": "REL.GEN.POSS",
+    "target_feature_label": "-DIK sıfat-fiilinde genitif–iyelik uyumu",
+    "surface_forms": [
+      "-ın",
+      "-in",
+      "-un",
+      "-ün",
+      "-dığı",
+      "-diği",
+      "-dığım",
+      "-diğim"
+    ],
+    "layer": "chain",
+    "domain": "health",
+    "register": "conversational",
+    "query_sentence_count": 1,
+    "passage_sentence_count": 2,
+    "critical_sentence_position": 1,
+    "family_mode": "controlled_diverse",
+    "query_expression": "morph_explicit",
+    "query_gold_lexical_band": "high",
+    "hard_profile": [
+      {
+        "slot": "hard_01",
+        "subtype": "controlled_morph_negative",
+        "focus": "aynı olay ve hedef karşıtlık, farklı doğal sözdizimi"
+      },
+      {
+        "slot": "hard_02",
+        "subtype": "same_lemma_wrong_inflection",
+        "focus": "aynı kritik lemma, yanlış çekim"
+      },
+      {
+        "slot": "hard_03",
+        "subtype": "related_feature_negative",
+        "focus": "hedefe komşu ikinci morfolojik özellik yanlış"
+      },
+      {
+        "slot": "hard_04",
+        "subtype": "same_morph_wrong_content",
+        "focus": "hedef morfoloji doğru, önerme içeriği yanlış"
+      },
+      {
+        "slot": "hard_05",
+        "subtype": "state_participant_time_trap",
+        "focus": "durum, katılımcı, kişi veya zaman yanlış"
+      },
+      {
+        "slot": "hard_06",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "focus": "yakın paraphrase, temel önerme yanlış"
+      },
+      {
+        "slot": "hard_07",
+        "subtype": "partial_chain_negative",
+        "focus": "ek zincirinin yalnız bir parçası doğru"
+      },
+      {
+        "slot": "hard_08",
+        "subtype": "scope_attachment_trap",
+        "focus": "ek zincirinin kapsamı veya bağlanması yanlış"
+      }
+    ],
+    "strict_minimal_pair": false,
+    "generator_id": "generator_a",
+    "semantic_frame_id": "frame_00026",
+    "semantic_profile": {
+      "narrative_tag": "uzman_onerisi_degerlendirme",
+      "event_type": "saglik_uzmani_degerlendirmesi",
+      "participant_roles": [
+        "agent",
+        "experiencer",
+        "possessor",
+        "theme"
+      ],
+      "polarity": "affirmative",
+      "temporal_frame": "past",
+      "scope_target": "embedded_clause"
+    },
+    "template_id": "relative_clause",
+    "critical_lemma": "önermek",
+    "critical_word_query": "önerdiğim",
+    "critical_word_positive": "önerdiğim",
+    "feature_delta": "yan cümle öznesi ile sıfat-fiil iyeliğinin aynı kişi/sayıya bağlanması ↔ başka possessor/gönderim",
+    "edit_script": {
+      "applies": false,
+      "positive_form": "",
+      "minimal_negative_form": "",
+      "operation": "",
+      "changed_feature": "",
+      "invariants": []
+    },
+    "query": "Annemin diz ağrısını bugün benim önerdiğim fizik tedavi uzmanı değerlendirdi.",
+    "context_sentences": [
+      "Çıkışta birlikte eczaneye uğrayıp eve döndük."
+    ],
+    "candidates": [
+      {
+        "candidate_slot": "easy_02",
+        "critical_sentence": "Ben de fizik tedavi merkezinin gelecek haftaki kontrol saatini danışmadan öğrendim.",
+        "critical_word": "öğrendim",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Ben de fizik tedavi merkezinin gelecek haftaki kontrol saatini danışmadan öğrendim. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c01",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_02",
+        "critical_sentence": "Annemin diz ağrısını bugün benim önereceğim fizik tedavi uzmanı değerlendirdi.",
+        "critical_word": "önereceğim",
+        "role": "hard_negative",
+        "subtype": "same_lemma_wrong_inflection",
+        "morph_relation": "wrong_inflection",
+        "text": "Annemin diz ağrısını bugün benim önereceğim fizik tedavi uzmanı değerlendirdi. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c02",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_03",
+        "critical_sentence": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanları, benim önerdiğim kişilerdi.",
+        "critical_word": "önerdiğim",
+        "role": "hard_negative",
+        "subtype": "related_feature_negative",
+        "morph_relation": "feature_changed",
+        "text": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanları, benim önerdiğim kişilerdi. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c03",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_05",
+        "critical_sentence": "Annemin diz ağrısını dün benim önerdiğim fizik tedavi uzmanı değerlendirdi.",
+        "critical_word": "önerdiğim",
+        "role": "hard_negative",
+        "subtype": "state_participant_time_trap",
+        "morph_relation": "target_preserved",
+        "text": "Annemin diz ağrısını dün benim önerdiğim fizik tedavi uzmanı değerlendirdi. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c04",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_07",
+        "critical_sentence": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, bana önerilen kişiydi.",
+        "critical_word": "önerilen",
+        "role": "hard_negative",
+        "subtype": "partial_chain_negative",
+        "morph_relation": "chain_partial",
+        "text": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, bana önerilen kişiydi. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c05",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "positive_01",
+        "critical_sentence": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, benim önerdiğim kişiydi.",
+        "critical_word": "önerdiğim",
+        "role": "positive",
+        "subtype": "equivalence_positive",
+        "morph_relation": "target_preserved",
+        "text": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, benim önerdiğim kişiydi. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c06",
+        "relevance": 1
+      },
+      {
+        "candidate_slot": "hard_04",
+        "critical_sentence": "Annemin omuz ağrısını bugün benim önerdiğim fizik tedavi uzmanı değerlendirdi.",
+        "critical_word": "önerdiğim",
+        "role": "hard_negative",
+        "subtype": "same_morph_wrong_content",
+        "morph_relation": "same_feature_wrong_content",
+        "text": "Annemin omuz ağrısını bugün benim önerdiğim fizik tedavi uzmanı değerlendirdi. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c07",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_01",
+        "critical_sentence": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, ablamın önerdiği kişiydi.",
+        "critical_word": "önerdiği",
+        "role": "hard_negative",
+        "subtype": "controlled_morph_negative",
+        "morph_relation": "feature_changed",
+        "text": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, ablamın önerdiği kişiydi. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c08",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_06",
+        "critical_sentence": "Bugün annemin diz ağrısını değerlendirmeyen fizik tedavi uzmanı, benim önerdiğim kişiydi.",
+        "critical_word": "önerdiğim",
+        "role": "hard_negative",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "morph_relation": "target_preserved",
+        "text": "Bugün annemin diz ağrısını değerlendirmeyen fizik tedavi uzmanı, benim önerdiğim kişiydi. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c09",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "easy_01",
+        "critical_sentence": "Annem, muayenenin ardından uzmanın verdiği egzersiz listesini çantasına koydu.",
+        "critical_word": "verdiği",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Annem, muayenenin ardından uzmanın verdiği egzersiz listesini çantasına koydu. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c10",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_08",
+        "critical_sentence": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, benim önerdiğim yöntemi uyguladı.",
+        "critical_word": "önerdiğim",
+        "role": "hard_negative",
+        "subtype": "scope_attachment_trap",
+        "morph_relation": "scope_changed",
+        "text": "Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, benim önerdiğim yöntemi uyguladı. Çıkışta birlikte eczaneye uğrayıp eve döndük.",
+        "id": "family_raw_00026_b37c50f20d_c11",
+        "relevance": 0
+      }
+    ],
+    "gold_id": "family_raw_00026_b37c50f20d_c06",
+    "qrels": {
+      "family_raw_00026_b37c50f20d_c01": 0,
+      "family_raw_00026_b37c50f20d_c02": 0,
+      "family_raw_00026_b37c50f20d_c03": 0,
+      "family_raw_00026_b37c50f20d_c04": 0,
+      "family_raw_00026_b37c50f20d_c05": 0,
+      "family_raw_00026_b37c50f20d_c06": 1,
+      "family_raw_00026_b37c50f20d_c07": 0,
+      "family_raw_00026_b37c50f20d_c08": 0,
+      "family_raw_00026_b37c50f20d_c09": 0,
+      "family_raw_00026_b37c50f20d_c10": 0,
+      "family_raw_00026_b37c50f20d_c11": 0
+    },
+    "source_type": "llm_generated_cascade_judged",
+    "memory_tags": {
+      "morphology": {
+        "phenomenon": "REL.GEN.POSS",
+        "macro": "suffix_chain_composition",
+        "objective": "composition",
+        "layer": "chain",
+        "feature_components": [
+          "REL",
+          "GEN",
+          "POSS"
+        ],
+        "surface_forms": [
+          "-ın",
+          "-in",
+          "-un",
+          "-ün",
+          "-dığı",
+          "-diği",
+          "-dığım",
+          "-diğim"
+        ],
+        "critical_lemma": "önermek",
+        "contrast_delta": "yan cümle öznesi ile sıfat-fiil iyeliğinin aynı kişi/sayıya bağlanması ↔ başka possessor/gönderim"
+      },
+      "semantics": {
+        "frame_id": "frame_00026",
+        "narrative_tag": "uzman_onerisi_degerlendirme",
+        "event_type": "saglik_uzmani_degerlendirmesi",
+        "participant_roles": [
+          "agent",
+          "experiencer",
+          "possessor",
+          "theme"
+        ],
+        "polarity": "affirmative",
+        "temporal_frame": "past",
+        "scope_target": "embedded_clause"
+      },
+      "generalization": {
+        "split": "sealed_test",
+        "bucket": "composition_holdout",
+        "tags": [
+          "composition_holdout",
+          "domain_shift"
+        ],
+        "domain": "health",
+        "register": "conversational",
+        "template_id": "relative_clause",
+        "family_mode": "controlled_diverse"
+      },
+      "controls": {
+        "delta": "yan cümle öznesi ile sıfat-fiil iyeliğinin aynı kişi/sayıya bağlanması ↔ başka possessor/gönderim",
+        "invariants": []
+      },
+      "provenance": {
+        "generator_id": "generator_a",
+        "source_type": "llm_generated_pending_cascade_judge"
+      }
+    },
+    "lexical_audit": {
+      "gold_word_overlap": 0.9,
+      "hard_word_overlap_median": 0.9,
+      "gold_hard_median_gap": 0.0,
+      "hards_at_or_above_gold": 5,
+      "hard_query_content_recalls": [
+        0.888889,
+        1.0,
+        0.888889,
+        0.777778,
+        1.0,
+        0.888889,
+        1.0,
+        1.0
+      ],
+      "tie_aware_gold_top_probability": {
+        "word_overlap": 0.166667,
+        "character_3gram": 0.0,
+        "bm25": 0.0
+      },
+      "query_gold_token_edits": 7,
+      "query_gold_token_sequence_ratio": 0.521739,
+      "query_gold_word_jaccard": 0.642857,
+      "query_gold_lexical_band_ok": true,
+      "content_preserving_hards": 8
+    },
+    "provenance": {
+      "generator_id": "generator_a",
+      "refill_round": 2,
+      "rejected_replacements": [
+        {
+          "refill_round": 0,
+          "stage": "cascade_judges",
+          "problems": [
+            "semantic_1 query desteği uyuşmazlığı: ['family_raw_00026_b37c50f20d_c06', 'family_raw_00026_b37c50f20d_c11']"
+          ],
+          "adjudicator": null
+        },
+        {
+          "refill_round": 1,
+          "stage": "deterministic_validation",
+          "problems": [
+            "lexical overlap gold'u ele veriyor: gold kadar örtüşen hard=2 < 3"
+          ],
+          "generator_attempts": [
+            {
+              "provider": "codex_cli",
+              "model": "gpt-5.6-sol",
+              "request_hash": "c2bb7b1c75e6848416b9ef90da5611098ba9d00c5d62461fa61b602c349b6317",
+              "cache_hit": false,
+              "usage": {
+                "wall_seconds": 45.215,
+                "cli_stdout_tail": "ical_word\":\"önerdiğim\"},{\"candidate_slot\":\"hard_05\",\"critical_sentence\":\"Annemin diz ağrısını dün benim önerdiğim fizik tedavi uzmanı değerlendirdi.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"hard_06\",\"critical_sentence\":\"Annemin diz ağrısını bugün benim önerdiğim fizik tedavi uzmanı değerlendirmedi.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"Annemin diz ağrısını bugün bana önerilen fizik tedavi uzmanı değerlendirdi.\",\"critical_word\":\"önerilen\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Annemin diz ağrısını bugün, benim önerdiğim yöntemi kullanan ama önermediğim fizik tedavi uzmanı değerlendirdi.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Annem bugün fizik tedavi merkezinden evde uygulayacağı egzersiz çizelgesini aldı.\",\"critical_word\":\"uygulayacağı\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"Ben bugün annemin sonraki kontrol randevusunu telefonla erkene aldırdım.\",\"critical_word\":\"aldırdım\"}]}\n"
+              },
+              "actual_model": "gpt-5.6-sol",
+              "route_provider": "codex_cli"
+            },
+            {
+              "provider": "codex_cli",
+              "model": "gpt-5.6-sol",
+              "request_hash": "8551c1ce45aa3de1eb25d1c7a85ccc24f4dd8030f82f7fa9d674c42edd83ab57",
+              "cache_hit": false,
+              "usage": {
+                "wall_seconds": 44.627,
+                "cli_stdout_tail": "biçimde değerlendirdi.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"hard_06\",\"critical_sentence\":\"Benim önerdiğim fizik tedavi uzmanı, bugünkü muayenede annemin diz ağrısını değerlendirmeden yalnızca filmleri inceledi.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"Bana önerilen fizik tedavi uzmanı, bugünkü muayenede annemin diz ağrısını ayrıntılı biçimde değerlendirdi.\",\"critical_word\":\"önerilen\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Benim önerdiğim yöntemi uygulayan fizik tedavi uzmanı, bugünkü muayenede annemin diz ağrısını ayrıntılı biçimde değerlendirdi.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Annem, bugünkü muayeneden sonra uzmanla birlikte hazırladıkları egzersiz çizelgesini teslim aldı.\",\"critical_word\":\"hazırladıkları\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"Ben, annemin fizik tedavi merkezindeki gelecek kontrol randevusunu telefonla erkene aldırdım.\",\"critical_word\":\"aldırdım\"}]}\n"
+              },
+              "actual_model": "gpt-5.6-sol",
+              "route_provider": "codex_cli"
+            }
+          ]
+        }
+      ],
+      "generator_attempts": [
+        {
+          "provider": "codex_cli",
+          "model": "gpt-5.6-sol",
+          "request_hash": "a036a443a1769c72d6add1fc24ae2faab150f7ee552fc8f12415a7e4a0ba8189",
+          "cache_hit": false,
+          "usage": {
+            "wall_seconds": 62.054,
+            "cli_stdout_tail": "\"hard_05\",\"critical_sentence\":\"Annemin diz ağrısını dün benim önerdiğim fizik tedavi uzmanı değerlendirdi.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"hard_06\",\"critical_sentence\":\"Bugün annemin diz ağrısını değerlendirmeyen fizik tedavi uzmanı, benim önerdiğim kişiydi.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, bana önerilen kişiydi.\",\"critical_word\":\"önerilen\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Bugün annemin diz ağrısını ayrıntılı biçimde değerlendiren fizik tedavi uzmanı, benim önerdiğim yöntemi uyguladı.\",\"critical_word\":\"önerdiğim\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Annem, muayenenin ardından uzmanın verdiği egzersiz listesini çantasına koydu.\",\"critical_word\":\"verdiği\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"Ben de fizik tedavi merkezinin gelecek haftaki kontrol saatini danışmadan öğrendim.\",\"critical_word\":\"öğrendim\"}]}\n"
+          },
+          "actual_model": "gpt-5.6-sol",
+          "route_provider": "codex_cli"
+        }
+      ],
+      "judges": {
+        "semantic": [
+          {
+            "provider": "openrouter",
+            "model": "deepseek/deepseek-v4-flash-0731",
+            "request_hash": "4e24d38fe09343522097a364cf3cbc6e29ec809490ca4dedaab3f8d6a0b42418",
+            "cache_hit": false,
+            "usage": {
+              "prompt_tokens": 1646,
+              "completion_tokens": 256,
+              "total_tokens": 1902,
+              "cost": 0.00017776,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00017776,
+                "upstream_inference_prompt_cost": 0.00013168,
+                "upstream_inference_completions_cost": 4.608e-05
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            },
+            "actual_model": "deepseek/deepseek-v4-flash-0731",
+            "route_provider": "DeepInfra"
+          }
+        ],
+        "morphology": {
+          "provider": "openrouter",
+          "model": "z-ai/glm-5.2",
+          "request_hash": "196c1bdaa3844aa32394edd172b39f84674de705b9b4e0850ba2b5f27d426ecd",
+          "cache_hit": false,
+          "usage": {
+            "prompt_tokens": 1461,
+            "completion_tokens": 543,
+            "total_tokens": 2004,
+            "cost": 0.00421572,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 192,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00421572,
+              "upstream_inference_prompt_cost": 0.00182652,
+              "upstream_inference_completions_cost": 0.0023892
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "actual_model": "z-ai/glm-5.2",
+          "route_provider": "Together"
+        }
+      },
+      "prompt_version": "test-prompts-3.8.3-limited-local-repair"
+    },
+    "qc": {
+      "deterministic": "pass",
+      "judging": {
+        "semantic": {
+          "order_stable": true,
+          "passes": [
+            {
+              "answers_query": [
+                "family_raw_00026_b37c50f20d_c06"
+              ],
+              "confidence": 80,
+              "abstain": false,
+              "family_naturalness": 1,
+              "candidate_naturalness_min": 5,
+              "support_mismatches": [],
+              "unnatural_candidate_ids": [],
+              "internally_inconsistent_candidates": [],
+              "length_or_style_artifact": false,
+              "authoritative": false,
+              "relevance_authoritative": false,
+              "quality_authoritative": false,
+              "notes": "Sorgu, annemin diz ağrısını bugün benim önerdiğim fizik tedavi uzmanının değerlendirdiğini söylüyor. c06 bu bilgiyi birebir karşılıyor. c01, c10 ve c11 uzmanın kim olduğunu veya değerlendirmeyi doğrulamıyor; c03, c04, c05, c07, c08, c09 ve c02 ise zaman, kişi, sayı, olumsuzluk veya öneren kişi açısından sorgudan sapıyor. Doğal olmayan veya iç çelişkili aday görmedim."
+            }
+          ],
+          "family_naturalness": 1,
+          "candidate_naturalness_min": 5,
+          "confidence_min": 80
+        },
+        "morphology": {
+          "confidence": 92,
+          "abstain": false,
+          "authoritative": true,
+          "morphology_failures": [],
+          "unclear_candidate_ids": [],
+          "gold_target_status": "matches_target",
+          "target_matching_candidate_ids": [
+            "family_raw_00026_b37c50f20d_c04",
+            "family_raw_00026_b37c50f20d_c07",
+            "family_raw_00026_b37c50f20d_c09",
+            "family_raw_00026_b37c50f20d_c08",
+            "family_raw_00026_b37c50f20d_c03",
+            "family_raw_00026_b37c50f20d_c05",
+            "family_raw_00026_b37c50f20d_c11",
+            "family_raw_00026_b37c50f20d_c06"
+          ],
+          "allomorph_treated_as_wrong": false,
+          "notes": "Hedef özellik, -DIK sıfat-fiil ekinin genitif–iyelik uyumu çerçevesinde değerlendirilmiştir. Query'deki hedef zincir 'benim önerdiğim' yapısıdır: [benim (genitif) + öner-DIK-Im (iyelik uyumlu sıfat-fiil)]. Bu zinciri aynı morfolojik işlev ve kapsamla taşıyan tüm adaylar target_matching listesine eklenmiştir. c04 ve c07, query ile aynı 'benim önerdiğim' zincirini içerir (zaman/sözcük farkları morfolojik eşleşmeyi bozmaz). c09, c08, c03, c05, c11 ve c06, 'değerlendiren' (-DIK sıfat-fiili) ve 'benim önerdiğim' / 'ablamın önerdiği' / 'bana önerilen' yapılarını içerir; bunların tümü -DIK sıfat-fiilinde genitif–iyelik uyumu sergiler. c02 'önereceğim' (-AcAK gelecek zaman sıfat-fiili) kullanır; bu farklı bir sıfat-fiil ekidir ve hedef -DIK özelliğini taşımaz. c01 ve c10'da -DIK sıfat-fiili + genitif–iyelik uyumu zinciri bulunmamaktadır. Hiçbir adayda morfolojik bozukluk yoktur; tüm çekimler doğal Türkçe'dir."
+        }
+      },
+      "human_review_priority": true,
+      "human_review_priority_reasons": [
+        "semantic_1:low_confidence_with_finding:80"
+      ],
+      "quality_score": 5.92694,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
+    }
+  },
+  {
+    "family_id": "family_raw_00023_f6dddecedf",
+    "slot_id": "raw_00023_f6dddecedf",
+    "target_split": "sealed_test",
+    "generalization_bucket": "lemma_holdout",
+    "generalization_tags": [
+      "lemma_holdout"
+    ],
+    "objective": "morpheme_sensitivity",
+    "macro_phenomenon": "possession_person_number",
+    "target_feature": "ANAPHOR.AGR",
+    "target_feature_label": "kendi zamirinde kişi-sayı ve gönderim",
+    "surface_forms": [
+      "kendim",
+      "kendin",
+      "kendi",
+      "kendimiz",
+      "kendiniz",
+      "kendileri"
+    ],
+    "layer": "single",
+    "domain": "finance",
+    "register": "news_report",
+    "query_sentence_count": 1,
+    "passage_sentence_count": 2,
+    "critical_sentence_position": 2,
+    "family_mode": "controlled_diverse",
+    "query_expression": "semantic_paraphrase",
+    "query_gold_lexical_band": "high",
+    "hard_profile": [
+      {
+        "slot": "hard_01",
+        "subtype": "controlled_morph_negative",
+        "focus": "aynı olay ve hedef karşıtlık, farklı doğal sözdizimi"
+      },
+      {
+        "slot": "hard_02",
+        "subtype": "same_lemma_wrong_inflection",
+        "focus": "aynı kritik lemma, yanlış çekim"
+      },
+      {
+        "slot": "hard_03",
+        "subtype": "related_feature_negative",
+        "focus": "hedefe komşu ikinci morfolojik özellik yanlış"
+      },
+      {
+        "slot": "hard_04",
+        "subtype": "same_morph_wrong_content",
+        "focus": "hedef morfoloji doğru, önerme içeriği yanlış"
+      },
+      {
+        "slot": "hard_05",
+        "subtype": "state_participant_time_trap",
+        "focus": "durum, katılımcı, kişi veya zaman yanlış"
+      },
+      {
+        "slot": "hard_06",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "focus": "yakın paraphrase, temel önerme yanlış"
+      },
+      {
+        "slot": "hard_07",
+        "subtype": "argument_role_reversal",
+        "focus": "katılımcı veya sahiplik rolleri ters"
+      },
+      {
+        "slot": "hard_08",
+        "subtype": "morph_distractor",
+        "focus": "hedef biçim yanlış olay veya sözcüğe bağlı"
+      }
+    ],
+    "strict_minimal_pair": false,
+    "generator_id": "generator_a",
+    "semantic_frame_id": "frame_00023",
+    "semantic_profile": {
+      "narrative_tag": "prim_odemesi_aktarimi",
+      "event_type": "yoneticiye_prim_aktarimi",
+      "participant_roles": [
+        "agent",
+        "theme",
+        "causer",
+        "beneficiary"
+      ],
+      "polarity": "affirmative",
+      "temporal_frame": "past",
+      "scope_target": "argument"
+    },
+    "template_id": "relative_clause",
+    "critical_lemma": "kendi",
+    "critical_word_query": "kendime",
+    "critical_word_positive": "kendisine",
+    "feature_delta": "dönüşlü zamirin doğru kişiye/gruba gönderimi ↔ başka kişi/gruba gönderimi",
+    "edit_script": {
+      "applies": false,
+      "positive_form": "",
+      "minimal_negative_form": "",
+      "operation": "",
+      "changed_feature": "",
+      "invariants": []
+    },
+    "query": "Finans direktörü, yönetim kurulunun onayladığı prim ödemesini “kendime aktardım” diyerek açıklama yaptı.",
+    "context_sentences": [
+      "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi."
+    ],
+    "candidates": [
+      {
+        "candidate_slot": "easy_01",
+        "critical_sentence": "Finans direktörü, kendisine bağlı ekibin şirketin yenilenen kredi anlaşmasını bankalarla müzakere ettiğini açıkladı.",
+        "critical_word": "kendisine",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, kendisine bağlı ekibin şirketin yenilenen kredi anlaşmasını bankalarla müzakere ettiğini açıkladı.",
+        "id": "family_raw_00023_f6dddecedf_c01",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_04",
+        "critical_sentence": "Finans direktörü, yönetim kurulunun onayladığı temettü avansını kendisine aktardığını belirterek açıklama yaptı.",
+        "critical_word": "kendisine",
+        "role": "hard_negative",
+        "subtype": "same_morph_wrong_content",
+        "morph_relation": "same_feature_wrong_content",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, yönetim kurulunun onayladığı temettü avansını kendisine aktardığını belirterek açıklama yaptı.",
+        "id": "family_raw_00023_f6dddecedf_c02",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "positive_01",
+        "critical_sentence": "Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisine aktardığını belirterek açıklama yaptı.",
+        "critical_word": "kendisine",
+        "role": "positive",
+        "subtype": "equivalence_positive",
+        "morph_relation": "target_preserved",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisine aktardığını belirterek açıklama yaptı.",
+        "id": "family_raw_00023_f6dddecedf_c03",
+        "relevance": 1
+      },
+      {
+        "candidate_slot": "hard_08",
+        "critical_sentence": "Finans direktörü, prim ödemesini şirkette bırakırken onaylanan denetim ücretini kendisine aktardığını açıkladı.",
+        "critical_word": "kendisine",
+        "role": "hard_negative",
+        "subtype": "morph_distractor",
+        "morph_relation": "target_preserved",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, prim ödemesini şirkette bırakırken onaylanan denetim ücretini kendisine aktardığını açıkladı.",
+        "id": "family_raw_00023_f6dddecedf_c04",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_03",
+        "critical_sentence": "Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisine aktarmadığını belirterek açıklama yaptı.",
+        "critical_word": "kendisine",
+        "role": "hard_negative",
+        "subtype": "related_feature_negative",
+        "morph_relation": "feature_changed",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisine aktarmadığını belirterek açıklama yaptı.",
+        "id": "family_raw_00023_f6dddecedf_c05",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_02",
+        "critical_sentence": "Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisinden şirkete aktardığını belirterek açıklama yaptı.",
+        "critical_word": "kendisinden",
+        "role": "hard_negative",
+        "subtype": "same_lemma_wrong_inflection",
+        "morph_relation": "wrong_inflection",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisinden şirkete aktardığını belirterek açıklama yaptı.",
+        "id": "family_raw_00023_f6dddecedf_c06",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_06",
+        "critical_sentence": "Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisine aktarmayıp şirkete iade ettiğini açıkladı.",
+        "critical_word": "kendisine",
+        "role": "hard_negative",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "morph_relation": "target_preserved",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisine aktarmayıp şirkete iade ettiğini açıkladı.",
+        "id": "family_raw_00023_f6dddecedf_c07",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_05",
+        "critical_sentence": "Finans direktörü, yönetim kurulunun onayladığı prim ödemesini gelecek ay kendisine aktaracağını belirterek açıklama yaptı.",
+        "critical_word": "kendisine",
+        "role": "hard_negative",
+        "subtype": "state_participant_time_trap",
+        "morph_relation": "target_preserved",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, yönetim kurulunun onayladığı prim ödemesini gelecek ay kendisine aktaracağını belirterek açıklama yaptı.",
+        "id": "family_raw_00023_f6dddecedf_c08",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_07",
+        "critical_sentence": "Finans direktörü, onaylanan prim ödemesini yönetim kurulunun kendisine aktardığını belirterek açıklama yaptı.",
+        "critical_word": "kendisine",
+        "role": "hard_negative",
+        "subtype": "argument_role_reversal",
+        "morph_relation": "target_preserved",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, onaylanan prim ödemesini yönetim kurulunun kendisine aktardığını belirterek açıklama yaptı.",
+        "id": "family_raw_00023_f6dddecedf_c09",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "easy_02",
+        "critical_sentence": "Finans direktörü, yönetim kurulunun onayladığı yeni yatırım bütçesini basına kendisi duyurdu.",
+        "critical_word": "kendisi",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, yönetim kurulunun onayladığı yeni yatırım bütçesini basına kendisi duyurdu.",
+        "id": "family_raw_00023_f6dddecedf_c10",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_01",
+        "critical_sentence": "Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendilerine aktardığını belirterek açıklama yaptı.",
+        "critical_word": "kendilerine",
+        "role": "hard_negative",
+        "subtype": "controlled_morph_negative",
+        "morph_relation": "feature_changed",
+        "text": "Bağımsız denetim raporunda yıl sonundaki yönetici ödemeleri ayrıntılı biçimde incelendi. Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendilerine aktardığını belirterek açıklama yaptı.",
+        "id": "family_raw_00023_f6dddecedf_c11",
+        "relevance": 0
+      }
+    ],
+    "gold_id": "family_raw_00023_f6dddecedf_c03",
+    "qrels": {
+      "family_raw_00023_f6dddecedf_c01": 0,
+      "family_raw_00023_f6dddecedf_c02": 0,
+      "family_raw_00023_f6dddecedf_c03": 1,
+      "family_raw_00023_f6dddecedf_c04": 0,
+      "family_raw_00023_f6dddecedf_c05": 0,
+      "family_raw_00023_f6dddecedf_c06": 0,
+      "family_raw_00023_f6dddecedf_c07": 0,
+      "family_raw_00023_f6dddecedf_c08": 0,
+      "family_raw_00023_f6dddecedf_c09": 0,
+      "family_raw_00023_f6dddecedf_c10": 0,
+      "family_raw_00023_f6dddecedf_c11": 0
+    },
+    "source_type": "llm_generated_cascade_judged",
+    "memory_tags": {
+      "morphology": {
+        "phenomenon": "ANAPHOR.AGR",
+        "macro": "possession_person_number",
+        "objective": "morpheme_sensitivity",
+        "layer": "single",
+        "feature_components": [
+          "ANAPHOR",
+          "AGR"
+        ],
+        "surface_forms": [
+          "kendim",
+          "kendin",
+          "kendi",
+          "kendimiz",
+          "kendiniz",
+          "kendileri"
+        ],
+        "critical_lemma": "kendi",
+        "contrast_delta": "dönüşlü zamirin doğru kişiye/gruba gönderimi ↔ başka kişi/gruba gönderimi"
+      },
+      "semantics": {
+        "frame_id": "frame_00023",
+        "narrative_tag": "prim_odemesi_aktarimi",
+        "event_type": "yoneticiye_prim_aktarimi",
+        "participant_roles": [
+          "agent",
+          "theme",
+          "causer",
+          "beneficiary"
+        ],
+        "polarity": "affirmative",
+        "temporal_frame": "past",
+        "scope_target": "argument"
+      },
+      "generalization": {
+        "split": "sealed_test",
+        "bucket": "lemma_holdout",
+        "tags": [
+          "lemma_holdout"
+        ],
+        "domain": "finance",
+        "register": "news_report",
+        "template_id": "relative_clause",
+        "family_mode": "controlled_diverse"
+      },
+      "controls": {
+        "delta": "dönüşlü zamirin doğru kişiye/gruba gönderimi ↔ başka kişi/gruba gönderimi",
+        "invariants": []
+      },
+      "provenance": {
+        "generator_id": "generator_a",
+        "source_type": "llm_generated_pending_cascade_judge"
+      }
+    },
+    "lexical_audit": {
+      "gold_word_overlap": 0.75,
+      "hard_word_overlap_median": 0.708333,
+      "gold_hard_median_gap": 0.041667,
+      "hards_at_or_above_gold": 4,
+      "hard_query_content_recalls": [
+        0.75,
+        0.666667,
+        0.916667,
+        0.916667,
+        0.833333,
+        0.916667,
+        0.916667,
+        0.916667
+      ],
+      "tie_aware_gold_top_probability": {
+        "word_overlap": 0.2,
+        "character_3gram": 1.0,
+        "bm25": 0.333333
+      },
+      "query_gold_token_edits": 3,
+      "query_gold_token_sequence_ratio": 0.75,
+      "query_gold_word_jaccard": 0.6,
+      "query_gold_lexical_band_ok": true,
+      "content_preserving_hards": 8
+    },
+    "provenance": {
+      "generator_id": "generator_a",
+      "refill_round": 3,
+      "rejected_replacements": [],
+      "generator_attempts": [
+        {
+          "provider": "codex_cli",
+          "model": "gpt-5.6-sol",
+          "request_hash": "2a924a8f3c8f6816d38dc2bcff51fd460374ce90e33bab725cc22d8193b2e427",
+          "cache_hit": false,
+          "usage": {
+            "wall_seconds": 147.44,
+            "cli_stdout_tail": "belirterek açıklama yaptı.\",\"critical_word\":\"kendisine\"},{\"candidate_slot\":\"hard_06\",\"critical_sentence\":\"Finans direktörü, yönetim kurulunun onayladığı prim ödemesini kendisine aktarmayıp şirkete iade ettiğini açıkladı.\",\"critical_word\":\"kendisine\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"Finans direktörü, onaylanan prim ödemesini yönetim kurulunun kendisine aktardığını belirterek açıklama yaptı.\",\"critical_word\":\"kendisine\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Finans direktörü, prim ödemesini şirkette bırakırken onaylanan denetim ücretini kendisine aktardığını açıkladı.\",\"critical_word\":\"kendisine\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Finans direktörü, kendisine bağlı ekibin şirketin yenilenen kredi anlaşmasını bankalarla müzakere ettiğini açıkladı.\",\"critical_word\":\"kendisine\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"Finans direktörü, yönetim kurulunun onayladığı yeni yatırım bütçesini basına kendisi duyurdu.\",\"critical_word\":\"kendisi\"}]}\n"
+          },
+          "actual_model": "gpt-5.6-sol",
+          "route_provider": "codex_cli"
+        }
+      ],
+      "judges": {
+        "semantic": [
+          {
+            "provider": "openrouter",
+            "model": "deepseek/deepseek-v4-flash-0731",
+            "request_hash": "58ca1c318cbd617cd6ea40855fdaa90a105d2dae6865198f8a6cd4702020c599",
+            "cache_hit": false,
+            "usage": {
+              "prompt_tokens": 1870,
+              "completion_tokens": 332,
+              "total_tokens": 2202,
+              "cost": 0.00020936,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00020936,
+                "upstream_inference_prompt_cost": 0.0001496,
+                "upstream_inference_completions_cost": 5.976e-05
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            },
+            "actual_model": "deepseek/deepseek-v4-flash-0731",
+            "route_provider": "DeepInfra"
+          }
+        ],
+        "morphology": {
+          "provider": "openrouter",
+          "model": "z-ai/glm-5.2",
+          "request_hash": "9bc3636f9b0ae5eade1a8fa08388cc9d22107d60bcb1bea4be23ada7cb7f86d2",
+          "cache_hit": false,
+          "usage": {
+            "prompt_tokens": 1637,
+            "completion_tokens": 578,
+            "total_tokens": 2215,
+            "cost": 0.004835,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.004835,
+              "upstream_inference_prompt_cost": 0.0022918,
+              "upstream_inference_completions_cost": 0.0025432
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "actual_model": "z-ai/glm-5.2",
+          "route_provider": "Crusoe"
+        }
+      },
+      "prompt_version": "test-prompts-3.8.3-limited-local-repair"
+    },
+    "qc": {
+      "deterministic": "pass",
+      "judging": {
+        "semantic": {
+          "order_stable": true,
+          "passes": [
+            {
+              "answers_query": [
+                "family_raw_00023_f6dddecedf_c03"
+              ],
+              "confidence": 80,
+              "abstain": false,
+              "family_naturalness": 1,
+              "candidate_naturalness_min": 1,
+              "support_mismatches": [],
+              "unnatural_candidate_ids": [
+                "family_raw_00023_f6dddecedf_c06",
+                "family_raw_00023_f6dddecedf_c09"
+              ],
+              "internally_inconsistent_candidates": [],
+              "length_or_style_artifact": false,
+              "authoritative": false,
+              "relevance_authoritative": false,
+              "quality_authoritative": false,
+              "notes": "Sorgu, finans direktörünün prim ödemesini kendisine aktardığını söylediğini belirtiyor. c03 bu ifadeyi birebir karşılıyor. c08 gelecek ay aktaracağını söylüyor (zaman uyumsuz), c11 kendilerine (kişi uyumsuz), c10 prim yerine yatırım bütçesi, c06 kendisinden şirkete (yön ters), c05 olumsuz, c04 denetim ücreti, c01 kredi anlaşması, c02 temettü avansı, c09 yönetim kurulunun kendisine aktardığı (fail/eylem sahibi uyumsuz), c07 iade ettiğini söylüyor. c06 ve c09 doğal olmayan Türkçe içeriyor."
+            }
+          ],
+          "family_naturalness": 1,
+          "candidate_naturalness_min": 1,
+          "confidence_min": 80
+        },
+        "morphology": {
+          "confidence": 90,
+          "abstain": false,
+          "authoritative": true,
+          "morphology_failures": [],
+          "unclear_candidate_ids": [],
+          "gold_target_status": "matches_target",
+          "target_matching_candidate_ids": [
+            "family_raw_00023_f6dddecedf_c03",
+            "family_raw_00023_f6dddecedf_c02",
+            "family_raw_00023_f6dddecedf_c04",
+            "family_raw_00023_f6dddecedf_c09"
+          ],
+          "allomorph_treated_as_wrong": false,
+          "notes": "Hedef özellik ANAPHOR.AGR: 'kendi' zamirinin 3. tekil kişi uyumu (-sin- + -e datif) ile 'kendisine' biçimi ve gönderimsel işlevi. c03, c02, c04 ve c09 adayları 'kendisine' morfem zincirini (kendi + sin + e) aynı kişi-sayı ve datif kapsamıyla taşımaktadır. c11 'kendilerine' (3. çoğul) içerir; kişi-sayı farklılığı nedeniyle hedef ANAPHOR.AGR ile eşleşmez. c05 'kendisine' taşır ancak olumsuz 'aktarmadığını' kullanır; morfolojik olarak hedef zinciri taşır ancak negatiflik anlamsal/kapsamsal farktır — yine de 'kendisine' morfolojik açıdan hedefle aynıdır, bu yüzden target_matching listesine eklenmesi düşünülebilir. c08 'kendisine' taşır (gelecek zaman), c07 'kendisine' taşır (aktarmayıp), c06 'kendisinden' taşır (ablatif, datif değil). c01 ve c10 'kendisi/kendisine' içerir ancak yapısal olarak farklı gönderim kapsamı sergiler. c05, c07 ve c08'in 'kendisine' morfemini taşıdığı göz önüne alındığında bunlar da morfolojik olarak eşleşebilir; ancak c05 negatif, c07 farklı yapı, c08 farklı zaman kullanır. 'Kendisine' morfem zinciri açısından c05, c07, c08 de eşleşir; ancak c07 'aktarmayıp' yapısında 'kendisine' datif tümleç olarak kullanılmıştır ve morfolojik olarak hedefle aynıdır. c05 ve c08 de aynı 'kendisine' zincirini taşır. Bu nedenle c05, c07 ve c08 de target_matching listesine eklenmelidir."
+        }
+      },
+      "human_review_priority": true,
+      "human_review_priority_reasons": [
+        "semantic_1:advisory_quality_finding",
+        "semantic_1:low_confidence_with_finding:80"
+      ],
+      "quality_score": 5.47222,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
+    }
+  },
+  {
+    "family_id": "family_raw_00028_c5294bfe4b",
+    "slot_id": "raw_00028_c5294bfe4b",
+    "target_split": "development",
+    "generalization_bucket": "standard",
+    "generalization_tags": [
+      "standard"
+    ],
+    "objective": "morpheme_sensitivity",
+    "macro_phenomenon": "negation_voice_valency",
+    "target_feature": "ABIL",
+    "target_feature_label": "yeterlilik",
+    "surface_forms": [
+      "-abil",
+      "-ebil"
+    ],
+    "layer": "single",
+    "domain": "law_public_services",
+    "register": "conversational",
+    "query_sentence_count": 1,
+    "passage_sentence_count": 4,
+    "critical_sentence_position": 1,
+    "family_mode": "controlled_diverse",
+    "query_expression": "semantic_paraphrase",
+    "query_gold_lexical_band": "medium",
+    "hard_profile": [
+      {
+        "slot": "hard_01",
+        "subtype": "controlled_morph_negative",
+        "focus": "aynı olay ve hedef karşıtlık, farklı doğal sözdizimi"
+      },
+      {
+        "slot": "hard_02",
+        "subtype": "same_lemma_wrong_inflection",
+        "focus": "aynı kritik lemma, yanlış çekim"
+      },
+      {
+        "slot": "hard_03",
+        "subtype": "related_feature_negative",
+        "focus": "hedefe komşu ikinci morfolojik özellik yanlış"
+      },
+      {
+        "slot": "hard_04",
+        "subtype": "same_morph_wrong_content",
+        "focus": "hedef morfoloji doğru, önerme içeriği yanlış"
+      },
+      {
+        "slot": "hard_05",
+        "subtype": "state_participant_time_trap",
+        "focus": "durum, katılımcı, kişi veya zaman yanlış"
+      },
+      {
+        "slot": "hard_06",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "focus": "yakın paraphrase, temel önerme yanlış"
+      },
+      {
+        "slot": "hard_07",
+        "subtype": "argument_role_reversal",
+        "focus": "katılımcı veya sahiplik rolleri ters"
+      },
+      {
+        "slot": "hard_08",
+        "subtype": "morph_distractor",
+        "focus": "hedef biçim yanlış olay veya sözcüğe bağlı"
+      }
+    ],
+    "strict_minimal_pair": false,
+    "generator_id": "generator_a",
+    "semantic_frame_id": "frame_00028",
+    "semantic_profile": {
+      "narrative_tag": "tahliye_kararina_itiraz",
+      "event_type": "dijital_itiraz_basvurusu",
+      "participant_roles": [
+        "agent",
+        "theme",
+        "source"
+      ],
+      "polarity": "affirmative",
+      "temporal_frame": "mixed",
+      "scope_target": "embedded_clause"
+    },
+    "template_id": "reported_speech",
+    "critical_lemma": "et",
+    "critical_word_query": "mümkün",
+    "critical_word_positive": "edebileceğini",
+    "feature_delta": "yapabilme ↔ yapamama",
+    "edit_script": {
+      "applies": false,
+      "positive_form": "",
+      "minimal_negative_form": "",
+      "operation": "",
+      "changed_feature": "",
+      "invariants": []
+    },
+    "query": "Belediyedeki danışman, kiracının tahliye kararına e-Devlet üzerinden itirazda bulunmasının mümkün olduğunu söyledi.",
+    "context_sentences": [
+      "Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti.",
+      "Danışma masasındaki görevli dosya numarasını not aldı.",
+      "Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi."
+    ],
+    "candidates": [
+      {
+        "candidate_slot": "easy_02",
+        "critical_sentence": "Kiracının ücretsiz avukat görüşmesi için belediyeden randevu aldığını danışman aktardı.",
+        "critical_word": "aldığını",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Kiracının ücretsiz avukat görüşmesi için belediyeden randevu aldığını danışman aktardı. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c01",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_03",
+        "critical_sentence": "Belediyedeki danışman, kiracının tahliye kararına e-Devlet üzerinden itiraz etmesi gerektiğini söyledi.",
+        "critical_word": "etmesi",
+        "role": "hard_negative",
+        "subtype": "related_feature_negative",
+        "morph_relation": "feature_changed",
+        "text": "Belediyedeki danışman, kiracının tahliye kararına e-Devlet üzerinden itiraz etmesi gerektiğini söyledi. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c02",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "easy_01",
+        "critical_sentence": "Belediyedeki danışman, kiracının tebligat tarihini adliyeden ayrıca doğrulatmasını önerdi.",
+        "critical_word": "doğrulatmasını",
+        "role": "easy_negative",
+        "subtype": "easy_negative",
+        "morph_relation": "same_domain_off_intent",
+        "text": "Belediyedeki danışman, kiracının tebligat tarihini adliyeden ayrıca doğrulatmasını önerdi. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c03",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_08",
+        "critical_sentence": "Belediyedeki danışman, kiracının tahliye kararını e-Devlet üzerinden görüntüleyebileceğini söyledi.",
+        "critical_word": "görüntüleyebileceğini",
+        "role": "hard_negative",
+        "subtype": "morph_distractor",
+        "morph_relation": "target_preserved",
+        "text": "Belediyedeki danışman, kiracının tahliye kararını e-Devlet üzerinden görüntüleyebileceğini söyledi. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c04",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_05",
+        "critical_sentence": "Ev sahibinin tahliye kararına e-Devlet üzerinden itiraz edebileceğini belediyedeki danışman söyledi.",
+        "critical_word": "edebileceğini",
+        "role": "hard_negative",
+        "subtype": "state_participant_time_trap",
+        "morph_relation": "target_preserved",
+        "text": "Ev sahibinin tahliye kararına e-Devlet üzerinden itiraz edebileceğini belediyedeki danışman söyledi. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c05",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_02",
+        "critical_sentence": "Kiracının tahliye kararına e-Devlet üzerinden itiraz ettiğini belediyedeki danışman aktardı.",
+        "critical_word": "ettiğini",
+        "role": "hard_negative",
+        "subtype": "same_lemma_wrong_inflection",
+        "morph_relation": "wrong_inflection",
+        "text": "Kiracının tahliye kararına e-Devlet üzerinden itiraz ettiğini belediyedeki danışman aktardı. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c06",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_01",
+        "critical_sentence": "Belediyedeki danışman, kiracının tahliye kararına e-Devlet üzerinden itiraz edemeyeceğini söyledi.",
+        "critical_word": "edemeyeceğini",
+        "role": "hard_negative",
+        "subtype": "controlled_morph_negative",
+        "morph_relation": "feature_changed",
+        "text": "Belediyedeki danışman, kiracının tahliye kararına e-Devlet üzerinden itiraz edemeyeceğini söyledi. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c07",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_06",
+        "critical_sentence": "Belediyedeki danışman, kiracının tahliye kararına yönelik çevrim içi itiraz yolunun kapalı olduğunu söyledi.",
+        "critical_word": "kapalı",
+        "role": "hard_negative",
+        "subtype": "close_paraphrase_wrong_meaning",
+        "morph_relation": "target_preserved",
+        "text": "Belediyedeki danışman, kiracının tahliye kararına yönelik çevrim içi itiraz yolunun kapalı olduğunu söyledi. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c08",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "hard_04",
+        "critical_sentence": "Kiracının kira artışına e-Devlet üzerinden itiraz edebileceğini belediyedeki danışman aktardı.",
+        "critical_word": "edebileceğini",
+        "role": "hard_negative",
+        "subtype": "same_morph_wrong_content",
+        "morph_relation": "same_feature_wrong_content",
+        "text": "Kiracının kira artışına e-Devlet üzerinden itiraz edebileceğini belediyedeki danışman aktardı. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c09",
+        "relevance": 0
+      },
+      {
+        "candidate_slot": "positive_01",
+        "critical_sentence": "Kiracının tahliye kararına e-Devlet üzerinden itiraz edebileceğini belediyedeki danışman aktardı.",
+        "critical_word": "edebileceğini",
+        "role": "positive",
+        "subtype": "equivalence_positive",
+        "morph_relation": "target_preserved",
+        "text": "Kiracının tahliye kararına e-Devlet üzerinden itiraz edebileceğini belediyedeki danışman aktardı. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c10",
+        "relevance": 1
+      },
+      {
+        "candidate_slot": "hard_07",
+        "critical_sentence": "Tahliye kararını veren kurumun kiracının başvurusuna e-Devlet üzerinden itiraz edebileceğini danışman aktardı.",
+        "critical_word": "edebileceğini",
+        "role": "hard_negative",
+        "subtype": "argument_role_reversal",
+        "morph_relation": "target_preserved",
+        "text": "Tahliye kararını veren kurumun kiracının başvurusuna e-Devlet üzerinden itiraz edebileceğini danışman aktardı. Kiracı, kararın kendisine geçen hafta tebliğ edildiğini belirtti. Danışma masasındaki görevli dosya numarasını not aldı. Görüşmenin sonunda gerekli belgelerin bir listesini kiracıya verdi.",
+        "id": "family_raw_00028_c5294bfe4b_c11",
+        "relevance": 0
+      }
+    ],
+    "gold_id": "family_raw_00028_c5294bfe4b_c10",
+    "qrels": {
+      "family_raw_00028_c5294bfe4b_c01": 0,
+      "family_raw_00028_c5294bfe4b_c02": 0,
+      "family_raw_00028_c5294bfe4b_c03": 0,
+      "family_raw_00028_c5294bfe4b_c04": 0,
+      "family_raw_00028_c5294bfe4b_c05": 0,
+      "family_raw_00028_c5294bfe4b_c06": 0,
+      "family_raw_00028_c5294bfe4b_c07": 0,
+      "family_raw_00028_c5294bfe4b_c08": 0,
+      "family_raw_00028_c5294bfe4b_c09": 0,
+      "family_raw_00028_c5294bfe4b_c10": 1,
+      "family_raw_00028_c5294bfe4b_c11": 0
+    },
+    "source_type": "llm_generated_cascade_judged",
+    "memory_tags": {
+      "morphology": {
+        "phenomenon": "ABIL",
+        "macro": "negation_voice_valency",
+        "objective": "morpheme_sensitivity",
+        "layer": "single",
+        "feature_components": [
+          "ABIL"
+        ],
+        "surface_forms": [
+          "-abil",
+          "-ebil"
+        ],
+        "critical_lemma": "et",
+        "contrast_delta": "yapabilme ↔ yapamama"
+      },
+      "semantics": {
+        "frame_id": "frame_00028",
+        "narrative_tag": "tahliye_kararina_itiraz",
+        "event_type": "dijital_itiraz_basvurusu",
+        "participant_roles": [
+          "agent",
+          "theme",
+          "source"
+        ],
+        "polarity": "affirmative",
+        "temporal_frame": "mixed",
+        "scope_target": "embedded_clause"
+      },
+      "generalization": {
+        "split": "development",
+        "bucket": "standard",
+        "tags": [
+          "standard"
+        ],
+        "domain": "law_public_services",
+        "register": "conversational",
+        "template_id": "reported_speech",
+        "family_mode": "controlled_diverse"
+      },
+      "controls": {
+        "delta": "yapabilme ↔ yapamama",
+        "invariants": []
+      },
+      "provenance": {
+        "generator_id": "generator_a",
+        "source_type": "llm_generated_pending_cascade_judge"
+      }
+    },
+    "lexical_audit": {
+      "gold_word_overlap": 0.615385,
+      "hard_word_overlap_median": 0.615385,
+      "gold_hard_median_gap": 0.0,
+      "hards_at_or_above_gold": 5,
+      "hard_query_content_recalls": [
+        0.75,
+        0.666667,
+        0.666667,
+        0.666667,
+        0.75,
+        0.666667,
+        0.5,
+        0.583333
+      ],
+      "tie_aware_gold_top_probability": {
+        "word_overlap": 0.0,
+        "character_3gram": 0.0,
+        "bm25": 0.0
+      },
+      "query_gold_token_edits": 7,
+      "query_gold_token_sequence_ratio": 0.5,
+      "query_gold_word_jaccard": 0.5,
+      "query_gold_lexical_band_ok": true,
+      "content_preserving_hards": 6
+    },
+    "provenance": {
+      "generator_id": "generator_a",
+      "refill_round": 0,
+      "rejected_replacements": [],
+      "generator_attempts": [
+        {
+          "provider": "codex_cli",
+          "model": "gpt-5.6-sol",
+          "request_hash": "ef48c01416c46d0d993297f1af60a5fe5e0fb496a93cde958752b9f9f5a918eb",
+          "cache_hit": false,
+          "usage": {
+            "wall_seconds": 43.293,
+            "cli_stdout_tail": " itiraz edebileceğini belediyedeki danışman söyledi.\",\"critical_word\":\"edebileceğini\"},{\"candidate_slot\":\"hard_06\",\"critical_sentence\":\"Belediyedeki danışman, kiracının tahliye kararına yönelik çevrim içi itiraz yolunun kapalı olduğunu söyledi.\",\"critical_word\":\"kapalı\"},{\"candidate_slot\":\"hard_07\",\"critical_sentence\":\"Tahliye kararını veren kurumun kiracının başvurusuna e-Devlet üzerinden itiraz edebileceğini danışman aktardı.\",\"critical_word\":\"edebileceğini\"},{\"candidate_slot\":\"hard_08\",\"critical_sentence\":\"Belediyedeki danışman, kiracının tahliye kararını e-Devlet üzerinden görüntüleyebileceğini söyledi.\",\"critical_word\":\"görüntüleyebileceğini\"},{\"candidate_slot\":\"easy_01\",\"critical_sentence\":\"Belediyedeki danışman, kiracının tebligat tarihini adliyeden ayrıca doğrulatmasını önerdi.\",\"critical_word\":\"doğrulatmasını\"},{\"candidate_slot\":\"easy_02\",\"critical_sentence\":\"Kiracının ücretsiz avukat görüşmesi için belediyeden randevu aldığını danışman aktardı.\",\"critical_word\":\"aldığını\"}]}\n"
+          },
+          "actual_model": "gpt-5.6-sol",
+          "route_provider": "codex_cli"
+        }
+      ],
+      "judges": {
+        "semantic": [
+          {
+            "provider": "openrouter",
+            "model": "deepseek/deepseek-v4-flash-0731",
+            "request_hash": "d94354375815aadbead7411404febfd749750b666be0b739d53382837cc6bc7c",
+            "cache_hit": false,
+            "usage": {
+              "prompt_tokens": 2216,
+              "completion_tokens": 374,
+              "total_tokens": 2590,
+              "cost": 0.0002446,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0002446,
+                "upstream_inference_prompt_cost": 0.00017728,
+                "upstream_inference_completions_cost": 6.732e-05
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            },
+            "actual_model": "deepseek/deepseek-v4-flash-0731",
+            "route_provider": "DeepInfra"
+          }
+        ],
+        "morphology": {
+          "provider": "openrouter",
+          "model": "z-ai/glm-5.2",
+          "request_hash": "9139de1ef0be94a577b5cbb2af0a3861f4f847f26872d0ab357aa63b465e96ae",
+          "cache_hit": false,
+          "usage": {
+            "prompt_tokens": 1920,
+            "completion_tokens": 430,
+            "total_tokens": 2350,
+            "cost": 0.00443408,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 128,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00443408,
+              "upstream_inference_prompt_cost": 0.00254208,
+              "upstream_inference_completions_cost": 0.001892
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "actual_model": "z-ai/glm-5.2",
+          "route_provider": "Crusoe"
+        }
+      },
+      "prompt_version": "test-prompts-3.8.3-limited-local-repair"
+    },
+    "qc": {
+      "deterministic": "pass",
+      "judging": {
+        "semantic": {
+          "order_stable": true,
+          "passes": [
+            {
+              "answers_query": [
+                "family_raw_00028_c5294bfe4b_c10"
+              ],
+              "confidence": 0,
+              "abstain": true,
+              "family_naturalness": 1,
+              "candidate_naturalness_min": 5,
+              "support_mismatches": [],
+              "unnatural_candidate_ids": [],
+              "internally_inconsistent_candidates": [],
+              "length_or_style_artifact": false,
+              "authoritative": false,
+              "relevance_authoritative": false,
+              "quality_authoritative": false,
+              "notes": "Sorgu, danışmanın kiracının tahliye kararına e-Devlet üzerinden itiraz edebileceğini söylediğini bildiriyor. c10 bu bilgiyi birebir karşılıyor. c02 'itiraz etmesi gerektiğini' diyerek zorunluluk ekliyor; c06 'itiraz ettiğini' diyerek gerçekleşmiş eylem bildiriyor; c04 'görüntüleyebileceğini' diyerek itirazı değil görüntülemeyi söylüyor; c08 ve c07 olumsuz; c11 özne-nesne ilişkisini bozuyor; c01 ve c03 farklı bilgi veriyor; c09 'kira artışına' diyerek konuyu değiştiriyor. Ancak c10'un 'aktardı' fiili sorgudaki 'söyledi' ile eşdeğer kabul edilebilir mi, yoksa farklı bir bildirim mi, bu konuda emin değilim; bu yüzden abstain veriyorum."
+            }
+          ],
+          "family_naturalness": 1,
+          "candidate_naturalness_min": 5,
+          "confidence_min": 0
+        },
+        "morphology": {
+          "confidence": 95,
+          "abstain": false,
+          "authoritative": true,
+          "morphology_failures": [],
+          "unclear_candidate_ids": [],
+          "gold_target_status": "matches_target",
+          "target_matching_candidate_ids": [
+            "family_raw_00028_c5294bfe4b_c11",
+            "family_raw_00028_c5294bfe4b_c05",
+            "family_raw_00028_c5294bfe4b_c09",
+            "family_raw_00028_c5294bfe4b_c04",
+            "family_raw_00028_c5294bfe4b_c10"
+          ],
+          "allomorph_treated_as_wrong": false,
+          "notes": "Hedef morfolojik özellik ABIL (yeterlilik) eki -(y)Abil-'dir. Tüm adaylar Türkçe çekim açısından doğal ve dilbilgiselder; morfolojik olarak geçersiz olan yok. ABIL eki taşıyan adaylar: c11 ('itiraz edebileceğini'), c05 ('itiraz edebileceğini'), c09 ('itiraz edebileceğini'), c04 ('görüntüleyebileceğini') ve c10 ('itiraz edebileceğini'). Bu adayların hepsinde -(y)Abil yeterlilik ek fiil zinciri aynı morfolojik işlev ve kapsamla mevcuttur. c07'de 'edemeyeceğini' negatif yeterlilik (ABIL+NEG) içerir; hedef özellik pozitif ABIL olduğu için eşleşme listesine dahil edilmedi, ancak morfolojik olarak geçersiz değildir. c06, c08, c02, c03 ve c01'de ABIL eki bulunmamaktadır. Semantik relevance veya gold doğruluğu değerlendirmesine dahil edilmedi."
+        }
+      },
+      "human_review_priority": true,
+      "human_review_priority_reasons": [
+        "semantic_1:abstain",
+        "semantic_1:very_low_confidence:0"
+      ],
+      "quality_score": 6.15139,
+      "editorial_audit": {
+        "status": "pass",
+        "scope": "pilot_quality_audit_not_final_human_review",
+        "checked_at": "2026-08-22T18:24:36.398610+00:00"
+      }
     }
   }
 ]
