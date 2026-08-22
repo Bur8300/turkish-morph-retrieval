@@ -10,9 +10,9 @@
 - Generator'lar: 300 Codex CLI + 300 Claude Code CLI; API key yalnız iki OpenRouter judge içindir.
 - Query: `%75` 1 cümle, `%25` 2 cümle.
 - Pasaj: `%30/%30/%30/%10` oranında 1/2/3/4 cümle.
-- 71 fenomen, 6 macro grup; morph-hard ve semantic-hard ayrı raporlanır.
-- Yeni altılı: `COP.NEG`, `COP.TAM`, `Q.PART.SCOPE`, `NMLZ.MA_VS_DIK`,
-  `REL.GEN.POSS`, `ANAPHOR.AGR`.
+- 76 fenomen, 6 macro grup; morph-hard ve semantic-hard ayrı raporlanır.
+- Oflazer-informed yeni beşli: `MORPH.CONTEXT_AMBIG`, `DERIV.IG_CHAIN`,
+  `CASE.ROLE.FRAME`, `SUSP.AFFIX`, `MWE.MORPH`.
 
 Tek akış:
 
@@ -35,12 +35,14 @@ doğal sözdizimi kullanabilir. Natural modda query, gold ve negatifler bağıms
 bilgi ihtiyacını karşılayan tek passage'dır. Lexical kapılar moda göre 4/3/2 içerik-koruyan hard
 ister ve word-overlap/char-3gram/BM25 sonuçlarını tie-aware hesaplar.
 
-LLM küçük bir JSON üretir: query, ortak context, kritik lemma/sözcük ve aday başına yalnız
+LLM küçük bir JSON üretir: query, ortak context, kritik lemma/sözcük, query–gold için somut
+katılımcı/rol bağları ve aday başına yalnız
 `candidate_slot + critical_sentence + critical_word`. Rol, subtype, morph relation, qrels,
 edit script ve kimlikler Python tarafından eklenir.
 
-Semantic judge hedef özelliği görmeden açık ikinci-gold, tutarlılık ve doğallık hatalarını kontrol
-eder. Morphology judge yalnız hedef özellik, bozuk çekim ve allomorfa bakar. Yalnız güveni en az
+Semantic judge hedef özelliği görmeden açık ikinci-gold, katılımcı rolleri, tutarlılık ve doğallık
+hatalarını kontrol eder. Morphology judge hedef özellik, bozuk çekim, allomorf, hâl/çatı rolleri,
+IG/türetim sınırları ve çok-tokenlı morfolojik kapsamı kontrol eder. Yalnız güveni en az
 85 olan semantic veya morphology somut aday hatası aynı slotu onartır. Somut uyarıyla birleşen
 85-altı güven, `abstain`/`unclear` veya uyarı olmasa bile 60-altı güven human-review önceliğidir.
 Temiz 60–84 kararı yalnız QC notudur. Human review üretim

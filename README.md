@@ -25,7 +25,8 @@ generator'ı bu metinleri few-shot olarak kullanmaz.
   dengelenir; aynı family'deki diğer tam bağlam cümleleri bütün adaylarda aynıdır.
 - Standard, lemma-holdout, template-holdout ve compositional-holdout dilimleri.
 - Allomorph invariance ile anlam değiştiren morfem karşıtlığı ayrı objective'lerdir.
-- 6 macro grup altında 71 fenomen; copula, soru odağı, adlaştırma, ilgi yapısı ve anafor uyumu dahil.
+- 6 macro grup altında 76 fenomen; bağlamsal morfolojik belirsizlik, IG/türetim zinciri,
+  hâl-rol çerçevesi, askıda ekleme ve çok sözcüklü morfoloji dahil.
 - 150 strict minimal-pair family; iki generator finalde 300+300 dengelenir.
 - 600 dengeli slot → deterministic QC → farklı model ailesinden blind judge. Kalan örnek aynı
   slotun kotasını koruyan taze üretimle hemen değiştirilir → hash/manifest ile freeze.

@@ -1,4 +1,4 @@
-# Turkish Morph Retrieval Test — v3.8.0
+# Turkish Morph Retrieval Test — v3.9.0
 
 Bu dizin Türkçe encoder'ların küçük fakat anlam değiştiren morfolojik farkları ayırt edip
 etmediğini ölçen benchmark'ı üretir ve değerlendirir. Train sistemi [`../train/`](../train/)
@@ -190,7 +190,7 @@ Ucuz baseline eşitlikleri candidate ID ile bozulmaz; eşit skorlu adayların b�
 
 ## Fenomenler ve hard negatifler
 
-Kod 6 macro grup altında 71 hedef taşır: 56 single ve 15 composition/chain.
+Kod 6 macro grup altında 76 hedef taşır: 58 single ve 18 composition/chain.
 
 - Hâl, konum ve yön
 - Çoğul, iyelik ve fiilde kişi-sayı uyumu (`V.AGR`)
@@ -204,6 +204,27 @@ odağı (`Q.PART.SCOPE`), `-mA/-DIK` adlaştırma ayrımı (`NMLZ.MA_VS_DIK`), `
 genitif–iyelik bağı (`REL.GEN.POSS`) ve `kendi` zamirinde kişi/sayı-gönderim (`ANAPHOR.AGR`).
 `Q.PART.SCOPE` doğal bir odak sorusu üretir ve parçacığın yerini değiştirmeyi gerektirdiğinden,
 token sırasını sabit tutan 150-family strict minimal-pair slice'ına atanmaz.
+
+Oflazer çizgisindeki yapılandırılmış Türkçe morfolojisinden alınan beş ek hedef:
+
+- `MORPH.CONTEXT_AMBIG`: aynı yüzey biçiminin bağlamla seçilen farklı lemma/POS/çekim analizi.
+- `DERIV.IG_CHAIN`: kök POS → türetim sınırları/IG'ler → final POS zinciri.
+- `CASE.ROLE.FRAME`: hâl işaretleriyle agent, patient/theme, goal/recipient ve source ayrımı.
+- `SUSP.AFFIX`: koordinasyonda yalnız son eşlenikte yüzeyleşen ekin doğru kapsamı.
+- `MWE.MORPH`: destek fiilli, kalıplaşmış ve tekrarlı yapılarda çok-tokenlı morfoloji.
+
+`MORPH.CONTEXT_AMBIG`, `SUSP.AFFIX` ve `MWE.MORPH` tek-token editine indirgenmez ve bu nedenle
+strict minimal-pair kotasına
+atanmaz. Yeni üretim şeması `participant_bindings` ile query–gold olayındaki her agent, patient,
+theme, goal, source, causer ve diğer rolü somut katılımcıya bağlar. Bu alan generator niyet
+metadatasıdır; semantik judge gold/rol etiketlerini görmeden metinden bağımsız doğrulama yapar.
+
+Bu tasarımın dilbilimsel dayanakları: Oflazer'in
+[iki seviyeli Türkçe morfolojisi](https://aclanthology.org/E93-1066/),
+[bağlamsal morfolojik belirsizlik giderme](https://aclanthology.org/C00-1042/),
+[morfoloji–sözdizim arayüzü](https://aclanthology.org/P06-1020/),
+[IG tabanlı dependency parsing](https://aclanthology.org/J08-3003/) ve
+[Türkçede MWE–morfoloji entegrasyonu](https://aclanthology.org/W04-0409/) çalışmalarıdır.
 
 Sekiz hard'ın işlevsel bileşimi:
 
@@ -339,7 +360,7 @@ Artefakt kontrolleri:
 - `prefix5` suffix-reduction kontrolü; gerçek lemma/kök analizi değildir
 
 İstatistikler query-level bootstrap `%95 CI`, paired bootstrap, approximate randomization,
-McNemar, Holm düzeltmesi ve slice sonuçlarını içerir. Tekil 71 fenomen küçük örnekli tanısal
+McNemar, Holm düzeltmesi ve slice sonuçlarını içerir. Tekil 76 fenomen küçük örnekli tanısal
 tablodur; ana rapor macro/layer/objective ve morph-hard/semantic-hard düzeyindedir.
 
 ## Komutlar

@@ -70,6 +70,7 @@ FEATURES = (
     F("INS", "vasıta/birliktelik hâli", CASE, "single", "birlikte/araçla ↔ hedefe", ("-la", "-le", "-yla", "-yle")),
     F("GEN", "ilgi hâli", CASE, "single", "aitlik/sahiplik ↔ yalın ad", ("-ın", "-in", "-un", "-ün", "-nın", "-nin")),
     F("EQU", "eşitlik hâli", CASE, "single", "ona göre/o biçimde ↔ başka ölçüt", ("-ca", "-ce", "-ça", "-çe")),
+    F("CASE.ROLE.FRAME", "hâl işaretli argüman rolleri", CASE, "single", "aynı katılımcılarla kim, kimi, kime ve kimden rollerinin korunması ↔ rollerin ters/yanlış bağlanması"),
     F("PL", "çoğul", AGR, "single", "birden çok ↔ tek", ("-lar", "-ler")),
     F("V.AGR", "fiilde kişi-sayı uyumu", AGR, "single", "eylemi yapan kişi/sayı ↔ başka kişi/sayı", ("-m", "-ım", "-im", "-sın", "-sin", "-k", "-ız", "-iz", "-siniz", "-lar", "-ler")),
     F("ANAPHOR.AGR", "kendi zamirinde kişi-sayı ve gönderim", AGR, "single", "dönüşlü zamirin doğru kişiye/gruba gönderimi ↔ başka kişi/gruba gönderimi", ("kendim", "kendin", "kendi", "kendimiz", "kendiniz", "kendileri")),
@@ -97,6 +98,7 @@ FEATURES = (
     F("AGT", "meslek/uğraş", DERIV, "single", "işi yapan kişi ↔ işin kendisi", ("-cı", "-ci", "-cu", "-cü", "-çı", "-çi")),
     F("ABST", "soyutlama", DERIV, "single", "soyut görev/nitelik ↔ somut varlık", ("-lık", "-lik", "-luk", "-lük")),
     F("DISTR", "üleştirme", DERIV, "single", "her birine ayrı ayrı ↔ toplam", ("-ar", "-er", "-şar", "-şer")),
+    F("MORPH.CONTEXT_AMBIG", "bağlamsal morfolojik belirsizlik", DERIV, "single", "aynı yüzey biçiminin bağlamda doğru lemma/sözcük türü/çekim analizi ↔ bağlama uymayan alternatif analizi"),
 
     # Allomorph invariance: valid variants preserve function and can only support the positive.
     F("ALLO.LOC", "bulunma hâli allomorfları", DERIV, "single", "aynı bulunma işlevi, farklı uyum/ötümsüzleşme", ("-da", "-de", "-ta", "-te"), "allomorph_invariance"),
@@ -120,6 +122,9 @@ FEATURES = (
     F("EVID.POSS.NEG", "kanıtsallık + iyelik + olumsuzluk", COMP, "chain", "kimin bilgisi, kaynağı ve kutupluluğu", (), "composition"),
     F("RECP.CAUS", "işteş + ettirgen", COMP, "chain", "karşılıklı yapma ↔ karşılıklı yaptırma", (), "composition"),
     F("POSS.PL.ABL", "iyelik + çoğul + ayrılma", COMP, "chain", "kimin kaç tanesinden ayrılma", (), "composition"),
+    F("DERIV.IG_CHAIN", "türetim sınırları ve IG zinciri", COMP, "chain", "kök sözcük türü, türetim adımları ve son sözcük türünün korunması ↔ farklı türetim yolu veya sınırı", (), "composition"),
+    F("SUSP.AFFIX", "koordinasyonda askıda ekleme", COMP, "chain", "son eşlenikteki çekimin koordineli ögelere doğru yayılması ↔ yalnız son ögeye bağlanması veya rollerin değişmesi", (), "composition"),
+    F("MWE.MORPH", "çok sözcüklü ifadede morfoloji", COMP, "chain", "destek fiilli/kalıplaşmış/tekrarlı yapının morfolojik ve bütüncül anlamının korunması ↔ yalnız yüzey parçalarının eşleşmesi", (), "composition"),
 )
 
 
@@ -208,7 +213,7 @@ def hard_profile(feature: Feature | dict, family_mode: str = "strict_minimal") -
             ("noun_possessor_number_trap", "nesnenin sayısı ile sahibin sayısı karıştırılmış"),
             ("morph_distractor", "hedef biçim yanlış olay veya sözcüğe bağlı"),
         )
-    elif key in {"COP.NEG", "Q.PART.SCOPE", "NMLZ.MA_VS_DIK"}:
+    elif key in {"COP.NEG", "Q.PART.SCOPE", "NMLZ.MA_VS_DIK", "MORPH.CONTEXT_AMBIG"}:
         extras = (
             ("scope_attachment_trap", "olumsuzluk, soru odağı veya yan-cümle kapsamı yanlış"),
             ("morph_distractor", "hedef biçim yanlış yüklem, öge veya olaya bağlı"),

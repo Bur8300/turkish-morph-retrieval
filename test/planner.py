@@ -55,6 +55,9 @@ def _round_robin(values: tuple | list, index: int, seed: int, salt: str) -> Any:
 
 
 DEV_COMPOSITION_KEYS = {"NEG.AOR", "PLUPRF", "PST.PROG", "FUT.PST"}
+NON_STRICT_FEATURE_KEYS = {
+    "Q.PART.SCOPE", "MORPH.CONTEXT_AMBIG", "SUSP.AFFIX", "MWE.MORPH",
+}
 SEALED_DOMAIN_REGISTER_PAIRS = (
     ("health", "conversational"),
     ("finance", "news_report"),
@@ -81,7 +84,7 @@ def _eligible_features(slot: dict[str, Any]) -> list:
         and feature.objective == slot["objective"]
     ]
     if slot["strict_minimal_pair"]:
-        pool = [feature for feature in pool if feature.key != "Q.PART.SCOPE"]
+        pool = [feature for feature in pool if feature.key not in NON_STRICT_FEATURE_KEYS]
     if slot["layer"] == "chain" and slot["target_split"] == "development":
         pool = [feature for feature in pool if feature.key in DEV_COMPOSITION_KEYS]
     elif slot["layer"] == "chain" and slot["generalization_bucket"] == "composition_holdout":
@@ -128,7 +131,7 @@ def _feature_for(
 ):
     pool = [feature for feature in FEATURES if feature.layer == layer and feature.macro == macro]
     if strict_minimal_pair:
-        pool = [feature for feature in pool if feature.key != "Q.PART.SCOPE"]
+        pool = [feature for feature in pool if feature.key not in NON_STRICT_FEATURE_KEYS]
     if layer == "chain" and target_split == "development":
         pool = [feature for feature in pool if feature.key in DEV_COMPOSITION_KEYS]
     elif layer == "chain" and bucket == "composition_holdout":

@@ -25,6 +25,15 @@ PARTICIPANT_ROLES = (
     "agent", "patient", "experiencer", "causer", "possessor", "theme", "source", "goal",
     "location", "beneficiary", "instrument", "other",
 )
+PARTICIPANT_BINDING_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "role": {"type": "string", "enum": list(PARTICIPANT_ROLES)},
+        "participant": {"type": "string", "minLength": 1, "maxLength": 80},
+    },
+    "required": ["role", "participant"],
+}
 POLARITIES = ("affirmative", "negative", "interrogative", "conditional", "mixed")
 TEMPORAL_FRAMES = ("past", "present", "future", "habitual", "atemporal", "mixed")
 SCOPE_TARGETS = (
@@ -44,13 +53,19 @@ SEMANTIC_PROFILE_SCHEMA = {
             "maxItems": 6,
             "items": {"type": "string", "enum": list(PARTICIPANT_ROLES)},
         },
+        "participant_bindings": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": PARTICIPANT_BINDING_SCHEMA,
+        },
         "polarity": {"type": "string", "enum": list(POLARITIES)},
         "temporal_frame": {"type": "string", "enum": list(TEMPORAL_FRAMES)},
         "scope_target": {"type": "string", "enum": list(SCOPE_TARGETS)},
     },
     "required": [
-        "narrative_tag", "event_type", "participant_roles", "polarity", "temporal_frame",
-        "scope_target",
+        "narrative_tag", "event_type", "participant_roles", "participant_bindings",
+        "polarity", "temporal_frame", "scope_target",
     ],
 }
 
@@ -93,6 +108,25 @@ def semantic_profile_problems(profile: Any) -> list[str]:
         or any(role not in PARTICIPANT_ROLES for role in roles)
     ):
         problems.append("semantic_profile.participant_roles geçersiz")
+    bindings = profile.get("participant_bindings")
+    if not isinstance(bindings, list) or not 1 <= len(bindings) <= 6:
+        problems.append("semantic_profile.participant_bindings geçersiz")
+    else:
+        binding_roles = []
+        for binding in bindings:
+            if not isinstance(binding, dict) or set(binding) != {"role", "participant"}:
+                problems.append("semantic_profile.participant_bindings girdisi geçersiz")
+                continue
+            role = binding.get("role")
+            participant = binding.get("participant")
+            if role not in PARTICIPANT_ROLES or not isinstance(participant, str) or not participant.strip():
+                problems.append("semantic_profile.participant_bindings rol/katılımcı değeri geçersiz")
+                continue
+            binding_roles.append(role)
+        if len(binding_roles) != len(set(binding_roles)):
+            problems.append("semantic_profile.participant_bindings rol tekrarı içeriyor")
+        if isinstance(roles, list) and set(binding_roles) != set(roles):
+            problems.append("semantic_profile participant_roles ve participant_bindings uyuşmuyor")
     if profile.get("polarity") not in POLARITIES:
         problems.append("semantic_profile.polarity geçersiz")
     if profile.get("temporal_frame") not in TEMPORAL_FRAMES:

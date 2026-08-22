@@ -371,7 +371,10 @@ def validate_family(family: dict[str, Any], slot: dict[str, Any], cfg: dict[str,
                 f"{sentence_count(text)} cümle"
             )
 
-    if query.rstrip().endswith("?"):
+    is_focus_question = family.get("target_feature") == "Q.PART.SCOPE"
+    if is_focus_question and not query.rstrip().endswith("?"):
+        problems.append("Q.PART.SCOPE query doğal bir odak sorusu olmalı")
+    elif not is_focus_question and query.rstrip().endswith("?"):
         problems.append("query soru cümlesi olamaz")
     lowered_query = tr_lower(query)
     if any(pattern in lowered_query for pattern in _META_PATTERNS):

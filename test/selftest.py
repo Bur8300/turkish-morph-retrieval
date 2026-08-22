@@ -87,6 +87,10 @@ def _fixture_raw():
             "narrative_tag": "rapor_teslimi",
             "event_type": "belge_tamamlama",
             "participant_roles": ["agent", "theme"],
+            "participant_bindings": [
+                {"role": "agent", "participant": "Ece"},
+                {"role": "theme", "participant": "rapor"},
+            ],
             "polarity": "negative",
             "temporal_frame": "past",
             "scope_target": "predicate",
@@ -119,6 +123,12 @@ def run() -> list[str]:
     bad_profile = {**_fixture_raw()["semantic_profile"], "narrative_tag": "Ham cümle etiketi"}
     if not semantic_profile_problems(bad_profile):
         failures.append("serbest metin semantic_profile etiketi reddedilmedi")
+    bad_bindings = deepcopy(_fixture_raw()["semantic_profile"])
+    bad_bindings["participant_bindings"] = [
+        {"role": "agent", "participant": "Ece"},
+    ]
+    if not semantic_profile_problems(bad_bindings):
+        failures.append("participant role/binding uyuşmazlığı reddedilmedi")
     if not _expected_feature_check("ALLO.ACC", {"ufeats": "Case=Acc|Number=Sing"}):
         failures.append("allomorph query UFeats eşlemesi çalışmadı")
     if not _expected_feature_check(
@@ -156,14 +166,16 @@ def run() -> list[str]:
     if split_counts != {"development": 100, "sealed_test": 500}:
         failures.append(f"600 slot split kotası yanlış: {split_counts}")
     planned_features = Counter(slot["feature"]["key"] for slot in slots_600)
-    if len(FEATURES) != 71 or set(planned_features) != {feature.key for feature in FEATURES}:
+    if len(FEATURES) != 76 or set(planned_features) != {feature.key for feature in FEATURES}:
         failures.append(
-            f"71 fenomenin tamamı planda değil: taxonomy={len(FEATURES)}, "
+            f"76 fenomenin tamamı planda değil: taxonomy={len(FEATURES)}, "
             f"planned={len(planned_features)}"
         )
     new_features = {
         "COP.NEG", "COP.TAM", "Q.PART.SCOPE", "NMLZ.MA_VS_DIK",
         "REL.GEN.POSS", "ANAPHOR.AGR",
+        "MORPH.CONTEXT_AMBIG", "DERIV.IG_CHAIN", "CASE.ROLE.FRAME", "SUSP.AFFIX",
+        "MWE.MORPH",
     }
     if not new_features <= set(planned_features):
         failures.append(f"yeni fenomenler eksik: {sorted(new_features - set(planned_features))}")
@@ -178,10 +190,12 @@ def run() -> list[str]:
     if unbalanced:
         failures.append(f"macro/objective içi fenomen dağılımı dengesiz: {unbalanced}")
     if any(
-        slot["strict_minimal_pair"] and slot["feature"]["key"] == "Q.PART.SCOPE"
+        slot["strict_minimal_pair"] and slot["feature"]["key"] in {
+            "Q.PART.SCOPE", "MORPH.CONTEXT_AMBIG", "SUSP.AFFIX", "MWE.MORPH",
+        }
         for slot in slots_600
     ):
-        failures.append("Q.PART.SCOPE token-sırası strict minimal-pair slice'ına girdi")
+        failures.append("strict olmayan bağlam/koordinasyon fenomeni minimal-pair slice'ına girdi")
     expected = {
         "target_split": {"development": 100, "sealed_test": 500},
         "query_sentence_count": {"1": 450, "2": 150},

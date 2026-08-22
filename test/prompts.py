@@ -9,7 +9,7 @@ import hashlib
 import json
 import random
 
-PROMPT_VERSION = "test-prompts-3.8.3-limited-local-repair"
+PROMPT_VERSION = "test-prompts-3.9.0-oflazer-structure"
 
 GENERATOR_SYSTEM = """\
 Sen Türkçe biçimbilim ve bilgi erişimi için contrast-set yazan uzman bir veri küratörüsün.
@@ -22,7 +22,7 @@ Görevin doğal, gündelik veya kurumsal Türkçe ile tek bir sorgu ve tam 11 ad
 SEMANTIC_JUDGE_SYSTEM = """\
 Sen generator'dan bağımsız, tamamen özellik-kör bir Türkçe retrieval hakemisin. Gold, negatif,
 biçimbilim fenomeni ve alt-tür etiketlerini görmeyeceksin. Yalnız metinsel anlam, sorguya destek,
-doğal Türkçe, iç tutarlılık ve yüzey artefaktlarını değerlendir. Bilmediğin durumda abstain=true
+doğal Türkçe, iç tutarlılık, katılımcı/olay rolleri ve yüzey artefaktlarını değerlendir. Bilmediğin durumda abstain=true
 ver; güven puanını şişirme. JSON dışında metin yazma.
 """
 
@@ -30,7 +30,9 @@ MORPHOLOGY_JUDGE_SYSTEM = """\
 Sen generator ve semantik hakemden bağımsız, özellik-bilinçli bir Türkçe biçimbilim hakemisin.
 Gold/hard/easy ve alt-tür etiketlerini görmeyeceksin. Semantik relevance veya doğru cevap seçme;
 yalnız hedef morfolojik özelliği, eklerin doğallığını, ek zincirini, kapsamı ve allomorf işlevini
-değerlendir. Geçerli bir allomorfu yalnız yüzeyi değiştiği için yanlış sayma. Bilmediğin durumda
+değerlendir. Hâl ve çatı işaretlerinin agent, patient, recipient, source ve causer rollerine etkisini;
+türetim sınırlarında kök/son sözcük türünü ayrıca izle. Geçerli bir allomorfu yalnız yüzeyi değiştiği
+için yanlış sayma. Bilmediğin durumda
 abstain=true ver. JSON dışında metin yazma.
 """
 
@@ -96,6 +98,31 @@ def build_generation_prompt(slot: dict) -> str:
         "ANAPHOR.AGR": (
             "`kendi` biçiminin kişi/sayı işaretini ve hangi katılımcıya döndüğünü birlikte izle; "
             "kendimiz/kendiniz gibi biçimleri yalnız yüzey benzerliğiyle eşdeğer sayma."
+        ),
+        "MORPH.CONTEXT_AMBIG": (
+            "Positive ve ana tuzakta aynı yüzey biçimini kullan; lemma, sözcük türü veya çekim analizi "
+            "yalnız cümle bağlamıyla ayrışsın. Örneği yalnız sözlük anlamı farkına indirgeme; en az bir "
+            "gerçek morfolojik analiz belirsizliği bulunsun. Bu fenomen strict minimal-pair değildir."
+        ),
+        "DERIV.IG_CHAIN": (
+            "Kök sözcük türünü, her yapım adımını ve son sözcük türünü planla. Positive hedef türetim "
+            "zincirini korusun; negatif farklı bir türetim sınırı/yolu yüzünden anlam veya valency "
+            "değiştirsin. Yalnız benzer harf dizisini türetim kanıtı sayma."
+        ),
+        "CASE.ROLE.FRAME": (
+            "Aynı katılımcıları ve temel olayı mümkün olduğunca koru; hâl işaretleri üzerinden agent, "
+            "patient/theme, goal/recipient ve source rollerini açıkça ayırt et. Negatif doğal ve "
+            "dilbilgisel kalmalı; anlamsız hâl dizisi kullanma."
+        ),
+        "SUSP.AFFIX": (
+            "Koordineli ögelerde çekimin yalnız son eşlenikte yüzeyleştiği fakat doğru kapsamda diğer "
+            "eşleniğe de yayıldığı doğal bir yapı kur. Positive ile tuzak, paylaşılan ek kapsamı veya "
+            "katılımcı rolleri bakımından ayrışsın; noktalama hilesi kullanma."
+        ),
+        "MWE.MORPH": (
+            "Destek fiilli, kalıplaşmış ya da tekrarlı çok sözcüklü ifadeyi bütün olarak kur. "
+            "Morfolojik işaretin hangi bileşene bağlandığı ve ifadenin bütüncül anlamı birlikte "
+            "korunsun; yalnız ortak kelimeleri kopyalayan aday positive olmasın."
         ),
     }.get(feature["key"], "Hedef feature'ın verilen anlam karşıtlığını doğal Türkçe içinde açık tut.")
     query_rule = (
@@ -251,8 +278,11 @@ GENERALİZASYON
   değiştirme; `avoid_critical_lemmas` ve `avoid_narrative_tags` değerlerini yeniden kullanma.
 - `semantic_profile.narrative_tag` ve `event_type` kısa ASCII snake_case etiketler olmalı
   (`banka_para_transferi`, `belge_teslimi` gibi); cümleyi veya özel kişi adını etikete kopyalama.
-- `participant_roles`, polarity, temporal_frame ve scope_target gerçekleşen query–gold anlamını
-  tanımlamalı. Bunlar generator niyet etiketi olarak ayrıca doğrulanacaktır.
+- `participant_roles`, `participant_bindings`, polarity, temporal_frame ve scope_target gerçekleşen
+  query–gold anlamını tanımlamalı. `participant_bindings`, her rolü query ve positive'taki somut
+  katılımcıya bir kez bağlamalı (ör. agent=Selin, theme=rapor, goal=şube). Özellikle CASE, CAUS,
+  PASS, REFL ve RECP family'lerinde kim-kime-ne yaptı ve varsa causer değişmeden izlenmeli.
+  Bunlar generator niyet etiketi olarak ayrıca doğrulanacaktır.
 
 ALANLAR
 - Yalnız şemanın istediği küçük üretim alanlarını yaz. Rol, subtype, morph_relation, qrels,
@@ -333,6 +363,7 @@ def build_morphology_judge_prompt(family: dict) -> str:
         "query": family["query"],
         "target_feature": family["target_feature"],
         "target_feature_label": family["target_feature_label"],
+        "meaning_contrast": family["feature_delta"],
         "objective": family["objective"],
         "layer": family["layer"],
         "candidates": _blind_candidates(family, "morphology"),
@@ -352,8 +383,12 @@ KURALLAR
    Negatif veya komşu özellik kullanmak tek başına biçimbilimsel bozukluk değildir.
 3. `unclear_candidate_ids`: morfolojik statüsüne güvenle karar veremediğin ID'ler.
 4. Kapsam, kişi, sayı, iyelik, zaman/kip ve ek zinciri işlevini yüzey benzerliğinden ayrı kontrol et.
-5. Geçerli allomorfu yanlış saydıysan allomorph_treated_as_wrong=true ver.
-6. Emin değilsen abstain=true ver. Confidence, yalnız morfolojik kararın 0–100 güvenidir.
+5. CASE/CAUS/PASS/REFL/RECP hedeflerinde hâl veya çatı işaretinin agent, patient/theme,
+   goal/recipient, source ve causer rollerini nasıl değiştirdiğini izle. DERIV.IG_CHAIN'de kök POS,
+   türetim sınırları ve final POS'u; MORPH.CONTEXT_AMBIG'de yüzey biçiminden çok bağlamsal analizi
+   esas al. SUSP.AFFIX ve MWE.MORPH'ta işlev birden fazla tokena yayılabilir.
+6. Geçerli allomorfu yanlış saydıysan allomorph_treated_as_wrong=true ver.
+7. Emin değilsen abstain=true ver. Confidence, yalnız morfolojik kararın 0–100 güvenidir.
 """
 
 

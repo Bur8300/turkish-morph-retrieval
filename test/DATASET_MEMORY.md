@@ -57,13 +57,20 @@ Her yeni family aşağıdaki küçük `semantic_profile` nesnesini üretir:
   "narrative_tag": "banka_para_transferi",
   "event_type": "para_cekme",
   "participant_roles": ["agent", "source", "theme"],
+  "participant_bindings": [
+    {"role": "agent", "participant": "Selin"},
+    {"role": "source", "participant": "şube"},
+    {"role": "theme", "participant": "para"}
+  ],
   "polarity": "affirmative",
   "temporal_frame": "past",
   "scope_target": "predicate"
 }
 ```
 
-Etiketler ASCII `snake_case` olmalı; özel ad veya ham cümle içermemelidir. Morfoloji metadata'sı
+Etiketler ASCII `snake_case` olmalı; özel ad veya ham cümle içermemelidir. Yalnız
+`participant_bindings.participant`, query–gold olayındaki somut katılımcıyı kısa biçimde yazar;
+rol listesiyle birebir uyuşur. Morfoloji metadata'sı
 generator beyanından değil, güvenilir plandaki feature taksonomisinden eklenir. Semantic profil
 generator niyetidir. Cascade judge reddi aynı slotta otomatik refill üretir. İnsan review yalnız
 600 kabul edilmiş family tamamlandıktan sonra uygulanır; insan reject verirse slot yeniden üretim
